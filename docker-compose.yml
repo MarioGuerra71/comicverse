@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:17
+    container_name: comicverse-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: comicverse
+      POSTGRES_PASSWORD: comicverse_dev
+      POSTGRES_DB: comicverse
+    ports:
+      - "5432:5432"
+    volumes:
+      - comicverse_pgdata:/var/lib/postgresql/data
+
+volumes:
+  comicverse_pgdata:
