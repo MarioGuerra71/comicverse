@@ -12,11 +12,17 @@ datasource db {
   provider = "postgresql"
 }
 
+enum DataSource {
+  COMICVINE
+}
+
 model Publisher {
   id        String   @id @default(uuid())
   name      String
   slug      String   @unique
   createdAt DateTime @default(now())
+  series     Series[]
+  characters Character[]
 }
 
 model User {
@@ -67,4 +73,116 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime?
   updatedAt  DateTime?
+}
+
+model Series {
+  id          String     @id @default(uuid())
+  publisherId String
+  publisher   Publisher  @relation(fields: [publisherId], references: [id])
+  name        String
+  startYear   Int?
+  source      DataSource
+  externalId  String
+  syncedAt    DateTime   @default(now())
+  comics      Comic[]
+
+  @@unique([source, externalId])
+  @@index([publisherId])
+}
+
+model Comic {
+  id            String           @id @default(uuid())
+  seriesId      String
+  series        Series           @relation(fields: [seriesId], references: [id])
+  issueNumber   String?
+  title         String
+  storyTitle    String?
+  description   String?
+  releaseDate   DateTime?        @db.Date
+  coverUrl      String?
+  coverThumbUrl String?
+  source        DataSource
+  externalId    String
+  syncedAt      DateTime         @default(now())
+  characters    ComicCharacter[]
+  creators      ComicCreator[]
+  events        ComicEvent[]
+
+  @@unique([source, externalId])
+  @@index([seriesId])
+  @@index([releaseDate])
+}
+
+model Character {
+  id                     String           @id @default(uuid())
+  publisherId            String?
+  publisher              Publisher?       @relation(fields: [publisherId], references: [id])
+  name                   String
+  realName               String?
+  summary                String?
+  imageUrl               String?
+  imageThumbUrl          String?
+  appearancesCount       Int?
+  firstAppearanceExternalId String?
+  isCollectible          Boolean          @default(false)
+  source                 DataSource
+  externalId             String
+  syncedAt               DateTime         @default(now())
+  detailsSyncedAt        DateTime?
+  comics                 ComicCharacter[]
+
+  @@unique([source, externalId])
+  @@index([isCollectible])
+  @@index([publisherId])
+}
+
+model ComicCharacter {
+  comicId     String
+  characterId String
+  comic       Comic     @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@id([comicId, characterId])
+  @@index([characterId])
+}
+
+model Creator {
+  id         String         @id @default(uuid())
+  name       String
+  source     DataSource
+  externalId String
+  comics     ComicCreator[]
+
+  @@unique([source, externalId])
+}
+
+model ComicCreator {
+  comicId   String
+  creatorId String
+  roles     String
+  comic     Comic   @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  creator   Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@id([comicId, creatorId])
+  @@index([creatorId])
+}
+
+model Event {
+  id         String       @id @default(uuid())
+  name       String
+  source     DataSource
+  externalId String
+  comics     ComicEvent[]
+
+  @@unique([source, externalId])
+}
+
+model ComicEvent {
+  comicId String
+  eventId String
+  comic   Comic @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@id([comicId, eventId])
+  @@index([eventId])
 }
