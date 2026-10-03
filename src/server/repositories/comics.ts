@@ -58,3 +58,32 @@ export async function findComicsPage(db: PrismaClient, input: ComicSearchInput) 
 
   return { rows, total };
 }
+export function findComicById(db: PrismaClient, id: string) {
+  return db.comic.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      title: true,
+      storyTitle: true,
+      description: true,
+      releaseDate: true,
+      coverUrl: true,
+      series: {
+        select: {
+          id: true,
+          name: true,
+          startYear: true,
+          publisher: { select: { name: true } },
+        },
+      },
+      _count: { select: { characters: true } },
+    },
+  });
+}
+
+export function findSeriesOptions(db: PrismaClient) {
+  return db.series.findMany({
+    orderBy: [{ name: "asc" }, { startYear: "asc" }],
+    select: { id: true, name: true, startYear: true },
+  });
+}

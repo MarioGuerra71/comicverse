@@ -10,19 +10,38 @@ export default async function AppLayout({
   const user = await requireUser();
 
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between border-b border-foreground/10 px-6 py-3">
-        <Link href="/dashboard" className="font-bold">
-          ComicVerse
-        </Link>
-        <nav className="flex items-center gap-4 text-sm">
+        <nav className="flex items-center gap-6 text-sm">
+          <Link href="/dashboard" className="text-base font-bold">
+            ComicVerse
+          </Link>
+          <Link href="/catalog" className="underline-offset-4 hover:underline">
+            Catálogo
+          </Link>
+        </nav>
+        <div className="flex items-center gap-4 text-sm">
           <Link href="/profile" className="underline-offset-4 hover:underline">
             {user.name}
           </Link>
           <SignOutButton />
-        </nav>
+        </div>
       </header>
-      {children}
+
+      <div className="flex-1">{children}</div>
+
+      <footer className="border-t border-foreground/10 px-6 py-4 text-xs opacity-70">
+        Datos e imágenes de cómics proporcionados por{" "}
+        <a
+          href="https://comicvine.gamespot.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+        >
+          Comic Vine
+        </a>
+        . Proyecto personal sin ánimo de lucro.
+      </footer>
     </div>
   );
 }
