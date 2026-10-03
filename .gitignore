@@ -48,3 +48,6 @@ next-env.d.ts
 .claude/
 .windsurf/
 skills-lock.json
+
+# Resultado de ejecuciones del script de resolución (se regenera)
+/data/universe.resolved.json

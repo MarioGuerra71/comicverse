@@ -1,0 +1,41 @@
+{
+  "series": [
+    { "id": 5533, "label": "Amazing Fantasy (1962)" },
+    { "id": 2127, "label": "The Amazing Spider-Man (1963)" },
+    { "id": 112161, "label": "The Amazing Spider-Man (2018)" },
+    { "id": 142577, "label": "The Amazing Spider-Man (2022)" }
+  ],
+  "characters": [
+    { "id": 1443, "label": "Spider-Man" },
+    { "id": 1486, "label": "Venom" },
+    { "id": 6733, "label": "Eddie Brock" },
+    { "id": 13380, "label": "Mary Jane" },
+    { "id": 1780, "label": "Aunt May" },
+    { "id": 1489, "label": "Flash Thompson" },
+    { "id": 4484, "label": "Scorpion" },
+    { "id": 58812, "label": "Norman Osborn (Green Goblin)" },
+    { "id": 2478, "label": "Harry Osborn" },
+    { "id": 1485, "label": "Doctor Octopus" },
+    { "id": 1490, "label": "Carnage" },
+    { "id": 1483, "label": "Kingpin" },
+    { "id": 24694, "label": "Daredevil" },
+    { "id": 1487, "label": "J. Jonah Jameson" },
+    { "id": 1480, "label": "Gwen Stacy" },
+    { "id": 1479, "label": "Black Cat" },
+    { "id": 2475, "label": "Kraven the Hunter" },
+    { "id": 4333, "label": "Mysterio" },
+    { "id": 3544, "label": "Sandman" },
+    { "id": 3228, "label": "Electro" },
+    { "id": 4459, "label": "Vulture" },
+    { "id": 2126, "label": "Rhino" },
+    { "id": 1488, "label": "Lizard" },
+    { "id": 79420, "label": "Miles Morales" },
+    { "id": 3114, "label": "Uncle Ben" },
+    { "id": 1782, "label": "Robbie Robertson" },
+    { "id": 2484, "label": "Betty Brant" },
+    { "id": 6722, "label": "Morbius" },
+    { "id": 4825, "label": "Shocker" },
+    { "id": 4458, "label": "Chameleon" },
+    { "id": 7608, "label": "Silver Sable" }
+  ]
+}

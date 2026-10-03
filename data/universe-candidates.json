@@ -1,0 +1,42 @@
+{
+  "series": [
+    { "id": 5533, "label": "Amazing Fantasy" },
+    { "id": 2127, "label": "The Amazing Spider-Man (1963)" },
+    { "id": 112161, "label": "The Amazing Spider-Man (2018)" },
+    { "id": 142577, "label": "The Amazing Spider-Man (2022)" }
+  ],
+  "characters": [
+    { "name": "Spider-Man", "id": 1443 },
+    { "name": "Venom", "id": 1486 },
+    { "name": "Eddie Brock", "id": 6733 },
+    { "name": "Mary Jane", "id": 13380 },
+    { "name": "Aunt May", "id": 1780 },
+    { "name": "Flash Thompson", "id": 1489 },
+    { "name": "Scorpion", "id": 4484 },
+    { "name": "Green Goblin" },
+    { "name": "Harry Osborn" },
+    { "name": "Doctor Octopus" },
+    { "name": "Carnage" },
+    { "name": "Kingpin" },
+    { "name": "Daredevil" },
+    { "name": "J. Jonah Jameson" },
+    { "name": "Gwen Stacy" },
+    { "name": "Black Cat" },
+    { "name": "Kraven the Hunter" },
+    { "name": "Mysterio" },
+    { "name": "Sandman" },
+    { "name": "Electro" },
+    { "name": "Vulture" },
+    { "name": "Rhino" },
+    { "name": "Lizard" },
+    { "name": "Miles Morales" },
+    { "name": "Uncle Ben" },
+    { "name": "Robbie Robertson" },
+    { "name": "Betty Brant" },
+    { "name": "Hobgoblin" },
+    { "name": "Morbius" },
+    { "name": "Shocker" },
+    { "name": "Chameleon" },
+    { "name": "Silver Sable" }
+  ]
+}
