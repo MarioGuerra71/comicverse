@@ -1,6 +1,23 @@
 import type { Prisma, PrismaClient } from "../../../generated/prisma/client";
 import type { ComicSearchInput, ComicSort } from "@/server/validation/catalog";
 
+export const comicListSelect = {
+  id: true,
+  title: true,
+  storyTitle: true,
+  releaseDate: true,
+  coverThumbUrl: true,
+  series: {
+    select: {
+      id: true,
+      name: true,
+      startYear: true,
+      publisher: { select: { name: true } },
+    },
+  },
+  _count: { select: { characters: true } },
+} satisfies Prisma.ComicSelect;
+
 function buildWhere(input: ComicSearchInput): Prisma.ComicWhereInput {
   const where: Prisma.ComicWhereInput = {};
 
@@ -36,22 +53,7 @@ export async function findComicsPage(db: PrismaClient, input: ComicSearchInput) 
       orderBy: buildOrderBy(input.sort),
       skip: (input.page - 1) * input.pageSize,
       take: input.pageSize,
-      select: {
-        id: true,
-        title: true,
-        storyTitle: true,
-        releaseDate: true,
-        coverThumbUrl: true,
-        series: {
-          select: {
-            id: true,
-            name: true,
-            startYear: true,
-            publisher: { select: { name: true } },
-          },
-        },
-        _count: { select: { characters: true } },
-      },
+      select: comicListSelect,
     }),
     db.comic.count({ where }),
   ]);
