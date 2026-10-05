@@ -3,7 +3,13 @@ import Link from "next/link";
 import type { ComicListItemDto } from "@/server/dto/comic";
 import { pluralize } from "@/lib/format";
 
-export function ComicCard({ comic }: { comic: ComicListItemDto }) {
+export function ComicCard({
+  comic,
+  eager = false,
+}: {
+  comic: ComicListItemDto;
+  eager?: boolean;
+}) {
   const year = comic.releaseDate?.slice(0, 4);
   const characters =
     comic.characterCount > 0
@@ -19,6 +25,7 @@ export function ComicCard({ comic }: { comic: ComicListItemDto }) {
             alt={`Portada de ${comic.title}`}
             fill
             unoptimized
+            loading={eager ? "eager" : "lazy"}
             className="object-cover transition-transform duration-200 group-hover:scale-105"
           />
         ) : (
@@ -29,7 +36,9 @@ export function ComicCard({ comic }: { comic: ComicListItemDto }) {
       </div>
       <div className="text-sm">
         <p className="font-medium leading-tight">{comic.title}</p>
-        <p className="opacity-60">{[year, characters].filter(Boolean).join(" · ")}</p>
+        <p className="opacity-60">
+          {[year, characters].filter(Boolean).join(" · ")}
+        </p>
       </div>
     </Link>
   );

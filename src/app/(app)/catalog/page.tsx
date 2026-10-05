@@ -37,7 +37,9 @@ export default async function CatalogPage({
 }) {
   await requireUser();
 
-  const parsed = comicSearchSchema.safeParse(normalizeParams(await searchParams));
+  const parsed = comicSearchSchema.safeParse(
+    normalizeParams(await searchParams),
+  );
   const input = parsed.success ? parsed.data : comicSearchSchema.parse({});
 
   const [result, series] = await Promise.all([
@@ -112,9 +114,9 @@ export default async function CatalogPage({
         </div>
       ) : (
         <ul className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {result.items.map((comic) => (
+          {result.items.map((comic, index) => (
             <li key={comic.id}>
-              <ComicCard comic={comic} />
+              <ComicCard comic={comic} eager={index < 6} />
             </li>
           ))}
         </ul>
