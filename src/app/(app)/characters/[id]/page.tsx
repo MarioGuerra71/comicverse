@@ -97,6 +97,39 @@ export default async function CharacterPage({
         </div>
       </div>
 
+      <section aria-labelledby="relationships-heading" className="mt-8">
+        <h2 id="relationships-heading" className="font-semibold">
+          Relaciones descubiertas
+        </h2>
+        {character.relationships.length > 0 ? (
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {character.relationships.map(({ character: other, shared }) => (
+              <li key={other.id}>
+                <Link
+                  href={`/characters/${other.id}`}
+                  className="flex min-h-11 items-center rounded-md border border-foreground/20 px-3 text-sm"
+                >
+                  {other.name}
+                  <span className="ml-2 opacity-60">
+                    {pluralize(shared, "cómic juntos", "cómics juntos")}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-1 text-sm opacity-80">
+            Aún no has descubierto a ningún personaje relacionado.
+          </p>
+        )}
+        {character.hiddenRelationships > 0 && (
+          <p className="mt-2 text-sm opacity-70">
+            Y {pluralize(character.hiddenRelationships, "relación", "relaciones")} por
+            descubrir.
+          </p>
+        )}
+      </section>
+
       <section aria-labelledby="comics-heading" className="mt-8">
         <h2 id="comics-heading" className="font-semibold">
           En tu biblioteca

@@ -85,3 +85,23 @@ export function findComicByExternalId(db: Db, externalId: string) {
     select: { id: true, title: true },
   });
 }
+
+/** Parejas de coleccionables que comparten cómics (a < b), con cuántos comparten. */
+export function findCoAppearancePairs(db: Db) {
+  return db.$queryRaw<{ a: string; b: string; shared: number }[]>`
+    SELECT x."characterId" AS a, y."characterId" AS b, count(*)::int AS shared
+    FROM "ComicCharacter" x
+    JOIN "ComicCharacter" y ON y."comicId" = x."comicId" AND x."characterId" < y."characterId"
+    JOIN "Character" cx ON cx.id = x."characterId" AND cx."isCollectible"
+    JOIN "Character" cy ON cy.id = y."characterId" AND cy."isCollectible"
+    GROUP BY 1, 2`;
+}
+
+/** Cuántos cómics importados tiene cada coleccionable. */
+export function countComicsPerCharacter(db: Db) {
+  return db.$queryRaw<{ id: string; comics: number }[]>`
+    SELECT cc."characterId" AS id, count(*)::int AS comics
+    FROM "ComicCharacter" cc
+    JOIN "Character" c ON c.id = cc."characterId" AND c."isCollectible"
+    GROUP BY 1`;
+}

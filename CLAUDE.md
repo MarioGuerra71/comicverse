@@ -170,7 +170,7 @@ comicverse/
    ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url · search-params · reading-status
    └─ server/
       ├─ auth/ session · api
-      ├─ domain/ card-state · library-status · unlock
+      ├─ domain/ card-state · library-status · unlock · relationships
       ├─ dto/ comic · library · character
       ├─ repositories/ comics · library · characters
       ├─ services/ catalog · library · discovery
@@ -207,6 +207,7 @@ Decisiones de diseño:
 **Desbloqueo (Fase 5)** — **decisión aprobada (2026-10-06): los desbloqueos se CALCULAN, no se guardan.**
 - "Personajes desbloqueados" = consulta: personajes coleccionables de `ComicCharacter` cuyos cómics estén en `UserComic` con estado `READ` para ese usuario. El invariante de la regla 2 se cumple por construcción: no hay `UserCharacter` de desbloqueos, ni `reconcile`, ni carreras entre peticiones simultáneas.
 - Igual con las relaciones: "descubierta" = ambos extremos desbloqueados, calculado (sin `UserRelationship`).
+- **Relaciones "aparecen juntos" (Paso 31):** derivadas de `ComicCharacter`. Una pareja es relación si comparte ≥ `MIN_SHARED_COMICS` (5) cómics **y** su coeficiente de Ochiai (compartidos / √(cómicsA·cómicsB)) es ≥ `MIN_SCORE` (0,2), en `domain/relationships.ts`. Motivo, medido con datos reales: con solo "≥ 5 cómics" salían 409 de 496 parejas (todos con todos, por los personajes omnipresentes); con Ochiai ≥ 0,2 salen 169 y ningún personaje queda aislado (Venom → Eddie Brock 0,73 primero). Reajustar los umbrales al ampliar el universo. Se calculan en cada petición (~30–70 ms de código en dev).
 - Al pasar a Leído (o salir de Leído), `setComicStatus`/`removeFromLibrary` comparan dentro de la transacción los desbloqueados antes y después y devuelven un `UnlockResult` (`newCharacters`, después `newRelationships`, progreso) que el frontend solo **anima**; no decide nada.
 - Solo **Leído** desbloquea (Pendiente/Leyendo/Abandonado no). Desmarcar retira automáticamente los personajes sin otro cómic leído.
 - Se guardará solo lo no calculable: personajes favoritos (tabla pequeña, al final de la Fase 5) y el registro `Discovery` (Fase 7).
@@ -260,8 +261,8 @@ Existentes:
 | `GET/PUT/DELETE /library/comics/:comicId` | Estado de un cómic / añadir o cambiar estado (`{status}`; 404 `COMIC_NOT_FOUND`) / quitar |
 | `PATCH /library/comics/:comicId` | `{rating?: 1-5 \| null, isFavorite?: boolean}` (al menos uno). 404 `NOT_IN_LIBRARY`, 409 `RATING_REQUIRES_READ` |
 | `GET/PUT/DELETE /library/comics/:comicId/review` | Reseña propia (`{body}`). 404 `NOT_IN_LIBRARY`, 409 `REVIEW_REQUIRES_READ`; borrar inexistente → `removed: false` |
-| `GET /collection` | Cartas desbloqueadas (`state`, `comicsRead`) + `locked` (solo el número) + `progress` |
-| `GET /characters/:id` | Ficha de un personaje desbloqueado (datos, estado, `comicsRead`, primera aparición, cómics de tu biblioteca con tu estado). **Bloqueado o inexistente → el mismo 404 `CHARACTER_NOT_FOUND`** |
+| `GET /collection` | Cartas desbloqueadas (`state`, `comicsRead`) + `locked` (solo el número) + `progress` + `relationships: {discovered, total}` |
+| `GET /characters/:id` | Ficha de un personaje desbloqueado (datos, estado, `comicsRead`, primera aparición, cómics de tu biblioteca con tu estado, `relationships` solo con personajes desbloqueados + `hiddenRelationships` (número)). **Bloqueado o inexistente → el mismo 404 `CHARACTER_NOT_FOUND`** |
 | `GET /api/health` | Comprobación de vida (sin versión) |
 
 Previstos: `PATCH /collection/characters/:id/favorite`, `GET /graph?focus=&depth=1`, `GET /progress`, `GET /dashboard`, `GET /discoveries`, `POST /admin/sync/*` (protegido).
@@ -279,7 +280,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **88 unitarios + 31 de integración** pasando tras el Paso 29 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
+- Estado: **92 unitarios + 33 de integración** pasando tras el Paso 31 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -328,10 +329,10 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 3: catálogo (búsqueda, filtro por serie, orden, paginación) y ficha de cómic con datos reales de Comic Vine; importador del universo semilla.
 - Fase 4 (**terminada**): modelos `UserComic`/`ReadingHistory` y reglas de estado (`applyStatusChange`) (Paso 21); servicio y API de biblioteca con validación, DTO, repositorio, transacciones con historial y rutas `api/v1/library` (Paso 22, commit `e20aa1f`); tests de integración contra PostgreSQL real con tests del servicio de biblioteca (Paso 23); botones de estado en la ficha del cómic (Paso 24a: componente cliente que llama a la API con `fetch` y luego `router.refresh()`; se descartaron las Server Actions para mantener una sola puerta de entrada y porque la Fase 5 necesitará el resultado del desbloqueo en el cliente). Página "Mi biblioteca" (`/library`, pestañas por estado con contadores como enlaces `?status=`, paginación y enlace en la cabecera; Paso 24b). Los nombres de los estados viven en `lib/reading-status.ts` y se comparten entre cliente y servidor. Puntuación y favorito (Paso 25a: `PATCH` en la API, `updateLibraryEntry`, panel `LibraryControls` en la ficha y marcas en la biblioteca). Reseñas privadas (Paso 25b: tabla `Review`, API `/review`, formulario en la ficha). `parseBody` compartido en `server/auth/api.ts`.
 
-- Fase 5 (en curso): `displayName` de personajes y regla de `cleanRealName` (Paso 26). Núcleo del desbloqueo (Paso 27): `findUnlockedCharacters` (repositorio `characters`), `diffById` (dominio `unlock`), `snapshotUnlocked`/`buildUnlockResult` (servicio `discovery`); `setComicStatus` y `removeFromLibrary` devuelven `unlock: UnlockResult | null` (null si el cómic no entra ni sale de Leído), y la API lo devuelve tal cual. "Mi colección" (Paso 28): página `/collection` y `GET /api/v1/collection`; `toCollection` envía solo las cartas desbloqueadas y, de las bloqueadas, **solo el número** (`locked`), así que ni su id, ni su nombre, ni su posición llegan al navegador; verificado buscando los 32 personajes en el HTML. Página de personaje (Paso 29): `/characters/[id]` y `GET /api/v1/characters/:id`; una sola consulta (`findCharacterWithLibrary`) y `toCharacterDetail` devuelve `null` si no hay ningún cómic leído; las cartas de la colección enlazan a ella. El resumen del personaje (de Comic Vine) puede nombrar a otros personajes, igual que las descripciones de cómics: entra en el ajuste futuro de ocultar descripciones. Animación de desbloqueo (Paso 30): `UnlockPanel` dentro de `LibraryControls` muestra el `unlock` de la respuesta ("¡Completado!", "N nuevos descubrimientos" con miniaturas enlazadas, o los que vuelven a estar por descubrir), con `role="status"`; animación CSS `animate-pop-in` (definida en `globals.css` con `@theme`) solo con `motion-safe:`; sin dependencias (Motion no hizo falta).
+- Fase 5 (en curso): `displayName` de personajes y regla de `cleanRealName` (Paso 26). Núcleo del desbloqueo (Paso 27): `findUnlockedCharacters` (repositorio `characters`), `diffById` (dominio `unlock`), `snapshotUnlocked`/`buildUnlockResult` (servicio `discovery`); `setComicStatus` y `removeFromLibrary` devuelven `unlock: UnlockResult | null` (null si el cómic no entra ni sale de Leído), y la API lo devuelve tal cual. "Mi colección" (Paso 28): página `/collection` y `GET /api/v1/collection`; `toCollection` envía solo las cartas desbloqueadas y, de las bloqueadas, **solo el número** (`locked`), así que ni su id, ni su nombre, ni su posición llegan al navegador; verificado buscando los 32 personajes en el HTML. Página de personaje (Paso 29): `/characters/[id]` y `GET /api/v1/characters/:id`; una sola consulta (`findCharacterWithLibrary`) y `toCharacterDetail` devuelve `null` si no hay ningún cómic leído; las cartas de la colección enlazan a ella. El resumen del personaje (de Comic Vine) puede nombrar a otros personajes, igual que las descripciones de cómics: entra en el ajuste futuro de ocultar descripciones. Animación de desbloqueo (Paso 30): `UnlockPanel` dentro de `LibraryControls` muestra el `unlock` de la respuesta ("¡Completado!", "N nuevos descubrimientos" con miniaturas enlazadas, o los que vuelven a estar por descubrir), con `role="status"`; animación CSS `animate-pop-in` (definida en `globals.css` con `@theme`) solo con `motion-safe:`; sin dependencias (Motion no hizo falta). Relaciones "aparecen juntos" (Paso 31): `getRelationships` (servicio `discovery`), sección "Relaciones descubiertas" en la ficha de personaje, contador X / N en la colección y `newRelationships` en el `UnlockResult` y el panel.
 
 **Fase 5 — pendiente** (desbloqueos calculados, ver sección 9):
-- **Paso 31:** relaciones (fuente: curadas y/o "aparecen juntos"; descubiertas calculadas).
+- **Paso 32:** relaciones con significado (aliado, enemigo, familia…) desde `character_friends`/`character_enemies` de Comic Vine, filtradas a nuestro universo y guardadas en un archivo de datos que revisa el usuario.
 - Al final: personajes favoritos y filtros de la colección.
 
 **Después:**
@@ -351,6 +352,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Búsqueda de cómics con `ILIKE` (`contains` + `insensitive`); con miles de cómics, añadir `pg_trgm`.
 - Orden por título alfabético (`#10` antes que `#2`); para leer en orden usar fecha.
 - El importador no borra enlaces que Comic Vine retire y vuelve a descargarlo todo en cada ejecución; hacerlo incremental y reconciliar cuando haya desbloqueos de usuarios.
+- Las relaciones se recalculan en cada petición (autounión de `ComicCharacter`); si el universo crece mucho, materializarlas al importar.
 - Posible doble anotación en el historial si dos cambios a Leído llegan exactamente a la vez. Igualmente, dos lecturas simultáneas con un personaje en común pueden anunciar ese personaje como nuevo en ambas respuestas (solo afecta a la animación; el estado calculado siempre es correcto).
 - Rate limiting y verificación de email aún no implementados.
 

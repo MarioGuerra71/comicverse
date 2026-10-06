@@ -5,6 +5,7 @@ import Link from "next/link";
 export interface UnlockView {
   newCharacters: { id: string; name: string; imageThumbUrl: string | null }[];
   lostCharacters: { id: string; name: string }[];
+  newRelationships: number;
   progress: { unlocked: number; total: number };
 }
 
@@ -24,6 +25,13 @@ export function UnlockPanel({ unlock, onClose }: { unlock: UnlockView; onClose: 
           <p className="mt-1 text-lg font-semibold">
             {gained === 1 ? "1 nuevo descubrimiento" : `${gained} nuevos descubrimientos`}
           </p>
+          {unlock.newRelationships > 0 && (
+            <p className="text-sm opacity-80">
+              {unlock.newRelationships === 1
+                ? "y 1 relación nueva entre personajes"
+                : `y ${unlock.newRelationships} relaciones nuevas entre personajes`}
+            </p>
+          )}
           <ul className="mt-3 flex flex-wrap gap-3">
             {unlock.newCharacters.map((character, index) => (
               <li

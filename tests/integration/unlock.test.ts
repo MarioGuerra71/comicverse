@@ -214,3 +214,50 @@ describe("getCharacterDetail", () => {
     expect(detail?.firstAppearance).toEqual({ id: comicA.id, title: comicA.title });
   });
 });
+
+describe("relaciones", () => {
+  // Spider-Man y Venom salen juntos en 5 cómics; además hay uno solo de Spider-Man.
+  async function seedRelated() {
+    const user = await createUser(db);
+    const spiderMan = await createCharacter(db, "Spider-Man");
+    const venom = await createCharacter(db, "Venom");
+    const together = [];
+    for (let i = 0; i < 5; i++) together.push(await createComic(db, [spiderMan, venom]));
+    const soloSpidey = await createComic(db, [spiderMan]);
+    return { user, spiderMan, venom, together, soloSpidey };
+  }
+
+  it("solo se revela cuando los dos personajes están desbloqueados", async () => {
+    const { user, spiderMan, venom, together, soloSpidey } = await seedRelated();
+
+    // Solo Spider-Man: la relación existe pero sigue oculta (solo el número).
+    await setComicStatus(db, user.id, soloSpidey.id, "READ");
+    const before = await getCharacterDetail(db, user.id, spiderMan.id);
+    expect(before?.relationships).toEqual([]);
+    expect(before?.hiddenRelationships).toBe(1);
+    expect(JSON.stringify(before)).not.toContain("Venom");
+    expect((await getCollection(db, user.id)).relationships).toEqual({ discovered: 0, total: 1 });
+
+    // Al desbloquear Venom, se descubre.
+    const result = await setComicStatus(db, user.id, together[0].id, "READ");
+    expect(result.unlock?.newRelationships).toBe(1);
+
+    const after = await getCharacterDetail(db, user.id, spiderMan.id);
+    expect(after?.relationships).toEqual([
+      { character: expect.objectContaining({ id: venom.id, name: "Venom" }), shared: 5 },
+    ]);
+    expect(after?.hiddenRelationships).toBe(0);
+    expect((await getCollection(db, user.id)).relationships).toEqual({ discovered: 1, total: 1 });
+  });
+
+  it("al volver a bloquear un personaje la relación deja de estar descubierta", async () => {
+    const { user, together, soloSpidey } = await seedRelated();
+    await setComicStatus(db, user.id, soloSpidey.id, "READ");
+    await setComicStatus(db, user.id, together[0].id, "READ");
+
+    const dropped = await setComicStatus(db, user.id, together[0].id, "DROPPED");
+
+    expect(dropped.unlock?.newRelationships).toBe(0);
+    expect((await getCollection(db, user.id)).relationships.discovered).toBe(0);
+  });
+});

@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Mi colección · ComicVerse" };
 
 export default async function CollectionPage() {
   const user = await requireUser();
-  const { cards, locked, progress } = await getCollection(db, user.id);
+  const { cards, locked, progress, relationships } = await getCollection(db, user.id);
   const percent = progress.total
     ? Math.round((progress.unlocked / progress.total) * 100)
     : 0;
@@ -31,6 +31,9 @@ export default async function CollectionPage() {
           aria-label="Progreso de la colección"
           className="mt-2 h-2 w-full overflow-hidden rounded-full accent-foreground"
         />
+        <p className="mt-2 text-sm opacity-80">
+          Relaciones descubiertas: {relationships.discovered} / {relationships.total}
+        </p>
       </div>
 
       {cards.length === 0 && (
