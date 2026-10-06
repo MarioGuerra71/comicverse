@@ -164,7 +164,7 @@ comicverse/
    │  ├─ (auth)/  layout · sign-in · sign-up        (redirige al dashboard si ya hay sesión)
    │  ├─ (app)/   layout (cabecera + footer) · dashboard · profile · catalog · comics/[id] · library
    │  └─ api/  auth/[...all] · health · v1/comics · v1/library · v1/library/comics/[comicId]
-   ├─ components/  auth/sign-out-button · comics/comic-card · library/status-buttons
+   ├─ components/  auth/sign-out-button · comics/comic-card · library/library-controls
    ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url · search-params · reading-status
    └─ server/
       ├─ auth/ session · api
@@ -216,7 +216,8 @@ Decisiones de diseño:
 **Biblioteca** (reglas aprobadas):
 - Añadir a la biblioteca = entrada en **Pendiente**. Estados: Pendiente, Leyendo, Leído, Abandonado. Quitar = borrar la entrada.
 - Pasar a Leyendo guarda `startedAt` (se conserva si ya existía). Pasar a Leído guarda `readAt`; salir de Leído lo borra. Repetir el mismo estado no hace nada (`changed: false`).
-- **Puntuar (1–5) solo cómics en Leído.** Pendiente de decidir: al salir de Leído, ¿se conserva o se borra la puntuación?
+- **Puntuar (1–5) solo cómics en Leído** (si no, 409 `RATING_REQUIRES_READ`). Decidido (opción A): al salir de Leído la puntuación **se conserva pero no se muestra** (el DTO la devuelve como `null` fuera de Leído) y reaparece al volver a Leído. Quitarla (`rating: null`) se permite siempre.
+- Favorito: cualquier cómic de la biblioteca, en cualquier estado.
 - Cada cambio se anota en `ReadingHistory`.
 
 **Cartas:** `LOCKED` (silueta y `?`, sin nombre ni parcial), `DISCOVERED`, `COLLECTED` (≥ 5 cómics leídos). Datos de una carta: imagen, nombre, nombre real, editorial, primera aparición, cómics en tu biblioteca donde aparece, cómics leídos donde aparece, relaciones descubiertas.
@@ -256,11 +257,12 @@ Existentes:
 | `GET /comics?q=&seriesId=&sort=&page=&pageSize=` | Catálogo. `sort`: `release_desc` (por defecto), `release_asc`, `title`. `pageSize` ≤ 60. Solo devuelve `characterCount` |
 | `GET /library?status=&page=&pageSize=` | Biblioteca propia + contadores por estado. `pageSize` ≤ 60 |
 | `GET/PUT/DELETE /library/comics/:comicId` | Estado de un cómic / añadir o cambiar estado (`{status}`; 404 `COMIC_NOT_FOUND`) / quitar |
+| `PATCH /library/comics/:comicId` | `{rating?: 1-5 \| null, isFavorite?: boolean}` (al menos uno). 404 `NOT_IN_LIBRARY`, 409 `RATING_REQUIRES_READ` |
 | `GET /api/health` | Comprobación de vida (sin versión) |
 
 Previstos: `GET /collection`, `GET /characters/:id` (404 u opaco si está bloqueado), `PATCH /collection/characters/:id/favorite`, `GET /graph?focus=&depth=1`, `GET /progress`, `GET /dashboard`, `GET /discoveries`, reseñas (`PUT/DELETE /library/comics/:id/review`), `POST /admin/sync/*` (protegido).
 
-Convenciones: errores `{ error: "CODIGO", issues? }`; `401 UNAUTHORIZED`, `400 INVALID_*`, `404`. Borrar algo inexistente no es error (`removed: false`). Paginación: `{ items, page, pageSize, total, totalPages }`.
+Convenciones: errores `{ error: "CODIGO", issues? }`; `401 UNAUTHORIZED`, `400 INVALID_*`, `404`, `409` (regla de negocio incumplida). Borrar algo inexistente no es error (`removed: false`). Paginación: `{ items, page, pageSize, total, totalPages }`.
 
 ---
 
@@ -273,7 +275,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **76 unitarios + 8 de integración** pasando tras el Paso 23.
+- Estado: **80 unitarios + 12 de integración** pasando tras el Paso 25a.
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -320,10 +322,10 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 0: arquitectura aprobada. Fase 1: proyecto, Docker/PostgreSQL, Prisma 7, validación de entorno, Vitest.
 - Fase 2: Better Auth (registro, login, cierre de sesión), dashboard protegido, perfil básico, layouts, portada.
 - Fase 3: catálogo (búsqueda, filtro por serie, orden, paginación) y ficha de cómic con datos reales de Comic Vine; importador del universo semilla.
-- Fase 4 (en curso): modelos `UserComic`/`ReadingHistory` y reglas de estado (`applyStatusChange`) (Paso 21); servicio y API de biblioteca con validación, DTO, repositorio, transacciones con historial y rutas `api/v1/library` (Paso 22, commit `e20aa1f`); tests de integración contra PostgreSQL real con tests del servicio de biblioteca (Paso 23); botones de estado en la ficha del cómic (Paso 24a: componente cliente que llama a la API con `fetch` y luego `router.refresh()`; se descartaron las Server Actions para mantener una sola puerta de entrada y porque la Fase 5 necesitará el resultado del desbloqueo en el cliente). Página "Mi biblioteca" (`/library`, pestañas por estado con contadores como enlaces `?status=`, paginación y enlace en la cabecera; Paso 24b). Los nombres de los estados viven en `lib/reading-status.ts` y se comparten entre cliente y servidor.
+- Fase 4 (en curso): modelos `UserComic`/`ReadingHistory` y reglas de estado (`applyStatusChange`) (Paso 21); servicio y API de biblioteca con validación, DTO, repositorio, transacciones con historial y rutas `api/v1/library` (Paso 22, commit `e20aa1f`); tests de integración contra PostgreSQL real con tests del servicio de biblioteca (Paso 23); botones de estado en la ficha del cómic (Paso 24a: componente cliente que llama a la API con `fetch` y luego `router.refresh()`; se descartaron las Server Actions para mantener una sola puerta de entrada y porque la Fase 5 necesitará el resultado del desbloqueo en el cliente). Página "Mi biblioteca" (`/library`, pestañas por estado con contadores como enlaces `?status=`, paginación y enlace en la cabecera; Paso 24b). Los nombres de los estados viven en `lib/reading-status.ts` y se comparten entre cliente y servidor. Puntuación y favorito (Paso 25a: `PATCH` en la API, `updateLibraryEntry`, panel `LibraryControls` en la ficha y marcas en la biblioteca).
 
 **Fase 4 — pendiente:**
-- **Paso 25:** puntuación (1–5, solo Leído), favoritos y reseñas (`Review`).
+- **Paso 25b:** reseñas (`Review`, una por usuario y cómic; `PUT/DELETE /library/comics/:id/review`).
 
 **Después:**
 - **Fase 5 — Descubrimiento:** `UserCharacter`, relaciones, desbloqueo transaccional con tests, `reconcile`, cartas, colección, progreso, página de personaje, `Discovery`; decidir `displayName`.
@@ -361,7 +363,11 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - **Regla de coste:** no instalar ni activar plugins, skills o servidores MCP que requieran pago o tarjeta. Cualquier uno nuevo debe justificarse y ser gratuito.
 - Un plugin o skill **no puede relajar** las reglas de la sección 3 (coste cero, spoilers, seguridad, versiones fijadas ni ritmo paso a paso). Si una instrucción de un plugin choca con este archivo, **prevalece este archivo**; avisa al usuario.
 - `npx prisma init` instaló automáticamente skills de asistentes en `.claude/skills/`, `.agents/skills/`, `.windsurf/skills/` y `skills-lock.json`; se ignoraron en `.gitignore` porque no son necesarios (pueden volver a aparecer en disco; no se versionan). Si Claude Code necesita `.claude/` en el proyecto, comprobar `.gitignore` y no versionar solo lo personal (`.claude/settings.local.json`).
-- Plugins/skills/MCP activos en este proyecto: *(rellenar con los que el usuario haya instalado, indicando para qué se usan y si son de proyecto o de usuario)*.
+- Plugins/skills/MCP activos (de **usuario**, no del proyecto):
+  - **impeccable**: diseño y revisión de interfaces. Tiene un *hook* que revisa automáticamente cada archivo de interfaz que se escribe.
+  - **ui-ux-pro-max** (`ui-ux-pro-max`, `ui-styling`, `design-system`…): guías de estilos, paletas, tipografías y componentes.
+  - **ponytail**: empuja hacia la solución más simple (sin abstracciones innecesarias).
+  - Uso previsto: los de diseño se usan a propósito en la **Fase 8** (sistema de diseño y pulido de pantallas); antes, la UI es provisional y funcional. Nunca prevalecen sobre este archivo.
 
 ---
 

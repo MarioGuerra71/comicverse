@@ -10,6 +10,11 @@ export interface LibraryEntryRow {
   readAt: Date | null;
 }
 
+// La puntuación se conserva al salir de Leído, pero solo se muestra en Leído.
+function visibleRating(row: { status: ReadingStatus; rating: number | null }) {
+  return row.status === "READ" ? row.rating : null;
+}
+
 export interface LibraryEntryDto {
   comicId: string;
   status: ReadingStatus;
@@ -24,7 +29,7 @@ export function toLibraryEntry(row: LibraryEntryRow): LibraryEntryDto {
     comicId: row.comicId,
     status: row.status,
     isFavorite: row.isFavorite,
-    rating: row.rating,
+    rating: visibleRating(row),
     startedAt: row.startedAt ? row.startedAt.toISOString() : null,
     readAt: row.readAt ? row.readAt.toISOString() : null,
   };
@@ -55,7 +60,7 @@ export function toLibraryItem(row: LibraryItemRow): LibraryItemDto {
     comic: toComicListItem(row.comic),
     status: row.status,
     isFavorite: row.isFavorite,
-    rating: row.rating,
+    rating: visibleRating(row),
     startedAt: row.startedAt ? row.startedAt.toISOString() : null,
     readAt: row.readAt ? row.readAt.toISOString() : null,
     updatedAt: row.updatedAt.toISOString(),

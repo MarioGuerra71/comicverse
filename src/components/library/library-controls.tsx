@@ -1,0 +1,139 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import {
+  READING_STATUS_LABELS,
+  READING_STATUSES,
+  type ReadingStatusKey as Status,
+} from "@/lib/reading-status";
+
+export interface LibraryControlsEntry {
+  status: Status;
+  isFavorite: boolean;
+  rating: number | null;
+}
+
+const RATINGS = [1, 2, 3, 4, 5];
+
+export function LibraryControls({
+  comicId,
+  entry,
+}: {
+  comicId: string;
+  entry: LibraryControlsEntry | null;
+}) {
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  // isRefreshing sigue activo hasta que llegan los datos nuevos del servidor.
+  const [isRefreshing, startTransition] = useTransition();
+  const busy = saving || isRefreshing;
+  const [error, setError] = useState<string | null>(null);
+
+  async function send(method: "PUT" | "PATCH" | "DELETE", body?: object) {
+    setSaving(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/v1/library/comics/${comicId}`, {
+        method,
+        headers: body ? { "Content-Type": "application/json" } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (!response.ok) throw new Error(String(response.status));
+      // Vuelve a pedir la página al servidor para mostrar lo guardado.
+      startTransition(() => router.refresh());
+    } catch {
+      setError("No se ha podido guardar el cambio. Inténtalo de nuevo.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const buttonClass =
+    "min-h-11 rounded-md border border-foreground/20 px-3 py-2 text-sm disabled:opacity-50";
+  const activeClass = "bg-foreground text-background";
+
+  return (
+    <section aria-labelledby="library-heading" className="flex flex-col gap-3">
+      <h2 id="library-heading" className="font-semibold">
+        Tu biblioteca
+      </h2>
+
+      <div className="flex flex-wrap gap-2">
+        {READING_STATUSES.map((value) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={entry?.status === value}
+            disabled={busy}
+            onClick={() => send("PUT", { status: value })}
+            className={`${buttonClass} ${entry?.status === value ? activeClass : ""}`}
+          >
+            {READING_STATUS_LABELS[value]}
+          </button>
+        ))}
+        {entry && (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => send("DELETE")}
+            className={`${buttonClass} underline-offset-4 hover:underline`}
+          >
+            Quitar de la biblioteca
+          </button>
+        )}
+      </div>
+
+      {entry && (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            aria-pressed={entry.isFavorite}
+            disabled={busy}
+            onClick={() => send("PATCH", { isFavorite: !entry.isFavorite })}
+            className={`${buttonClass} ${entry.isFavorite ? activeClass : ""}`}
+          >
+            {entry.isFavorite ? "♥ Favorito" : "♡ Añadir a favoritos"}
+          </button>
+        </div>
+      )}
+
+      {entry?.status === "READ" ? (
+        <div role="group" aria-label="Tu puntuación" className="flex flex-wrap items-center gap-2">
+          <span className="text-sm opacity-70">Tu puntuación:</span>
+          {RATINGS.map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={entry.rating === value}
+              aria-label={`${value} de 5`}
+              disabled={busy}
+              onClick={() => send("PATCH", { rating: value })}
+              className={`${buttonClass} min-w-11 ${entry.rating !== null && value <= entry.rating ? activeClass : ""}`}
+            >
+              ★
+            </button>
+          ))}
+          {entry.rating !== null && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => send("PATCH", { rating: null })}
+              className="min-h-11 px-2 text-sm underline-offset-4 hover:underline disabled:opacity-50"
+            >
+              Quitar puntuación
+            </button>
+          )}
+        </div>
+      ) : (
+        entry && <p className="text-sm opacity-70">Podrás puntuarlo cuando lo marques como leído.</p>
+      )}
+
+      {error && (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      )}
+    </section>
+  );
+}

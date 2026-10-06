@@ -20,3 +20,15 @@ export const librarySearchSchema = z.object({
 });
 
 export type LibrarySearchInput = z.infer<typeof librarySearchSchema>;
+
+// PATCH: puntuación (1–5, null para quitarla) y/o favorito. Al menos uno de los dos.
+export const updateEntrySchema = z
+  .object({
+    rating: z.int().min(1).max(5).nullable().optional(),
+    isFavorite: z.boolean().optional(),
+  })
+  .refine((data) => data.rating !== undefined || data.isFavorite !== undefined, {
+    message: "Indica rating o isFavorite",
+  });
+
+export type UpdateEntryInput = z.infer<typeof updateEntrySchema>;

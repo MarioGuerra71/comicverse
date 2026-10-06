@@ -80,11 +80,15 @@ export default async function LibraryPage({
           {result.items.map((item, index) => (
             <li key={item.comic.id} className="flex flex-col gap-1">
               <ComicCard comic={item.comic} eager={index < 6} />
-              {!input.status && (
-                <p className="text-xs font-medium opacity-80">
-                  {READING_STATUS_LABELS[item.status]}
-                </p>
-              )}
+              <p className="text-xs font-medium opacity-80">
+                {[
+                  !input.status && READING_STATUS_LABELS[item.status],
+                  item.rating !== null && `★ ${item.rating}/5`,
+                  item.isFavorite && "♥ Favorito",
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
             </li>
           ))}
         </ul>

@@ -28,6 +28,18 @@ export function saveEntry(
   });
 }
 
+export function updateEntry(
+  db: Db,
+  userId: string,
+  comicId: string,
+  data: { rating?: number | null; isFavorite?: boolean },
+) {
+  return db.userComic.update({
+    where: { userId_comicId: { userId, comicId } },
+    data,
+  });
+}
+
 export function deleteEntry(db: Db, userId: string, comicId: string) {
   return db.userComic.deleteMany({ where: { userId, comicId } });
 }

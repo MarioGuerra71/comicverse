@@ -8,7 +8,7 @@ import { buildCatalogHref } from "@/lib/catalog-url";
 import { requireUser } from "@/server/auth/session";
 import { getComicDetail } from "@/server/services/catalog";
 import { getLibraryEntry } from "@/server/services/library";
-import { StatusButtons } from "@/components/library/status-buttons";
+import { LibraryControls } from "@/components/library/library-controls";
 
 export default async function ComicPage({
   params,
@@ -83,7 +83,7 @@ export default async function ComicPage({
             )}
           </dl>
 
-          <StatusButtons comicId={comic.id} status={entry?.status ?? null} />
+          <LibraryControls comicId={comic.id} entry={entry} />
 
           <section aria-labelledby="characters-heading">
             <h2 id="characters-heading" className="font-semibold">

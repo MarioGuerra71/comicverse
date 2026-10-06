@@ -2,8 +2,11 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import {
   ComicNotFoundError,
   listLibrary,
+  NotInLibraryError,
+  RatingRequiresReadError,
   removeFromLibrary,
   setComicStatus,
+  updateLibraryEntry,
 } from "@/server/services/library";
 import { createComic, createTestDb, createUser, resetDb } from "./test-db";
 
@@ -92,6 +95,55 @@ describe("setComicStatus", () => {
     ]);
 
     expect(await db.userComic.count({ where: { userId: user.id } })).toBe(1);
+  });
+});
+
+describe("updateLibraryEntry", () => {
+  it("solo deja puntuar cómics en Leído", async () => {
+    const user = await createUser(db);
+    const comic = await createComic(db);
+    await setComicStatus(db, user.id, comic.id, "READING");
+
+    await expect(
+      updateLibraryEntry(db, user.id, comic.id, { rating: 4 }),
+    ).rejects.toThrow(RatingRequiresReadError);
+
+    await setComicStatus(db, user.id, comic.id, "READ");
+    const result = await updateLibraryEntry(db, user.id, comic.id, { rating: 4 });
+    expect(result.entry.rating).toBe(4);
+  });
+
+  it("al salir de Leído la puntuación se oculta y vuelve al regresar", async () => {
+    const user = await createUser(db);
+    const comic = await createComic(db);
+    await setComicStatus(db, user.id, comic.id, "READ");
+    await updateLibraryEntry(db, user.id, comic.id, { rating: 5 });
+
+    const dropped = await setComicStatus(db, user.id, comic.id, "DROPPED");
+    expect(dropped.entry.rating).toBeNull();
+
+    const reread = await setComicStatus(db, user.id, comic.id, "READ");
+    expect(reread.entry.rating).toBe(5);
+  });
+
+  it("marca y desmarca favorito en cualquier estado", async () => {
+    const user = await createUser(db);
+    const comic = await createComic(db);
+    await setComicStatus(db, user.id, comic.id, "PENDING");
+
+    const on = await updateLibraryEntry(db, user.id, comic.id, { isFavorite: true });
+    expect(on.entry.isFavorite).toBe(true);
+    const off = await updateLibraryEntry(db, user.id, comic.id, { isFavorite: false });
+    expect(off.entry.isFavorite).toBe(false);
+  });
+
+  it("falla con NotInLibraryError si el cómic no está en la biblioteca", async () => {
+    const user = await createUser(db);
+    const comic = await createComic(db);
+
+    await expect(
+      updateLibraryEntry(db, user.id, comic.id, { isFavorite: true }),
+    ).rejects.toThrow(NotInLibraryError);
   });
 });
 

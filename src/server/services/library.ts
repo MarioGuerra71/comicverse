@@ -11,13 +11,31 @@ import {
   findEntry,
   findLibraryPage,
   saveEntry,
+  updateEntry,
 } from "@/server/repositories/library";
-import type { LibrarySearchInput } from "@/server/validation/library";
+import type {
+  LibrarySearchInput,
+  UpdateEntryInput,
+} from "@/server/validation/library";
 
 export class ComicNotFoundError extends Error {
   constructor() {
     super("Comic not found");
     this.name = "ComicNotFoundError";
+  }
+}
+
+export class NotInLibraryError extends Error {
+  constructor() {
+    super("Comic not in library");
+    this.name = "NotInLibraryError";
+  }
+}
+
+export class RatingRequiresReadError extends Error {
+  constructor() {
+    super("Only read comics can be rated");
+    this.name = "RatingRequiresReadError";
   }
 }
 
@@ -76,6 +94,25 @@ export async function removeFromLibrary(
 
     // Fase 5: si estaba Leído, aquí se reajustarán los desbloqueos.
     return { removed: true, stoppedBeingRead: current.status === "READ" };
+  });
+}
+
+/** Cambia puntuación y/o favorito de un cómic que ya está en la biblioteca. */
+export async function updateLibraryEntry(
+  db: PrismaClient,
+  userId: string,
+  comicId: string,
+  changes: UpdateEntryInput,
+) {
+  return db.$transaction(async (tx) => {
+    const current = await findEntry(tx, userId, comicId);
+    if (!current) throw new NotInLibraryError();
+    // Quitar la puntuación (null) siempre se permite; ponerla, solo en Leído.
+    if (changes.rating != null && current.status !== "READ") {
+      throw new RatingRequiresReadError();
+    }
+    const saved = await updateEntry(tx, userId, comicId, changes);
+    return { entry: toLibraryEntry(saved) };
   });
 }
 

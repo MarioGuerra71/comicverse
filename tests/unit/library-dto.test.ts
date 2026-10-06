@@ -23,6 +23,20 @@ describe("toLibraryEntry", () => {
   });
 });
 
+describe("puntuación oculta fuera de Leído", () => {
+  it("muestra la puntuación en Leído y la oculta en otros estados", () => {
+    const row = {
+      comicId: "c1",
+      isFavorite: false,
+      rating: 4,
+      startedAt: null,
+      readAt: null,
+    };
+    expect(toLibraryEntry({ ...row, status: "READ" }).rating).toBe(4);
+    expect(toLibraryEntry({ ...row, status: "DROPPED" }).rating).toBeNull();
+  });
+});
+
 describe("toLibraryItem", () => {
   it("incluye el cómic con solo el número de personajes", () => {
     const item = toLibraryItem({
