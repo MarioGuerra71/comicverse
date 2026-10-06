@@ -12,7 +12,8 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit",
     "universe:resolve": "tsx --env-file=.env scripts/resolve-universe.ts",
-    "universe:import": "tsx --env-file=.env scripts/import-universe.ts"
+    "universe:import": "tsx --env-file=.env scripts/import-universe.ts",
+    "relationships:suggest": "tsx --env-file=.env scripts/suggest-relationships.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",

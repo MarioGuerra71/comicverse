@@ -51,3 +51,5 @@ skills-lock.json
 
 # Resultado de ejecuciones del script de resolución (se regenera)
 /data/universe.resolved.json
+# Sugerencias de relaciones de Comic Vine (se regeneran con relationships:suggest)
+/data/relationships.suggested.json

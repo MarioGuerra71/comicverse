@@ -94,6 +94,7 @@ npm run typecheck                    # tsc --noEmit
 npm run lint
 npm run universe:resolve             # resuelve candidatos -> data/universe.resolved.json (no versionado)
 npm run universe:import              # importa el universo semilla a PostgreSQL (repetible)
+npm run relationships:suggest        # aliados/enemigos de Comic Vine dentro del universo -> data/relationships.suggested.json (no versionado)
 ```
 
 Variables de entorno (en `.env`; plantilla en `.env.example`):
@@ -280,7 +281,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **92 unitarios + 33 de integración** pasando tras el Paso 31 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
+- Estado: **95 unitarios + 33 de integración** pasando tras el Paso 32a (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -332,7 +333,8 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 5 (en curso): `displayName` de personajes y regla de `cleanRealName` (Paso 26). Núcleo del desbloqueo (Paso 27): `findUnlockedCharacters` (repositorio `characters`), `diffById` (dominio `unlock`), `snapshotUnlocked`/`buildUnlockResult` (servicio `discovery`); `setComicStatus` y `removeFromLibrary` devuelven `unlock: UnlockResult | null` (null si el cómic no entra ni sale de Leído), y la API lo devuelve tal cual. "Mi colección" (Paso 28): página `/collection` y `GET /api/v1/collection`; `toCollection` envía solo las cartas desbloqueadas y, de las bloqueadas, **solo el número** (`locked`), así que ni su id, ni su nombre, ni su posición llegan al navegador; verificado buscando los 32 personajes en el HTML. Página de personaje (Paso 29): `/characters/[id]` y `GET /api/v1/characters/:id`; una sola consulta (`findCharacterWithLibrary`) y `toCharacterDetail` devuelve `null` si no hay ningún cómic leído; las cartas de la colección enlazan a ella. El resumen del personaje (de Comic Vine) puede nombrar a otros personajes, igual que las descripciones de cómics: entra en el ajuste futuro de ocultar descripciones. Animación de desbloqueo (Paso 30): `UnlockPanel` dentro de `LibraryControls` muestra el `unlock` de la respuesta ("¡Completado!", "N nuevos descubrimientos" con miniaturas enlazadas, o los que vuelven a estar por descubrir), con `role="status"`; animación CSS `animate-pop-in` (definida en `globals.css` con `@theme`) solo con `motion-safe:`; sin dependencias (Motion no hizo falta). Relaciones "aparecen juntos" (Paso 31): `getRelationships` (servicio `discovery`), sección "Relaciones descubiertas" en la ficha de personaje, contador X / N en la colección y `newRelationships` en el `UnlockResult` y el panel.
 
 **Fase 5 — pendiente** (desbloqueos calculados, ver sección 9):
-- **Paso 32:** relaciones con significado (aliado, enemigo, familia…) desde `character_friends`/`character_enemies` de Comic Vine, filtradas a nuestro universo y guardadas en un archivo de datos que revisa el usuario.
+- **Paso 32a (hecho):** script `relationships:suggest` + `buildRelationshipSuggestions` (pura, con tests). Resultado real: 248 parejas (88 aliados, 104 enemigos, 56 en conflicto) con ruido evidente (Spider-Man–Green Goblin en conflicto; familia y pareja salen como "aliado"): **no importar tal cual**.
+- **Paso 32b:** relaciones con significado (aliado, enemigo, familia…) desde `character_friends`/`character_enemies` de Comic Vine, filtradas a nuestro universo y guardadas en un archivo de datos que revisa el usuario.
 - Al final: personajes favoritos y filtros de la colección.
 
 **Después:**
