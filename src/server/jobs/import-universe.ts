@@ -164,10 +164,13 @@ export async function importUniverse({
     const publisherId = await ensurePublisher(db, publisherCache, c.publisher);
     const images = pickImageUrls(c.image);
     const externalId = String(c.id);
+    const name = c.name.trim();
     const data = {
       publisherId,
-      name: c.name.trim(),
-      realName: cleanRealName(c.real_name),
+      name,
+      // Nombre de la carta: el label curado de universe.json, o el de Comic Vine.
+      displayName: entry.label?.trim() || name,
+      realName: cleanRealName(c.real_name, name),
       summary: htmlToText(c.deck, 500),
       imageUrl: images.url,
       imageThumbUrl: images.thumbUrl,

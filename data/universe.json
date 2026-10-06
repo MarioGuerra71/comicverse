@@ -13,7 +13,7 @@
     { "id": 1780, "label": "Aunt May" },
     { "id": 1489, "label": "Flash Thompson" },
     { "id": 4484, "label": "Scorpion" },
-    { "id": 58812, "label": "Norman Osborn (Green Goblin)" },
+    { "id": 58812, "label": "Green Goblin" },
     { "id": 2478, "label": "Harry Osborn" },
     { "id": 1485, "label": "Doctor Octopus" },
     { "id": 1490, "label": "Carnage" },
@@ -37,6 +37,6 @@
     { "id": 4825, "label": "Shocker" },
     { "id": 4458, "label": "Chameleon" },
     { "id": 7608, "label": "Silver Sable" },
-    { "id": 7605, "label": "Hobgoblin (Roderick Kingsley)" }
+    { "id": 7605, "label": "Hobgoblin" }
   ]
 }

@@ -22,6 +22,12 @@ describe("cleanRealName", () => {
     expect(cleanRealName("none")).toBeNull();
   });
 
+  it("descarta un nombre real igual al nombre del personaje", () => {
+    expect(cleanRealName("Carnage", "Carnage")).toBeNull();
+    expect(cleanRealName(" carnage ", "Carnage")).toBeNull();
+    expect(cleanRealName("Cletus Kasady", "Carnage")).toBe("Cletus Kasady");
+  });
+
   it("devuelve null para vacío, espacios o ausencia", () => {
     expect(cleanRealName("")).toBeNull();
     expect(cleanRealName("   ")).toBeNull();

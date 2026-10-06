@@ -122,6 +122,8 @@ model Character {
   publisherId            String?
   publisher              Publisher?       @relation(fields: [publisherId], references: [id])
   name                   String
+  // Nombre para mostrar en las cartas (label curado de data/universe.json).
+  displayName            String?
   realName               String?
   summary                String?
   imageUrl               String?

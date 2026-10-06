@@ -3,10 +3,15 @@
 const EMPTY_REAL_NAMES = new Set(["none", "unknown", "n/a"]);
 
 /** Limpia el nombre real: recorta espacios y trata "None" y vacío como "sin dato". */
-export function cleanRealName(value: string | null | undefined): string | null {
+export function cleanRealName(
+  value: string | null | undefined,
+  name?: string,
+): string | null {
   const trimmed = value?.trim();
   if (!trimmed) return null;
   if (EMPTY_REAL_NAMES.has(trimmed.toLowerCase())) return null;
+  // Un "nombre real" igual al nombre no aporta nada (p. ej. Carnage: "Carnage").
+  if (name && trimmed.toLowerCase() === name.trim().toLowerCase()) return null;
   return trimmed;
 }
 
