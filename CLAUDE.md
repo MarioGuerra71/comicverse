@@ -67,7 +67,7 @@ La IA es una **capa futura opcional**; la experiencia principal no depende de el
 | Tests | Vitest **5** (`tests/unit` y `tests/integration`) | Integración contra PostgreSQL real (`comicverse_test`) |
 | Scripts | `tsx` (con `--env-file=.env`) | Importadores y utilidades de consola |
 | Node / npm | Node **24** LTS, npm **11** | Gestor: **npm** (no pnpm/yarn) |
-| Grafo (Fase 6) | React Flow (`@xyflow/react`) + `d3-force` para el layout | Plan B si hay miles de nodos: Sigma.js |
+| Grafo | React Flow (`@xyflow/react` **12.12**, MIT) + `d3-force` **3** (ISC) para el layout, instalados en el Paso 35 | Plan B si hay miles de nodos: Sigma.js |
 | Estado cliente (cuando haga falta) | TanStack Query | Aún no instalado |
 | UI (cuando haga falta) | shadcn/ui (Radix) copiado al repo; Motion solo para la animación de desbloqueo | Aún no instalado |
 | Despliegue previsto | Vercel (plan gratuito, dominio `*.vercel.app`) + Neon/Supabase | Verificar condiciones vigentes de los planes gratuitos |
@@ -167,10 +167,10 @@ comicverse/
    ├─ app/
    │  ├─ page.tsx                      portada
    │  ├─ (auth)/  layout · sign-in · sign-up        (redirige al dashboard si ya hay sesión)
-   │  ├─ (app)/   layout (cabecera + footer) · dashboard · profile · catalog · comics/[id] · library · collection · characters/[id]
+   │  ├─ (app)/   layout (cabecera + footer) · dashboard · profile · catalog · comics/[id] · library · collection · characters/[id] · graph
    │  └─ api/  auth/[...all] · health · v1/comics · v1/library · v1/library/comics/[comicId] (+ /review) · v1/collection · v1/characters/[id] · v1/graph
-   ├─ components/  auth/sign-out-button · comics/comic-card · library/library-controls · library/unlock-panel · characters/character-card · characters/favorite-button
-   ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url · search-params · reading-status
+   ├─ components/  auth/sign-out-button · comics/comic-card · library/library-controls · library/unlock-panel · characters/character-card · characters/favorite-button · graph/universe-graph
+   ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url · search-params · reading-status · relationship-types · graph-layout
    └─ server/
       ├─ auth/ session · api
       ├─ domain/ card-state · library-status · unlock · relationships
@@ -182,7 +182,7 @@ comicverse/
       └─ jobs/ import-universe · import-relationships
 ```
 
-Carpetas previstas más adelante: `server/services/discovery`, `server/integrations/ai/` (AIProvider/AIGateway, sin implementación), `components/{characters,graph,layout}`, `features/` (hooks y queries del cliente), `docs/` (arquitectura, ER, ADR).
+Carpetas previstas más adelante: `server/integrations/ai/` (AIProvider/AIGateway, sin implementación), `components/layout`, `features/` (hooks y queries del cliente), `docs/` (arquitectura, ER, ADR).
 
 ---
 
@@ -286,7 +286,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **102 unitarios + 40 de integración** pasando tras el Paso 34 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
+- Estado: **106 unitarios + 40 de integración** pasando tras el Paso 35 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -342,8 +342,13 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
   - **Paso 32b:** relaciones curadas (59) con tipo, tabla `CharacterRelationship`, importador y tipo visible en la ficha de personaje. **Pendiente: que el usuario revise `data/relationships.json`** (curado con conocimiento general, no verificado una a una).
 - Fase 5, Paso 33: personajes favoritos (`CharacterFavorite`, solo desbloqueados; `setCharacterFavorite`, `FavoriteButton` en la ficha, ♥ en las cartas) y filtros/orden de "Mi colección" (`collectionSearchSchema`, `filterCards`, pestañas con contadores como enlaces).
 
+- Fase 6 (en curso): `GET /api/v1/graph` (Paso 34). Página `/graph` "Universo descubierto" (Paso 35): `UniverseGraph` (cliente, React Flow con zoom/arrastre, controles y minimapa, `colorMode="system"`); posiciones con `layoutGraph` (`lib/graph-layout.ts`, `d3-force`, 300 pasos de golpe, con tests); siluetas bloqueadas en un anillo exterior sin enlaces; relaciones curadas en línea continua con su tipo y derivadas en discontinua; enlace "Grafo" en la cabecera.
+
+**Fase 6 — pendiente:**
+- **Paso 36:** ego-graph (`?focus=`, un salto) y abrir la ficha al tocar un nodo.
+- **Paso 37:** móvil (pantalla completa, *bottom sheet*) y vista alternativa en lista (accesibilidad).
+
 **Después:**
-- **Fase 6 — Grafo** (React Flow, ego-graph, nodos bloqueados, móvil).
 - **Fase 7 — Dashboard** (estadísticas, actividad, descubrimientos, progreso).
 - **Fase 8 — Pulido:** diseño visual definitivo y `AppShell` responsive, animaciones, estados de carga/error/vacío, accesibilidad, traducir errores, rate limiting, CSRF/cabeceras, rendimiento, aviso de `vitest.config.ts` (config ESM), ajuste de ocultar descripciones.
 - **Fase 9 — IA** (solo si el usuario decide asumir costes).
@@ -354,7 +359,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 
 ## 18. Limitaciones y deuda técnica conocidas
 
-- Aviso `npm audit` (4 altas) heredado de la CLI de Prisma 7: aceptado, revisar al actualizar Prisma.
+- `npm audit` (10 altas a 2026-10-06, iguales antes y después de instalar React Flow y d3-force): `deepmerge-ts` y `mysql2` (CLI de Prisma 7; aceptado, revisar al actualizar Prisma), `braces` (vía `eslint-config-next` → `fast-glob`) y `source-map-js` (vía Tailwind/PostCSS/Next). Todos son herramientas de desarrollo/compilación, no código que reciba datos de usuarios. `source-map-js` tiene arreglo sin `--force` (`npm audit fix`): pendiente de decidir con el usuario.
 - `vitest.config.ts` muestra un aviso por usar sintaxis ESM sin `"type": "module"`.
 - Búsqueda de cómics con `ILIKE` (`contains` + `insensitive`); con miles de cómics, añadir `pg_trgm`.
 - Orden por título alfabético (`#10` antes que `#2`); para leer en orden usar fecha.
