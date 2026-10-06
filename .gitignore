@@ -53,3 +53,6 @@ skills-lock.json
 /data/universe.resolved.json
 # Sugerencias de relaciones de Comic Vine (se regeneran con relationships:suggest)
 /data/relationships.suggested.json
+
+# Estado temporal de las páginas de decisión de impeccable
+/.impeccable/questions/
