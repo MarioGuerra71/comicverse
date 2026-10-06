@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { findUnlockedCharacters } from "@/server/repositories/characters";
-import { getCollection } from "@/server/services/discovery";
+import { getCharacterDetail, getCollection } from "@/server/services/discovery";
 import { removeFromLibrary, setComicStatus } from "@/server/services/library";
 import { createCharacter, createComic, createTestDb, createUser, resetDb } from "./test-db";
 
@@ -149,5 +149,68 @@ describe("getCollection", () => {
     ]);
     expect(collection.locked).toBe(1);
     expect(JSON.stringify(collection)).not.toContain("Green Goblin");
+  });
+});
+
+describe("getCharacterDetail", () => {
+  async function seedWithIds() {
+    const user = await createUser(db);
+    const spiderMan = await createCharacter(db, "Spider-Man");
+    const goblin = await createCharacter(db, "Green Goblin");
+    const comicA = await createComic(db, [spiderMan]);
+    const comicB = await createComic(db, [spiderMan, goblin]);
+    return { user, spiderMan, goblin, comicA, comicB };
+  }
+
+  it("devuelve null para un personaje bloqueado aunque el cómic esté en la biblioteca", async () => {
+    const { user, goblin, comicB } = await seedWithIds();
+    await setComicStatus(db, user.id, comicB.id, "PENDING");
+
+    expect(await getCharacterDetail(db, user.id, goblin.id)).toBeNull();
+  });
+
+  it("devuelve null para un personaje no coleccionable o inexistente", async () => {
+    const { user } = await seedWithIds();
+    const extra = await createCharacter(db, "Transeúnte", { isCollectible: false });
+    const comic = await createComic(db, [extra]);
+    await setComicStatus(db, user.id, comic.id, "READ");
+
+    expect(await getCharacterDetail(db, user.id, extra.id)).toBeNull();
+    expect(
+      await getCharacterDetail(db, user.id, "00000000-0000-4000-8000-000000000000"),
+    ).toBeNull();
+  });
+
+  it("lista solo los cómics de MI biblioteca con mi estado", async () => {
+    const { user, spiderMan, comicA, comicB } = await seedWithIds();
+    const other = await createUser(db);
+    const comicC = await createComic(db, [spiderMan]);
+    await setComicStatus(db, user.id, comicA.id, "READ");
+    await setComicStatus(db, user.id, comicB.id, "READING");
+    await setComicStatus(db, other.id, comicC.id, "READ");
+
+    const detail = await getCharacterDetail(db, user.id, spiderMan.id);
+
+    expect(detail?.comicsRead).toBe(1);
+    expect(detail?.state).toBe("DISCOVERED");
+    expect(detail?.comics.map((c) => [c.comic.id, c.status]).sort()).toEqual(
+      [
+        [comicA.id, "READ"],
+        [comicB.id, "READING"],
+      ].sort(),
+    );
+  });
+
+  it("enlaza la primera aparición si ese cómic está importado", async () => {
+    const { user, spiderMan, comicA } = await seedWithIds();
+    await db.character.update({
+      where: { id: spiderMan.id },
+      data: { firstAppearanceExternalId: comicA.externalId },
+    });
+    await setComicStatus(db, user.id, comicA.id, "READ");
+
+    const detail = await getCharacterDetail(db, user.id, spiderMan.id);
+
+    expect(detail?.firstAppearance).toEqual({ id: comicA.id, title: comicA.title });
   });
 });

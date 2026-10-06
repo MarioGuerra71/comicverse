@@ -2,13 +2,16 @@ import type { Prisma } from "../../../generated/prisma/client";
 import { diffById } from "@/server/domain/unlock";
 import type { PrismaClient } from "../../../generated/prisma/client";
 import {
+  toCharacterDetail,
   toCharacterSummary,
   toCollection,
   type CharacterSummaryDto,
 } from "@/server/dto/character";
 import {
   countCollectibleCharacters,
+  findCharacterWithLibrary,
   findCollection,
+  findComicByExternalId,
   findUnlockedCharacters,
 } from "@/server/repositories/characters";
 
@@ -45,4 +48,14 @@ export async function buildUnlockResult(
 
 export async function getCollection(db: PrismaClient, userId: string) {
   return toCollection(await findCollection(db, userId));
+}
+
+/** Ficha de un personaje; null si no existe, no es coleccionable o está bloqueado. */
+export async function getCharacterDetail(db: PrismaClient, userId: string, id: string) {
+  const row = await findCharacterWithLibrary(db, id, userId);
+  if (!row) return null;
+  const firstAppearance = row.firstAppearanceExternalId
+    ? await findComicByExternalId(db, row.firstAppearanceExternalId)
+    : null;
+  return toCharacterDetail(row, firstAppearance);
 }

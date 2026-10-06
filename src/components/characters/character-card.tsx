@@ -1,15 +1,16 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { CollectionCardDto } from "@/server/dto/character";
 import { pluralize } from "@/lib/format";
 
-const STATE_LABELS = {
+export const CARD_STATE_LABELS = {
   DISCOVERED: "Descubierto",
   COLLECTED: "Coleccionado",
 } as const;
 
 export function CharacterCard({ card }: { card: CollectionCardDto }) {
   return (
-    <article className="flex flex-col gap-2">
+    <Link href={`/characters/${card.id}`} className="group flex flex-col gap-2">
       <div className="relative aspect-3/4 overflow-hidden rounded-md bg-foreground/10">
         {card.imageThumbUrl ? (
           <Image
@@ -17,7 +18,7 @@ export function CharacterCard({ card }: { card: CollectionCardDto }) {
             alt={`Imagen de ${card.name}`}
             fill
             unoptimized
-            className="object-cover"
+            className="object-cover transition-transform duration-200 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-xs opacity-60">
@@ -31,7 +32,7 @@ export function CharacterCard({ card }: { card: CollectionCardDto }) {
               : "bg-background/80 text-foreground"
           }`}
         >
-          {STATE_LABELS[card.state]}
+          {CARD_STATE_LABELS[card.state]}
         </span>
       </div>
       <div className="text-sm">
@@ -41,7 +42,7 @@ export function CharacterCard({ card }: { card: CollectionCardDto }) {
           {pluralize(card.comicsRead, "cómic leído", "cómics leídos")}
         </p>
       </div>
-    </article>
+    </Link>
   );
 }
 

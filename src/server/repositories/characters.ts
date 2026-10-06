@@ -1,4 +1,5 @@
 import type { Prisma, PrismaClient } from "../../../generated/prisma/client";
+import { comicListSelect } from "@/server/repositories/comics";
 
 // Acepta tanto la conexión normal como una transacción en curso.
 type Db = PrismaClient | Prisma.TransactionClient;
@@ -48,4 +49,39 @@ export function findCollection(db: Db, userId: string) {
 
 export function countCollectibleCharacters(db: Db) {
   return db.character.count({ where: { isCollectible: true } });
+}
+
+/** Un coleccionable con los cómics de la biblioteca del usuario donde aparece. */
+export function findCharacterWithLibrary(db: Db, id: string, userId: string) {
+  return db.character.findFirst({
+    where: { id, isCollectible: true },
+    select: {
+      ...characterSummarySelect,
+      realName: true,
+      summary: true,
+      imageUrl: true,
+      appearancesCount: true,
+      firstAppearanceExternalId: true,
+      publisher: { select: { name: true } },
+      comics: {
+        where: { comic: { userEntries: { some: { userId } } } },
+        orderBy: { comic: { releaseDate: "asc" } },
+        select: {
+          comic: {
+            select: {
+              ...comicListSelect,
+              userEntries: { where: { userId }, select: { status: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+export function findComicByExternalId(db: Db, externalId: string) {
+  return db.comic.findFirst({
+    where: { source: "COMICVINE", externalId },
+    select: { id: true, title: true },
+  });
 }
