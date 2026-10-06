@@ -95,6 +95,7 @@ npm run lint
 npm run universe:resolve             # resuelve candidatos -> data/universe.resolved.json (no versionado)
 npm run universe:import              # importa el universo semilla a PostgreSQL (repetible)
 npm run relationships:suggest        # aliados/enemigos de Comic Vine dentro del universo -> data/relationships.suggested.json (no versionado)
+npm run relationships:import         # carga data/relationships.json (curado) en la BD; repetible, sin Comic Vine
 ```
 
 Variables de entorno (en `.env`; plantilla en `.env.example`):
@@ -110,6 +111,7 @@ Particularidades que ya han dado problemas:
 
 - Los archivos de configuración de Prisma se llaman **`prisma7.config.ts`** (así lo generó `prisma init`); no renombrar sin motivo.
 - Prisma 7 **no genera el cliente al migrar**: ejecutar `npx prisma generate`.
+- `prisma migrate dev --create-only` **aplica antes las migraciones pendientes** (y si no hay cambios crea una vacía): para añadir SQL a mano (p. ej. un `CHECK`), crear la migración con `--create-only` **una sola vez**, editarla y luego `prisma migrate dev`. No editar migraciones ya aplicadas (obliga a reiniciar la BD).
 - Tras `prisma generate`, **reiniciar `npm run dev`**: `src/lib/db.ts` guarda el cliente en `globalThis` y el servidor sigue usando el antiguo (síntoma: `Cannot read properties of undefined (reading 'findUnique')` en un modelo nuevo).
 - Solo puede haber un `next dev` por carpeta: si ya hay uno abierto, otro no arranca.
 - Rutas con corchetes o paréntesis (`[id]`, `(app)`, `[...all]`): crearlas desde el explorador de VS Code o con `-LiteralPath`; PowerShell las interpreta como comodines.
@@ -157,8 +159,8 @@ Convenciones de capas:
 comicverse/
 ├─ CLAUDE.md · README.md (pendiente) · docker-compose.yml · vitest.config.ts · vitest.integration.config.ts
 ├─ prisma/ ............ schema.prisma · migrations/        prisma7.config.ts
-├─ data/ .............. universe-candidates.json · universe.json   (universe.resolved.json no se versiona)
-├─ scripts/ ........... resolve-universe.ts · import-universe.ts
+├─ data/ .............. universe-candidates.json · universe.json · relationships.json   (universe.resolved.json y relationships.suggested.json no se versionan)
+├─ scripts/ ........... resolve-universe.ts · import-universe.ts · suggest-relationships.ts · import-relationships.ts
 ├─ tests/unit/ ........ *.test.ts
 ├─ tests/integration/ . global-setup · test-db (cliente, resetDb, createUser, createComic) · *.test.ts
 └─ src/
@@ -177,7 +179,7 @@ comicverse/
       ├─ services/ catalog · library · discovery
       ├─ validation/ catalog · library
       ├─ integrations/comic-sources/comicvine/ client · mappers · types · character-matching
-      └─ jobs/ import-universe
+      └─ jobs/ import-universe · import-relationships
 ```
 
 Carpetas previstas más adelante: `server/services/discovery`, `server/integrations/ai/` (AIProvider/AIGateway, sin implementación), `components/{characters,graph,layout}`, `features/` (hooks y queries del cliente), `docs/` (arquitectura, ER, ADR).
@@ -186,7 +188,7 @@ Carpetas previstas más adelante: `server/services/discovery`, `server/integrati
 
 ## 8. Modelo de datos
 
-**Existentes** (migradas): `User`, `Session`, `Account`, `Verification` (Better Auth) · `Publisher`, `Series`, `Comic`, `Character`, `ComicCharacter`, `Creator`, `ComicCreator`, `Event`, `ComicEvent` (catálogo global) · `UserComic`, `ReadingHistory`, `Review` (biblioteca) · enums `DataSource` (`COMICVINE`) y `ReadingStatus` (`PENDING | READING | READ | DROPPED`).
+**Existentes** (migradas): `User`, `Session`, `Account`, `Verification` (Better Auth) · `Publisher`, `Series`, `Comic`, `Character`, `ComicCharacter`, `Creator`, `ComicCreator`, `Event`, `ComicEvent` (catálogo global) · `UserComic`, `ReadingHistory`, `Review` (biblioteca) · `CharacterRelationship` (relaciones curadas) · enums `DataSource` (`COMICVINE`) y `ReadingStatus` (`PENDING | READING | READ | DROPPED`).
 
 Decisiones de diseño:
 
@@ -199,7 +201,7 @@ Decisiones de diseño:
 - `Creator`, `ComicCreator`, `Event` y `ComicEvent` existen pero **el importador aún no los rellena** (se descargarán bajo demanda al abrir un cómic, y se guardan).
 - El estado de la carta (LOCKED / DISCOVERED / COLLECTED) **no se almacena**: lo deriva `getCardState` del nº de cómics leídos (`COLLECTED_THRESHOLD = 5`).
 
-**Previstos (Fase 5 en adelante):** favoritos de personajes, `RelationshipType` (tabla, no enum), `CharacterRelationship` (`CHECK a < b`, `origin`: CURATED/DERIVED), `RelationshipEvidence` (sin `UserCharacter` ni `UserRelationship`: los desbloqueos se calculan, ver sección 9), `Discovery` (feed: tipo, entidad, `viaComicId`, fecha), `Achievement` / `UserAchievement` (solo esquema), y más adelante tablas de IA (`AiUsage`, caché) y `pgvector`.
+**Previstos (Fase 5 en adelante):** favoritos de personajes (sin `UserCharacter` ni `UserRelationship`: los desbloqueos se calculan, ver sección 9; sin `RelationshipType` ni `RelationshipEvidence`: el tipo es texto validado y las derivadas no se guardan), `Discovery` (feed: tipo, entidad, `viaComicId`, fecha), `Achievement` / `UserAchievement` (solo esquema), y más adelante tablas de IA (`AiUsage`, caché) y `pgvector`.
 
 ---
 
@@ -209,6 +211,7 @@ Decisiones de diseño:
 - "Personajes desbloqueados" = consulta: personajes coleccionables de `ComicCharacter` cuyos cómics estén en `UserComic` con estado `READ` para ese usuario. El invariante de la regla 2 se cumple por construcción: no hay `UserCharacter` de desbloqueos, ni `reconcile`, ni carreras entre peticiones simultáneas.
 - Igual con las relaciones: "descubierta" = ambos extremos desbloqueados, calculado (sin `UserRelationship`).
 - **Relaciones "aparecen juntos" (Paso 31):** derivadas de `ComicCharacter`. Una pareja es relación si comparte ≥ `MIN_SHARED_COMICS` (5) cómics **y** su coeficiente de Ochiai (compartidos / √(cómicsA·cómicsB)) es ≥ `MIN_SCORE` (0,2), en `domain/relationships.ts`. Motivo, medido con datos reales: con solo "≥ 5 cómics" salían 409 de 496 parejas (todos con todos, por los personajes omnipresentes); con Ochiai ≥ 0,2 salen 169 y ningún personaje queda aislado (Venom → Eddie Brock 0,73 primero). Reajustar los umbrales al ampliar el universo. Se calculan en cada petición (~30–70 ms de código en dev).
+- **Relaciones curadas (Paso 32b):** `data/relationships.json` (ids de Comic Vine, `type`, `label`/`note` solo para leer), revisado a mano; `npm run relationships:import` lo valida con Zod y sustituye la tabla `CharacterRelationship` en una transacción (si un id no existe o una pareja se repite, falla sin tocar nada). Una fila por pareja con `CHECK (characterAId COLLATE "C" < characterBId COLLATE "C")` ("C" = mismo orden que JavaScript). `type` es texto validado contra `lib/relationship-types.ts` (ALLY, ENEMY, FAMILY, PARTNER, COMPANION, RIVAL): añadir un tipo no necesita migración. Una curada cuenta siempre, aunque no llegue a los umbrales (179 relaciones en total con las 59 curadas). Las sugerencias de Comic Vine (`relationships:suggest`) solo sirven de pista: traen ruido (p. ej. Spider-Man–Green Goblin "en conflicto") y no distinguen familia ni pareja.
 - Al pasar a Leído (o salir de Leído), `setComicStatus`/`removeFromLibrary` comparan dentro de la transacción los desbloqueados antes y después y devuelven un `UnlockResult` (`newCharacters`, después `newRelationships`, progreso) que el frontend solo **anima**; no decide nada.
 - Solo **Leído** desbloquea (Pendiente/Leyendo/Abandonado no). Desmarcar retira automáticamente los personajes sin otro cómic leído.
 - Se guardará solo lo no calculable: personajes favoritos (tabla pequeña, al final de la Fase 5) y el registro `Discovery` (Fase 7).
@@ -281,7 +284,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **95 unitarios + 33 de integración** pasando tras el Paso 32a (los de desbloqueo están en `tests/integration/unlock.test.ts`).
+- Estado: **98 unitarios + 36 de integración** pasando tras el Paso 32 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -334,7 +337,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 
 **Fase 5 — pendiente** (desbloqueos calculados, ver sección 9):
 - **Paso 32a (hecho):** script `relationships:suggest` + `buildRelationshipSuggestions` (pura, con tests). Resultado real: 248 parejas (88 aliados, 104 enemigos, 56 en conflicto) con ruido evidente (Spider-Man–Green Goblin en conflicto; familia y pareja salen como "aliado"): **no importar tal cual**.
-- **Paso 32b:** relaciones con significado (aliado, enemigo, familia…) desde `character_friends`/`character_enemies` de Comic Vine, filtradas a nuestro universo y guardadas en un archivo de datos que revisa el usuario.
+- **Paso 32b (hecho):** relaciones curadas (59) con tipo, tabla `CharacterRelationship`, importador y tipo visible en la ficha de personaje.
 - Al final: personajes favoritos y filtros de la colección.
 
 **Después:**
