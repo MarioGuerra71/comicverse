@@ -36,7 +36,14 @@ export function CharacterCard({ card }: { card: CollectionCardDto }) {
         </span>
       </div>
       <div className="text-sm">
-        <h2 className="font-medium leading-tight">{card.name}</h2>
+        <h2 className="font-medium leading-tight">
+          {card.name}
+          {card.isFavorite && (
+            <span aria-label="Favorito" className="ml-1">
+              ♥
+            </span>
+          )}
+        </h2>
         {card.realName && <p className="opacity-60">{card.realName}</p>}
         <p className="opacity-60">
           {pluralize(card.comicsRead, "cómic leído", "cómics leídos")}

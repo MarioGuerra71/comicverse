@@ -35,6 +35,7 @@ export function findCollection(db: Db, userId: string) {
     select: {
       ...characterSummarySelect,
       realName: true,
+      favorites: { where: { userId }, select: { userId: true } },
       _count: {
         select: {
           comics: {
@@ -45,6 +46,32 @@ export function findCollection(db: Db, userId: string) {
     },
     orderBy: { name: "asc" },
   });
+}
+
+/** Misma regla que findUnlockedCharacters, para un solo personaje. */
+export async function isCharacterUnlocked(db: Db, userId: string, id: string) {
+  const count = await db.character.count({
+    where: {
+      id,
+      isCollectible: true,
+      comics: {
+        some: { comic: { userEntries: { some: { userId, status: "READ" } } } },
+      },
+    },
+  });
+  return count > 0;
+}
+
+export function addFavorite(db: Db, userId: string, characterId: string) {
+  return db.characterFavorite.upsert({
+    where: { userId_characterId: { userId, characterId } },
+    create: { userId, characterId },
+    update: {},
+  });
+}
+
+export function removeFavorite(db: Db, userId: string, characterId: string) {
+  return db.characterFavorite.deleteMany({ where: { userId, characterId } });
 }
 
 export function countCollectibleCharacters(db: Db) {
@@ -63,6 +90,7 @@ export function findCharacterWithLibrary(db: Db, id: string, userId: string) {
       appearancesCount: true,
       firstAppearanceExternalId: true,
       publisher: { select: { name: true } },
+      favorites: { where: { userId }, select: { userId: true } },
       comics: {
         where: { comic: { userEntries: { some: { userId } } } },
         orderBy: { comic: { releaseDate: "asc" } },

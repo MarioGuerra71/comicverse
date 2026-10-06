@@ -1,5 +1,6 @@
 import { getCardState, type CardState } from "@/server/domain/card-state";
 import type { ReadingStatus } from "@/server/domain/library-status";
+import type { CollectionSearchInput } from "@/server/validation/collection";
 import { toComicListItem, type ComicListItemDto, type ComicListRow } from "@/server/dto/comic";
 
 // Solo se usa con personajes YA desbloqueados: los bloqueados nunca llegan aquí.
@@ -26,6 +27,7 @@ export function toCharacterSummary(row: CharacterSummaryRow): CharacterSummaryDt
 
 export interface CollectionRow extends CharacterSummaryRow {
   realName: string | null;
+  favorites: { userId: string }[];
   _count: { comics: number };
 }
 
@@ -33,6 +35,7 @@ export interface CollectionCardDto extends CharacterSummaryDto {
   realName: string | null;
   state: Exclude<CardState, "LOCKED">;
   comicsRead: number;
+  isFavorite: boolean;
 }
 
 export interface CollectionDto {
@@ -52,6 +55,7 @@ export function toCollection(rows: CollectionRow[]): CollectionDto {
       realName: row.realName,
       state,
       comicsRead: row._count.comics,
+      isFavorite: row.favorites.length > 0,
     });
   }
   cards.sort((a, b) => a.name.localeCompare(b.name));
@@ -68,6 +72,7 @@ export interface CharacterDetailRow extends CharacterSummaryRow {
   imageUrl: string | null;
   appearancesCount: number | null;
   publisher: { name: string } | null;
+  favorites: { userId: string }[];
   comics: { comic: ComicListRow & { userEntries: { status: ReadingStatus }[] } }[];
 }
 
@@ -79,6 +84,7 @@ export interface CharacterDetailDto extends CharacterSummaryDto {
   appearancesCount: number | null;
   state: Exclude<CardState, "LOCKED">;
   comicsRead: number;
+  isFavorite: boolean;
   firstAppearance: { id: string; title: string } | null;
   /** Cómics de TU biblioteca donde aparece, con tu estado. */
   comics: { comic: ComicListItemDto; status: ReadingStatus }[];
@@ -106,7 +112,22 @@ export function toCharacterDetail(
     appearancesCount: row.appearancesCount,
     state,
     comicsRead,
+    isFavorite: row.favorites.length > 0,
     firstAppearance,
     comics,
   };
+}
+
+/** Filtra y ordena las cartas desbloqueadas (los bloqueados nunca están aquí). */
+export function filterCards(cards: CollectionCardDto[], { filter, sort }: CollectionSearchInput) {
+  const filtered = cards.filter(
+    (card) =>
+      filter === "all" ||
+      (filter === "favorites" && card.isFavorite) ||
+      (filter === "discovered" && card.state === "DISCOVERED") ||
+      (filter === "collected" && card.state === "COLLECTED"),
+  );
+  return sort === "comics"
+    ? [...filtered].sort((a, b) => b.comicsRead - a.comicsRead || a.name.localeCompare(b.name))
+    : filtered; // toCollection ya las deja por nombre
 }

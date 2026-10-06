@@ -8,6 +8,7 @@ import { READING_STATUS_LABELS } from "@/lib/reading-status";
 import { RELATIONSHIP_TYPE_LABELS } from "@/lib/relationship-types";
 import { ComicCard } from "@/components/comics/comic-card";
 import { CARD_STATE_LABELS } from "@/components/characters/character-card";
+import { FavoriteButton } from "@/components/characters/favorite-button";
 import { requireUser } from "@/server/auth/session";
 import { getCharacterDetail } from "@/server/services/discovery";
 
@@ -89,6 +90,8 @@ export default async function CharacterPage({
               </>
             )}
           </dl>
+
+          <FavoriteButton characterId={character.id} isFavorite={character.isFavorite} />
 
           {character.summary && (
             <p className="max-w-prose text-sm leading-relaxed opacity-90">

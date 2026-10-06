@@ -6,14 +6,19 @@ import {
   pickRelationships,
   type Relationship,
 } from "@/server/domain/relationships";
+import type { CollectionSearchInput } from "@/server/validation/collection";
 import {
+  filterCards,
   toCharacterDetail,
   toCharacterSummary,
   toCollection,
   type CharacterSummaryDto,
 } from "@/server/dto/character";
 import {
+  addFavorite,
   countCollectibleCharacters,
+  isCharacterUnlocked,
+  removeFavorite,
   countComicsPerCharacter,
   findCharacterWithLibrary,
   findCoAppearancePairs,
@@ -85,15 +90,36 @@ export async function buildUnlockResult(
   };
 }
 
-export async function getCollection(db: PrismaClient, userId: string) {
+export class CharacterNotFoundError extends Error {
+  constructor() {
+    super("Character not found");
+    this.name = "CharacterNotFoundError";
+  }
+}
+
+export async function getCollection(
+  db: PrismaClient,
+  userId: string,
+  input: CollectionSearchInput = { filter: "all", sort: "name" },
+) {
   const [rows, relationships] = await Promise.all([
     findCollection(db, userId),
     getRelationships(db),
   ]);
   const collection = toCollection(rows);
   const unlockedIds = idsOf(collection.cards);
+  const { cards } = collection;
   return {
-    ...collection,
+    cards: filterCards(cards, input),
+    // Las siluetas solo tienen sentido en "todos".
+    locked: input.filter === "all" ? collection.locked : 0,
+    counts: {
+      all: collection.progress.total,
+      favorites: cards.filter((c) => c.isFavorite).length,
+      discovered: cards.filter((c) => c.state === "DISCOVERED").length,
+      collected: cards.filter((c) => c.state === "COLLECTED").length,
+    },
+    progress: collection.progress,
     relationships: {
       discovered: relationships.filter((r) => isDiscovered(r, unlockedIds)).length,
       total: relationships.length,
@@ -136,4 +162,17 @@ export async function getCharacterDetail(db: PrismaClient, userId: string, id: s
     relationships: discovered,
     hiddenRelationships: mine.length - discovered.length,
   };
+}
+
+/** Marca o desmarca un favorito. Bloqueado o inexistente: CharacterNotFoundError (no se revela nada). */
+export async function setCharacterFavorite(
+  db: PrismaClient,
+  userId: string,
+  characterId: string,
+  isFavorite: boolean,
+) {
+  if (!(await isCharacterUnlocked(db, userId, characterId))) throw new CharacterNotFoundError();
+  if (isFavorite) await addFavorite(db, userId, characterId);
+  else await removeFavorite(db, userId, characterId);
+  return { isFavorite };
 }

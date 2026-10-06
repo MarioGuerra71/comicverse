@@ -1,6 +1,11 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { findUnlockedCharacters } from "@/server/repositories/characters";
-import { getCharacterDetail, getCollection } from "@/server/services/discovery";
+import {
+  CharacterNotFoundError,
+  getCharacterDetail,
+  getCollection,
+  setCharacterFavorite,
+} from "@/server/services/discovery";
 import { removeFromLibrary, setComicStatus } from "@/server/services/library";
 import { createCharacter, createComic, createTestDb, createUser, resetDb } from "./test-db";
 
@@ -263,5 +268,53 @@ describe("relaciones", () => {
 
     expect(dropped.unlock?.newRelationships).toBe(0);
     expect((await getCollection(db, user.id)).relationships.discovered).toBe(0);
+  });
+});
+
+describe("personajes favoritos", () => {
+  it("solo se pueden marcar personajes desbloqueados", async () => {
+    const user = await createUser(db);
+    const spiderMan = await createCharacter(db, "Spider-Man");
+    const venom = await createCharacter(db, "Venom");
+    const comic = await createComic(db, [spiderMan]);
+    await createComic(db, [venom]);
+    await setComicStatus(db, user.id, comic.id, "READ");
+
+    await expect(setCharacterFavorite(db, user.id, venom.id, true)).rejects.toThrow(
+      CharacterNotFoundError,
+    );
+    expect(await setCharacterFavorite(db, user.id, spiderMan.id, true)).toEqual({ isFavorite: true });
+  });
+
+  it("marcar dos veces no duplica y desmarcar lo quita", async () => {
+    const user = await createUser(db);
+    const spiderMan = await createCharacter(db, "Spider-Man");
+    const comic = await createComic(db, [spiderMan]);
+    await setComicStatus(db, user.id, comic.id, "READ");
+
+    await setCharacterFavorite(db, user.id, spiderMan.id, true);
+    await setCharacterFavorite(db, user.id, spiderMan.id, true);
+    expect(await db.characterFavorite.count()).toBe(1);
+    expect((await getCharacterDetail(db, user.id, spiderMan.id))?.isFavorite).toBe(true);
+
+    await setCharacterFavorite(db, user.id, spiderMan.id, false);
+    expect(await db.characterFavorite.count()).toBe(0);
+  });
+
+  it("la colección filtra por favoritos y los favoritos son de cada usuario", async () => {
+    const { user, comicA } = await seed();
+    const other = await createUser(db);
+    await setComicStatus(db, user.id, comicA.id, "READ");
+    await setComicStatus(db, other.id, comicA.id, "READ");
+    const spiderMan = (await getCollection(db, user.id)).cards.find((c) => c.name === "Spider-Man")!;
+    await setCharacterFavorite(db, user.id, spiderMan.id, true);
+
+    const mine = await getCollection(db, user.id, { filter: "favorites", sort: "name" });
+    expect(mine.cards.map((c) => c.name)).toEqual(["Spider-Man"]);
+    expect(mine.locked).toBe(0);
+    expect(mine.counts).toMatchObject({ all: 3, favorites: 1, discovered: 2 });
+
+    const theirs = await getCollection(db, other.id, { filter: "favorites", sort: "name" });
+    expect(theirs.cards).toEqual([]);
   });
 });

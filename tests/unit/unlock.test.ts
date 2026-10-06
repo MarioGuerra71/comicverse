@@ -35,6 +35,7 @@ describe("toCollection", () => {
     displayName: null,
     realName: `Real ${name}`,
     imageThumbUrl: `https://img.test/${id}.jpg`,
+    favorites: [],
     _count: { comics: comicsRead },
   });
 

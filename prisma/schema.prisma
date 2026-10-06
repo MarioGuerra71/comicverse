@@ -37,6 +37,7 @@ model User {
   accounts      Account[]
   libraryEntries UserComic[]
   readingHistory ReadingHistory[]
+  favoriteCharacters CharacterFavorite[]
 }
 
 model Session {
@@ -138,6 +139,7 @@ model Character {
   comics                 ComicCharacter[]
   relationshipsAsA       CharacterRelationship[] @relation("RelationshipA")
   relationshipsAsB       CharacterRelationship[] @relation("RelationshipB")
+  favorites              CharacterFavorite[]
 
   @@unique([source, externalId])
   @@index([isCollectible])
@@ -261,4 +263,16 @@ model CharacterRelationship {
 
   @@id([characterAId, characterBId])
   @@index([characterBId])
+}
+
+// Personajes favoritos de cada usuario (solo se pueden marcar desbloqueados).
+model CharacterFavorite {
+  userId      String
+  characterId String
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@id([userId, characterId])
+  @@index([characterId])
 }
