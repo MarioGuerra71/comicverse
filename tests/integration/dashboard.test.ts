@@ -1,5 +1,12 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-import { getDashboard, getDashboardStats, getRecentDiscoveries } from "@/server/services/dashboard";
+import {
+  getDashboard,
+  getDashboardStats,
+  getRecentActivity,
+  getRecentDiscoveries,
+  listDiscoveries,
+} from "@/server/services/dashboard";
+import { removeFromLibrary } from "@/server/services/library";
 import { setComicStatus } from "@/server/services/library";
 import { createCharacter, createComic, createTestDb, createUser, resetDb } from "./test-db";
 
@@ -125,5 +132,54 @@ describe("getRecentDiscoveries", () => {
     await setComicStatus(db, user.id, comicA.id, "READ");
 
     expect(await getRecentDiscoveries(db, user.id, 10)).toHaveLength(2);
+  });
+});
+
+describe("listDiscoveries", () => {
+  it("pagina el registro completo, con redescubrimientos y sin personajes bloqueados", async () => {
+    const { user, comicA, comicB } = await seed();
+    await setComicStatus(db, user.id, comicA.id, "READ"); // Spider-Man + Venom
+    await setComicStatus(db, user.id, comicA.id, "DROPPED"); // los dos se bloquean
+    await setComicStatus(db, user.id, comicA.id, "READ"); // se redescubren
+    await setComicStatus(db, user.id, comicB.id, "READ"); // nada nuevo
+
+    const all = await listDiscoveries(db, user.id, { page: 1, pageSize: 10 });
+    expect(all.total).toBe(4);
+    expect(all.items.map((d) => d.character.name).sort()).toEqual([
+      "Spider-Man",
+      "Spider-Man",
+      "Venom",
+      "Venom",
+    ]);
+
+    const page2 = await listDiscoveries(db, user.id, { page: 2, pageSize: 3 });
+    expect(page2.items).toHaveLength(1);
+    expect(page2.totalPages).toBe(2);
+
+    // Venom vuelve a bloquearse: sus filas dejan de verse (siguen guardadas).
+    await setComicStatus(db, user.id, comicA.id, "DROPPED");
+    const after = await listDiscoveries(db, user.id, { page: 1, pageSize: 10 });
+    expect(after.items.map((d) => d.character.name)).toEqual(["Spider-Man", "Spider-Man"]);
+    expect(await db.discovery.count()).toBe(4);
+  });
+});
+
+describe("getRecentActivity", () => {
+  it("devuelve los últimos cambios de mi biblioteca, el más reciente primero", async () => {
+    const { user, comicA } = await seed();
+    const other = await createUser(db);
+    await setComicStatus(db, user.id, comicA.id, "READING");
+    await setComicStatus(db, user.id, comicA.id, "READ");
+    await removeFromLibrary(db, user.id, comicA.id);
+    await setComicStatus(db, other.id, comicA.id, "PENDING");
+
+    const activity = await getRecentActivity(db, user.id, 10);
+
+    expect(activity.map((a) => [a.fromStatus, a.toStatus])).toEqual([
+      ["READ", null],
+      ["READING", "READ"],
+      [null, "READING"],
+    ]);
+    expect(activity[0].comic).toEqual({ id: comicA.id, title: comicA.title });
   });
 });

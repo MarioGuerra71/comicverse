@@ -1,9 +1,10 @@
 import type { PrismaClient } from "../../../generated/prisma/client";
 import { toCharacterSummary, type CharacterSummaryDto } from "@/server/dto/character";
-import { findUnlockedCharacters } from "@/server/repositories/characters";
 import { countSeriesProgress } from "@/server/repositories/comics";
-import { findRecentDiscoveries } from "@/server/repositories/discoveries";
-import { countByStatus } from "@/server/repositories/library";
+import { findDiscoveriesPage, findRecentDiscoveries } from "@/server/repositories/discoveries";
+import { countByStatus, findRecentHistory } from "@/server/repositories/library";
+import type { ReadingStatus } from "@/server/domain/library-status";
+import type { PageInput } from "@/server/validation/discoveries";
 import { getCollection } from "@/server/services/discovery";
 import { listLibrary, toStatusCounts } from "@/server/services/library";
 
@@ -29,43 +30,56 @@ export async function getDashboardStats(db: PrismaClient, userId: string) {
   };
 }
 
-/**
- * Últimos personajes descubiertos (uno por personaje, el descubrimiento más reciente).
- * Solo los que siguen desbloqueados: el registro es historia, pero un personaje que
- * ha vuelto a bloquearse no puede salir hacia el navegador.
- */
-export async function getRecentDiscoveries(
-  db: PrismaClient,
-  userId: string,
-  limit: number,
-): Promise<DiscoveryDto[]> {
-  // ponytail: mira las últimas 100 filas; con historiales enormes podría quedarse corto.
-  const [rows, unlocked] = await Promise.all([
-    findRecentDiscoveries(db, userId, 100),
-    findUnlockedCharacters(db, userId),
-  ]);
-  const unlockedIds = new Set(unlocked.map((c) => c.id));
-  const seen = new Set<string>();
-  const result: DiscoveryDto[] = [];
-  for (const row of rows) {
-    if (!unlockedIds.has(row.character.id) || seen.has(row.character.id)) continue;
-    seen.add(row.character.id);
-    result.push({
-      character: toCharacterSummary(row.character),
-      viaComic: row.viaComic,
-      discoveredAt: row.createdAt.toISOString(),
-    });
-    if (result.length === limit) break;
-  }
-  return result;
+const toDiscovery = (row: Awaited<ReturnType<typeof findRecentDiscoveries>>[number]): DiscoveryDto => ({
+  character: toCharacterSummary(row.character),
+  viaComic: row.viaComic,
+  discoveredAt: row.createdAt.toISOString(),
+});
+
+/** Últimos personajes descubiertos (uno por personaje, solo los que siguen desbloqueados). */
+export async function getRecentDiscoveries(db: PrismaClient, userId: string, limit: number) {
+  return (await findRecentDiscoveries(db, userId, limit)).map(toDiscovery);
+}
+
+/** Registro completo paginado (incluye redescubrimientos; nunca personajes bloqueados). */
+export async function listDiscoveries(db: PrismaClient, userId: string, input: PageInput) {
+  const { rows, total } = await findDiscoveriesPage(db, userId, input.page, input.pageSize);
+  return {
+    items: rows.map(toDiscovery),
+    page: input.page,
+    pageSize: input.pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / input.pageSize)),
+  };
+}
+
+export interface ActivityDto {
+  comic: { id: string; title: string };
+  fromStatus: ReadingStatus | null;
+  toStatus: ReadingStatus | null;
+  at: string;
+}
+
+/** Últimos cambios en la biblioteca (del historial de lectura). */
+export async function getRecentActivity(db: PrismaClient, userId: string, limit: number) {
+  const rows = await findRecentHistory(db, userId, limit);
+  return rows.map(
+    (r): ActivityDto => ({
+      comic: r.comic,
+      fromStatus: r.fromStatus,
+      toStatus: r.toStatus,
+      at: r.createdAt.toISOString(),
+    }),
+  );
 }
 
 /** Todo lo que necesita la portada privada. */
 export async function getDashboard(db: PrismaClient, userId: string) {
-  const [stats, recentLibrary, recentDiscoveries] = await Promise.all([
+  const [stats, recentLibrary, recentDiscoveries, activity] = await Promise.all([
     getDashboardStats(db, userId),
     listLibrary(db, userId, { page: 1, pageSize: 6 }),
     getRecentDiscoveries(db, userId, 6),
+    getRecentActivity(db, userId, 8),
   ]);
-  return { stats, recentComics: recentLibrary.items, recentDiscoveries };
+  return { stats, recentComics: recentLibrary.items, recentDiscoveries, activity };
 }

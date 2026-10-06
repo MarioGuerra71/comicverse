@@ -107,6 +107,21 @@ export async function findLibraryPage(
   return { rows, total };
 }
 
+/** Últimos cambios del historial de lectura, con el cómic. */
+export function findRecentHistory(db: PrismaClient, userId: string, take: number) {
+  return db.readingHistory.findMany({
+    where: { userId },
+    orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+    take,
+    select: {
+      fromStatus: true,
+      toStatus: true,
+      createdAt: true,
+      comic: { select: { id: true, title: true } },
+    },
+  });
+}
+
 export function countByStatus(db: PrismaClient, userId: string) {
   return db.userComic.groupBy({
     by: ["status"],

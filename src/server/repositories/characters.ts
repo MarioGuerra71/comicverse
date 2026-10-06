@@ -12,17 +12,20 @@ export const characterSummarySelect = {
 } satisfies Prisma.CharacterSelect;
 
 /**
- * Personajes desbloqueados = coleccionables que aparecen en al menos un cómic
+ * LA definición de "desbloqueado": coleccionable que aparece en al menos un cómic
  * que el usuario tiene en Leído. Se calcula siempre: no hay copia que mantener.
+ * Todas las consultas que filtran por desbloqueado usan esta función.
  */
+export function unlockedBy(userId: string) {
+  return {
+    isCollectible: true,
+    comics: { some: { comic: { userEntries: { some: { userId, status: "READ" as const } } } } },
+  } satisfies Prisma.CharacterWhereInput;
+}
+
 export function findUnlockedCharacters(db: Db, userId: string) {
   return db.character.findMany({
-    where: {
-      isCollectible: true,
-      comics: {
-        some: { comic: { userEntries: { some: { userId, status: "READ" } } } },
-      },
-    },
+    where: unlockedBy(userId),
     select: characterSummarySelect,
     orderBy: { name: "asc" },
   });
@@ -50,15 +53,7 @@ export function findCollection(db: Db, userId: string) {
 
 /** Misma regla que findUnlockedCharacters, para un solo personaje. */
 export async function isCharacterUnlocked(db: Db, userId: string, id: string) {
-  const count = await db.character.count({
-    where: {
-      id,
-      isCollectible: true,
-      comics: {
-        some: { comic: { userEntries: { some: { userId, status: "READ" } } } },
-      },
-    },
-  });
+  const count = await db.character.count({ where: { id, ...unlockedBy(userId) } });
   return count > 0;
 }
 

@@ -113,7 +113,7 @@ Particularidades que ya han dado problemas:
 - Prisma 7 **no genera el cliente al migrar**: ejecutar `npx prisma generate`.
 - `prisma migrate dev --create-only` **aplica antes las migraciones pendientes** (y si no hay cambios crea una vacía): para añadir SQL a mano (p. ej. un `CHECK`), crear la migración con `--create-only` **una sola vez**, editarla y luego `prisma migrate dev`. No editar migraciones ya aplicadas (obliga a reiniciar la BD).
 - Tras `prisma generate`, **reiniciar `npm run dev`**: `src/lib/db.ts` guarda el cliente en `globalThis` y el servidor sigue usando el antiguo (síntoma: `Cannot read properties of undefined (reading 'findUnique')` en un modelo nuevo).
-- Solo puede haber un `next dev` por carpeta: si ya hay uno abierto, otro no arranca.
+- Solo puede haber un `next dev` por carpeta: si ya hay uno abierto, otro no arranca (sale en el 3001 y se cierra). Si el usuario tiene el suyo abierto, probar contra ese y **no cerrarlo**.
 - Rutas con corchetes o paréntesis (`[id]`, `(app)`, `[...all]`): crearlas desde el explorador de VS Code o con `-LiteralPath`; PowerShell las interpreta como comodines.
 - Los scripts de consola no pueden usar `src/lib/db.ts` (lleva `import "server-only"`); crean su propio `PrismaClient` con `PrismaPg`.
 - Avisos `LF will be replaced by CRLF` de Git en Windows: inofensivos.
@@ -167,17 +167,17 @@ comicverse/
    ├─ app/
    │  ├─ page.tsx                      portada
    │  ├─ (auth)/  layout · sign-in · sign-up        (redirige al dashboard si ya hay sesión)
-   │  ├─ (app)/   layout (cabecera + footer) · dashboard · profile · catalog · comics/[id] · library · collection · characters/[id] · graph
-   │  └─ api/  auth/[...all] · health · v1/comics · v1/library · v1/library/comics/[comicId] (+ /review) · v1/collection · v1/characters/[id] · v1/graph · v1/dashboard
-   ├─ components/  auth/sign-out-button · comics/comic-card · library/library-controls · library/unlock-panel · characters/character-card · characters/favorite-button · graph/universe-graph · graph/relationship-list
-   ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url · search-params · reading-status · relationship-types · graph-layout
+   │  ├─ (app)/   layout (cabecera + footer) · dashboard · profile · catalog · comics/[id] · library · collection · characters/[id] · graph · discoveries
+   │  └─ api/  auth/[...all] · health · v1/comics · v1/library · v1/library/comics/[comicId] (+ /review) · v1/collection · v1/characters/[id] · v1/graph · v1/dashboard · v1/discoveries
+   ├─ components/  auth/sign-out-button · comics/comic-card · library/library-controls · library/unlock-panel · characters/character-card · characters/favorite-button · graph/universe-graph · graph/relationship-list · characters/discovery-item
+   ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url · search-params · reading-status · relationship-types · graph-layout · activity
    └─ server/
       ├─ auth/ session · api
       ├─ domain/ card-state · library-status · unlock · relationships
       ├─ dto/ comic · library · character
       ├─ repositories/ comics · library · characters · discoveries
       ├─ services/ catalog · library · discovery · dashboard
-      ├─ validation/ catalog · library · collection · graph
+      ├─ validation/ catalog · library · collection · graph · discoveries
       ├─ integrations/comic-sources/comicvine/ client · mappers · types · character-matching
       └─ jobs/ import-universe · import-relationships
 ```
@@ -269,10 +269,11 @@ Existentes:
 | `PATCH /collection/characters/:id/favorite` | `{isFavorite: boolean}`. Bloqueado o inexistente → 404 `CHARACTER_NOT_FOUND` |
 | `GET /characters/:id` | Ficha de un personaje desbloqueado (datos, estado, `comicsRead`, primera aparición, cómics de tu biblioteca con tu estado, `relationships` solo con personajes desbloqueados + `hiddenRelationships` (número)). **Bloqueado o inexistente → el mismo 404 `CHARACTER_NOT_FOUND`** |
 | `GET /graph?focus=` | (La página `/graph` acepta además `view=graph|list`.) Grafo del universo descubierto. Con `focus` (uuid): ego-graph a un salto (el personaje y sus vecinos), `locked: 0` y `hiddenRelationships` (número); focus bloqueado o inexistente → 404 `CHARACTER_NOT_FOUND`. Sin focus: `nodes` (cartas desbloqueadas), `edges` (`source`, `target`, `type`, `shared`; solo relaciones descubiertas), `locked` (solo el número: siluetas sin enlaces), `progress` |
-| `GET /dashboard` | `stats` (biblioteca por estado + total, personajes, relaciones, series), `recentComics` (6 últimos de la biblioteca), `recentDiscoveries` (6: personaje, `viaComic`, `discoveredAt`; uno por personaje y **solo si sigue desbloqueado**) |
+| `GET /dashboard` | `stats` (biblioteca por estado + total, personajes, relaciones, series), `recentComics` (6 últimos de la biblioteca), `recentDiscoveries` (6: personaje, `viaComic`, `discoveredAt`; uno por personaje y **solo si sigue desbloqueado**), `activity` (8 últimos cambios del historial: `comic`, `fromStatus`, `toStatus`, `at`) |
+| `GET /discoveries?page=&pageSize=` | Registro completo paginado (con redescubrimientos), solo personajes que siguen desbloqueados; `pageSize` ≤ 60 |
 | `GET /api/health` | Comprobación de vida (sin versión) |
 
-Previstos: `GET /discoveries`, `POST /admin/sync/*` (protegido).
+Previstos: `POST /admin/sync/*` (protegido).
 
 Convenciones: errores `{ error: "CODIGO", issues? }`; `401 UNAUTHORIZED`, `400 INVALID_*`, `404`, `409` (regla de negocio incumplida). Borrar algo inexistente no es error (`removed: false`). Paginación: `{ items, page, pageSize, total, totalPages }`.
 
@@ -287,7 +288,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **106 unitarios + 50 de integración** pasando tras el Paso 39 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
+- Estado: **107 unitarios + 52 de integración** pasando tras el Paso 40 (Fase 7 cerrada) (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -347,10 +348,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 6 (**terminada**, salvo móvil: ver abajo): `GET /api/v1/graph` (Paso 34). Página `/graph` "Universo descubierto" (Paso 35): `UniverseGraph` (cliente, React Flow con zoom/arrastre, controles y minimapa, `colorMode="system"`); posiciones con `layoutGraph` (`lib/graph-layout.ts`, `d3-force`, 300 pasos de golpe, con tests); siluetas bloqueadas en un anillo exterior sin enlaces; relaciones curadas en línea continua con su tipo y derivadas en discontinua; enlace "Grafo" en la cabecera. Ego-graph (Paso 36): `/graph?focus=<id>` ("Universo de X", personaje resaltado con un anillo), tocar un nodo abre su ficha (`onNodeClick`), y la ficha enlaza "Ver en el grafo". Vista en lista (Paso 37): `/graph?view=list` (también con `focus`), `RelationshipList` (componente de servidor, sin JS: títulos y listas con enlaces, tipo y cómics juntos), conmutador Grafo/Lista que conserva el foco.
 - **Aplazado al rediseño del grafo (decisión del usuario):** grafo a pantalla completa en móvil y *bottom sheet* al tocar un nodo; no tiene sentido hacerlo antes de decidir el nuevo diseño.
 
-- Fase 7 (en curso): registro `Discovery` y `getDashboardStats` (servicio `dashboard`: biblioteca por estado + total, personajes X/N, relaciones X/N, series con algún cómic leído X/N; `toStatusCounts` compartido con `listLibrary`) (Paso 38). Dashboard (Paso 39): `getDashboard` + `getRecentDiscoveries` (lee las últimas 100 filas de `Discovery`, se queda con una por personaje y descarta los que han vuelto a bloquearse: el registro es historia, pero un bloqueado no sale al navegador), página `/dashboard` con tarjetas de progreso (enlazan a biblioteca, colección, grafo y catálogo), bienvenida para usuarios nuevos, últimos descubrimientos y últimos movimientos de la biblioteca; `GET /api/v1/dashboard`.
-
-**Fase 7 — pendiente:**
-- **Paso 40:** actividad reciente (historial de lectura + descubrimientos) y página de descubrimientos.
+- Fase 7 (**terminada**): registro `Discovery` y `getDashboardStats` (servicio `dashboard`: biblioteca por estado + total, personajes X/N, relaciones X/N, series con algún cómic leído X/N; `toStatusCounts` compartido con `listLibrary`) (Paso 38). Dashboard (Paso 39): `getDashboard` + `getRecentDiscoveries` (lee las últimas 100 filas de `Discovery`, se queda con una por personaje y descarta los que han vuelto a bloquearse: el registro es historia, pero un bloqueado no sale al navegador), página `/dashboard` con tarjetas de progreso (enlazan a biblioteca, colección, grafo y catálogo), bienvenida para usuarios nuevos, últimos descubrimientos y últimos movimientos de la biblioteca; `GET /api/v1/dashboard`. Paso 40: `unlockedBy(userId)` en `repositories/characters` es **la única definición de "desbloqueado"** (la usan todas las consultas, también el registro: `findRecentDiscoveries` con `distinct` y `findDiscoveriesPage` filtran en la BD, así la paginación es correcta); actividad reciente en el dashboard (`getRecentActivity` sobre `ReadingHistory`, frases de `lib/activity.ts` con test); página `/discoveries` paginada y `GET /api/v1/discoveries`; componente `DiscoveryItem` compartido.
 
 **Después:**
 - **Fase 8 — Pulido:** diseño visual definitivo y `AppShell` responsive, animaciones, estados de carga/error/vacío, accesibilidad, traducir errores, rate limiting, CSRF/cabeceras, rendimiento, aviso de `vitest.config.ts` (config ESM), ajuste de ocultar descripciones.

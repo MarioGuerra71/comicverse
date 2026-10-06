@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
+import { describeActivity } from "@/lib/activity";
 import { READING_STATUS_LABELS } from "@/lib/reading-status";
 import { ComicCard } from "@/components/comics/comic-card";
+import { DiscoveryItem } from "@/components/characters/discovery-item";
 import { requireUser } from "@/server/auth/session";
 import { getDashboard } from "@/server/services/dashboard";
 
@@ -47,7 +48,7 @@ function StatCard({
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const { stats, recentComics, recentDiscoveries } = await getDashboard(db, user.id);
+  const { stats, recentComics, recentDiscoveries, activity } = await getDashboard(db, user.id);
   const isNew = stats.library.total === 0;
 
   return (
@@ -109,35 +110,18 @@ export default async function DashboardPage() {
 
       {recentDiscoveries.length > 0 && (
         <section aria-labelledby="discoveries-heading" className="mt-8">
-          <h2 id="discoveries-heading" className="font-semibold">
-            Últimos descubrimientos
-          </h2>
+          <div className="flex items-baseline justify-between">
+            <h2 id="discoveries-heading" className="font-semibold">
+              Últimos descubrimientos
+            </h2>
+            <Link href="/discoveries" className="text-sm underline">
+              Ver todos
+            </Link>
+          </div>
           <ul className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {recentDiscoveries.map(({ character, viaComic, discoveredAt }) => (
-              <li key={character.id}>
-                <Link
-                  href={`/characters/${character.id}`}
-                  className="flex items-center gap-3 rounded-md border border-foreground/20 p-2 hover:bg-foreground/5"
-                >
-                  <span className="relative h-14 w-11 shrink-0 overflow-hidden rounded bg-foreground/10">
-                    {character.imageThumbUrl && (
-                      <Image
-                        src={character.imageThumbUrl}
-                        alt=""
-                        fill
-                        unoptimized
-                        className="object-cover"
-                      />
-                    )}
-                  </span>
-                  <span className="text-sm">
-                    <span className="block font-medium">{character.name}</span>
-                    <span className="block opacity-60">
-                      {viaComic ? `Con ${viaComic.title}` : "Descubierto"} ·{" "}
-                      {formatDate(discoveredAt.slice(0, 10))}
-                    </span>
-                  </span>
-                </Link>
+            {recentDiscoveries.map((discovery) => (
+              <li key={discovery.character.id}>
+                <DiscoveryItem discovery={discovery} />
               </li>
             ))}
           </ul>
@@ -164,6 +148,25 @@ export default async function DashboardPage() {
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {activity.length > 0 && (
+        <section aria-labelledby="activity-heading" className="mt-8">
+          <h2 id="activity-heading" className="font-semibold">
+            Actividad reciente
+          </h2>
+          <ol className="mt-3 flex flex-col gap-1 text-sm">
+            {activity.map((item, index) => (
+              <li key={`${item.at}-${index}`}>
+                {describeActivity(item.fromStatus, item.toStatus)}{" "}
+                <Link href={`/comics/${item.comic.id}`} className="underline">
+                  {item.comic.title}
+                </Link>
+                <span className="opacity-60"> · {formatDate(item.at.slice(0, 10))}</span>
+              </li>
+            ))}
+          </ol>
         </section>
       )}
     </main>

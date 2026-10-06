@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from "../../../generated/prisma/client";
-import { characterSummarySelect } from "@/server/repositories/characters";
+import { characterSummarySelect, unlockedBy } from "@/server/repositories/characters";
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
@@ -15,16 +15,40 @@ export function recordDiscoveries(
   });
 }
 
-/** Últimas filas del registro, con el personaje y el cómic. */
+const discoverySelect = {
+  createdAt: true,
+  character: { select: characterSummarySelect },
+  viaComic: { select: { id: true, title: true } },
+} satisfies Prisma.DiscoverySelect;
+
+// Solo filas de personajes que siguen desbloqueados: el registro es historia,
+// pero un personaje que ha vuelto a bloquearse no puede salir hacia el navegador.
+const visibleDiscoveries = (userId: string) =>
+  ({ userId, character: unlockedBy(userId) }) satisfies Prisma.DiscoveryWhereInput;
+
+/** Los últimos personajes descubiertos, uno por personaje (su descubrimiento más reciente). */
 export function findRecentDiscoveries(db: Db, userId: string, take: number) {
   return db.discovery.findMany({
-    where: { userId },
+    where: visibleDiscoveries(userId),
+    distinct: ["characterId"],
     orderBy: { createdAt: "desc" },
     take,
-    select: {
-      createdAt: true,
-      character: { select: characterSummarySelect },
-      viaComic: { select: { id: true, title: true } },
-    },
+    select: discoverySelect,
   });
+}
+
+/** Página del registro completo (con redescubrimientos), del más reciente al más antiguo. */
+export async function findDiscoveriesPage(db: PrismaClient, userId: string, page: number, pageSize: number) {
+  const where = visibleDiscoveries(userId);
+  const [rows, total] = await db.$transaction([
+    db.discovery.findMany({
+      where,
+      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      select: discoverySelect,
+    }),
+    db.discovery.count({ where }),
+  ]);
+  return { rows, total };
 }
