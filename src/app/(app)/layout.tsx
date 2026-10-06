@@ -19,6 +19,9 @@ export default async function AppLayout({
           <Link href="/catalog" className="underline-offset-4 hover:underline">
             Catálogo
           </Link>
+          <Link href="/library" className="underline-offset-4 hover:underline">
+            Biblioteca
+          </Link>
         </nav>
         <div className="flex items-center gap-4 text-sm">
           <Link href="/profile" className="underline-offset-4 hover:underline">

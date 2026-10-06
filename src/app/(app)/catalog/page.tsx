@@ -6,20 +6,9 @@ import { ComicCard } from "@/components/comics/comic-card";
 import { requireUser } from "@/server/auth/session";
 import { listSeries, searchComics } from "@/server/services/catalog";
 import { comicSearchSchema } from "@/server/validation/catalog";
+import { normalizeParams, type SearchParams } from "@/lib/search-params";
 
 export const metadata: Metadata = { title: "Catálogo · ComicVerse" };
-
-type SearchParams = Record<string, string | string[] | undefined>;
-
-// Toma el primer valor de cada parámetro y descarta los vacíos.
-function normalizeParams(params: SearchParams) {
-  return Object.fromEntries(
-    Object.entries(params).map(([key, value]) => {
-      const first = Array.isArray(value) ? value[0] : value;
-      return [key, first === "" ? undefined : first];
-    }),
-  );
-}
 
 const SORT_OPTIONS = [
   { value: "release_desc", label: "Más recientes primero" },

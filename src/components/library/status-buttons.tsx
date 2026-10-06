@@ -2,16 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-
-// Copia local de los estados: los componentes cliente no importan nada de src/server.
-const STATUS_LABELS = {
-  PENDING: "Pendiente",
-  READING: "Leyendo",
-  READ: "Leído",
-  DROPPED: "Abandonado",
-} as const;
-
-type Status = keyof typeof STATUS_LABELS;
+import {
+  READING_STATUS_LABELS,
+  READING_STATUSES,
+  type ReadingStatusKey as Status,
+} from "@/lib/reading-status";
 
 export function StatusButtons({
   comicId,
@@ -56,7 +51,7 @@ export function StatusButtons({
         Tu biblioteca
       </h2>
       <div className="mt-2 flex flex-wrap gap-2">
-        {(Object.keys(STATUS_LABELS) as Status[]).map((value) => (
+        {READING_STATUSES.map((value) => (
           <button
             key={value}
             type="button"
@@ -65,7 +60,7 @@ export function StatusButtons({
             onClick={() => save(value)}
             className={`${buttonClass} ${status === value ? "bg-foreground text-background" : ""}`}
           >
-            {STATUS_LABELS[value]}
+            {READING_STATUS_LABELS[value]}
           </button>
         ))}
         {status && (
