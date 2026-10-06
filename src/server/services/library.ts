@@ -5,6 +5,11 @@ import {
 } from "@/server/domain/library-status";
 import { toLibraryEntry, toLibraryItem, toReview } from "@/server/dto/library";
 import {
+  buildUnlockResult,
+  snapshotUnlocked,
+  type UnlockResult,
+} from "@/server/services/discovery";
+import {
   addHistory,
   countByStatus,
   deleteEntry,
@@ -72,20 +77,27 @@ export async function setComicStatus(
         changed: false,
         becameRead: false,
         stoppedBeingRead: false,
+        unlock: null,
       };
     }
+
+    // Solo entrar o salir de Leído cambia los desbloqueos.
+    const tracksUnlocks = change.becameRead || change.stoppedBeingRead;
+    const before = tracksUnlocks ? await snapshotUnlocked(tx, userId) : null;
 
     const saved = await saveEntry(tx, userId, comicId, change.next);
     await addHistory(tx, userId, comicId, current?.status ?? null, status);
 
-    // Fase 5: aquí, dentro de esta misma transacción, se ejecutará el
-    // desbloqueo de personajes (becameRead) o su reajuste (stoppedBeingRead).
+    const unlock: UnlockResult | null = before
+      ? await buildUnlockResult(tx, userId, before)
+      : null;
 
     return {
       entry: toLibraryEntry(saved),
       changed: true,
       becameRead: change.becameRead,
       stoppedBeingRead: change.stoppedBeingRead,
+      unlock,
     };
   });
 }
@@ -97,13 +109,16 @@ export async function removeFromLibrary(
 ) {
   return db.$transaction(async (tx) => {
     const current = await findEntry(tx, userId, comicId);
-    if (!current) return { removed: false, stoppedBeingRead: false };
+    if (!current) return { removed: false, stoppedBeingRead: false, unlock: null };
+
+    const stoppedBeingRead = current.status === "READ";
+    const before = stoppedBeingRead ? await snapshotUnlocked(tx, userId) : null;
 
     await deleteEntry(tx, userId, comicId);
     await addHistory(tx, userId, comicId, current.status, null);
 
-    // Fase 5: si estaba Leído, aquí se reajustarán los desbloqueos.
-    return { removed: true, stoppedBeingRead: current.status === "READ" };
+    const unlock = before ? await buildUnlockResult(tx, userId, before) : null;
+    return { removed: true, stoppedBeingRead, unlock };
   });
 }
 

@@ -170,10 +170,10 @@ comicverse/
    ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url · search-params · reading-status
    └─ server/
       ├─ auth/ session · api
-      ├─ domain/ card-state · library-status
-      ├─ dto/ comic · library
-      ├─ repositories/ comics · library
-      ├─ services/ catalog · library
+      ├─ domain/ card-state · library-status · unlock
+      ├─ dto/ comic · library · character
+      ├─ repositories/ comics · library · characters
+      ├─ services/ catalog · library · discovery
       ├─ validation/ catalog · library
       ├─ integrations/comic-sources/comicvine/ client · mappers · types · character-matching
       └─ jobs/ import-universe
@@ -277,7 +277,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **83 unitarios + 16 de integración** pasando tras el Paso 26.
+- Estado: **86 unitarios + 26 de integración** pasando tras el Paso 27 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -326,10 +326,9 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 3: catálogo (búsqueda, filtro por serie, orden, paginación) y ficha de cómic con datos reales de Comic Vine; importador del universo semilla.
 - Fase 4 (**terminada**): modelos `UserComic`/`ReadingHistory` y reglas de estado (`applyStatusChange`) (Paso 21); servicio y API de biblioteca con validación, DTO, repositorio, transacciones con historial y rutas `api/v1/library` (Paso 22, commit `e20aa1f`); tests de integración contra PostgreSQL real con tests del servicio de biblioteca (Paso 23); botones de estado en la ficha del cómic (Paso 24a: componente cliente que llama a la API con `fetch` y luego `router.refresh()`; se descartaron las Server Actions para mantener una sola puerta de entrada y porque la Fase 5 necesitará el resultado del desbloqueo en el cliente). Página "Mi biblioteca" (`/library`, pestañas por estado con contadores como enlaces `?status=`, paginación y enlace en la cabecera; Paso 24b). Los nombres de los estados viven en `lib/reading-status.ts` y se comparten entre cliente y servidor. Puntuación y favorito (Paso 25a: `PATCH` en la API, `updateLibraryEntry`, panel `LibraryControls` en la ficha y marcas en la biblioteca). Reseñas privadas (Paso 25b: tabla `Review`, API `/review`, formulario en la ficha). `parseBody` compartido en `server/auth/api.ts`.
 
-- Fase 5 (en curso): `displayName` de personajes y regla de `cleanRealName` (Paso 26).
+- Fase 5 (en curso): `displayName` de personajes y regla de `cleanRealName` (Paso 26). Núcleo del desbloqueo (Paso 27): `findUnlockedCharacters` (repositorio `characters`), `diffById` (dominio `unlock`), `snapshotUnlocked`/`buildUnlockResult` (servicio `discovery`); `setComicStatus` y `removeFromLibrary` devuelven `unlock: UnlockResult | null` (null si el cómic no entra ni sale de Leído), y la API lo devuelve tal cual.
 
 **Fase 5 — pendiente** (desbloqueos calculados, ver sección 9):
-- **Paso 27:** núcleo del desbloqueo (consulta de desbloqueados, `UnlockResult` en `setComicStatus`/`removeFromLibrary` y en la API) con los tests obligatorios.
 - **Paso 28:** "Mi colección" (cartas, progreso X / N; DTO sin datos de bloqueados).
 - **Paso 29:** página de personaje (404 si bloqueado).
 - **Paso 30:** animación sencilla de desbloqueo al marcar Leído.
@@ -353,7 +352,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Búsqueda de cómics con `ILIKE` (`contains` + `insensitive`); con miles de cómics, añadir `pg_trgm`.
 - Orden por título alfabético (`#10` antes que `#2`); para leer en orden usar fecha.
 - El importador no borra enlaces que Comic Vine retire y vuelve a descargarlo todo en cada ejecución; hacerlo incremental y reconciliar cuando haya desbloqueos de usuarios.
-- Posible doble anotación en el historial si dos cambios a Leído llegan exactamente a la vez; lo importante (no duplicar desbloqueos) lo garantizan las restricciones únicas.
+- Posible doble anotación en el historial si dos cambios a Leído llegan exactamente a la vez. Igualmente, dos lecturas simultáneas con un personaje en común pueden anunciar ese personaje como nuevo en ambas respuestas (solo afecta a la animación; el estado calculado siempre es correcto).
 - Rate limiting y verificación de email aún no implementados.
 
 ---

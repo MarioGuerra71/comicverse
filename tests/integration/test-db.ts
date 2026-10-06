@@ -43,7 +43,19 @@ export async function createUser(db: PrismaClient) {
   });
 }
 
-export async function createComic(db: PrismaClient) {
+export async function createCharacter(
+  db: PrismaClient,
+  name: string,
+  { isCollectible = true } = {},
+) {
+  counter++;
+  return db.character.create({
+    data: { name, isCollectible, source: "COMICVINE", externalId: `char-${counter}` },
+  });
+}
+
+/** Crea un cómic; `characters` son los personajes que aparecen en él. */
+export async function createComic(db: PrismaClient, characters: { id: string }[] = []) {
   counter++;
   const publisher = await db.publisher.upsert({
     where: { slug: "marvel" },
@@ -67,6 +79,7 @@ export async function createComic(db: PrismaClient) {
       title: `Serie de prueba #${counter}`,
       source: "COMICVINE",
       externalId: `comic-${counter}`,
+      characters: { create: characters.map((c) => ({ characterId: c.id })) },
     },
   });
 }

@@ -209,13 +209,14 @@ describe("removeFromLibrary", () => {
     const comic = await createComic(db);
     await setComicStatus(db, user.id, comic.id, "READ");
 
-    expect(await removeFromLibrary(db, user.id, comic.id)).toEqual({
+    expect(await removeFromLibrary(db, user.id, comic.id)).toMatchObject({
       removed: true,
       stoppedBeingRead: true,
     });
-    expect(await removeFromLibrary(db, user.id, comic.id)).toEqual({
+    expect(await removeFromLibrary(db, user.id, comic.id)).toMatchObject({
       removed: false,
       stoppedBeingRead: false,
+      unlock: null,
     });
     expect(await history(user.id, comic.id)).toEqual([
       { fromStatus: null, toStatus: "READ" },
