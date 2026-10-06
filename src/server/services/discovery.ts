@@ -1,5 +1,6 @@
 import type { Prisma, PrismaClient } from "../../../generated/prisma/client";
 import { diffById } from "@/server/domain/unlock";
+import type { RelationshipType } from "@/lib/relationship-types";
 import {
   isDiscovered,
   pickRelationships,
@@ -17,6 +18,7 @@ import {
   findCharacterWithLibrary,
   findCoAppearancePairs,
   findCollection,
+  findCuratedRelationships,
   findComicByExternalId,
   findUnlockedCharacters,
 } from "@/server/repositories/characters";
@@ -35,11 +37,21 @@ export type UnlockedSnapshot = Awaited<ReturnType<typeof findUnlockedCharacters>
 
 /** Todas las relaciones "aparecen juntos" del universo (iguales para todos los usuarios). */
 export async function getRelationships(db: Db): Promise<Relationship[]> {
-  const [pairs, counts] = await Promise.all([
+  const [pairs, counts, curated] = await Promise.all([
     findCoAppearancePairs(db),
     countComicsPerCharacter(db),
+    findCuratedRelationships(db),
   ]);
-  return pickRelationships(pairs, new Map(counts.map((c) => [c.id, c.comics])));
+  return pickRelationships(
+    pairs,
+    new Map(counts.map((c) => [c.id, c.comics])),
+    curated.map((c) => ({
+      a: c.characterAId,
+      b: c.characterBId,
+      // El importador ya validó el tipo contra la lista de lib/relationship-types.
+      type: c.type as RelationshipType,
+    })),
+  );
 }
 
 const idsOf = (list: { id: string }[]) => new Set(list.map((item) => item.id));
@@ -106,14 +118,17 @@ export async function getCharacterDetail(db: PrismaClient, userId: string, id: s
     getRelationships(db),
   ]);
   const unlockedById = new Map(unlocked.map((c) => [c.id, c]));
+  // Primero las curadas (con tipo), después por puntuación.
   const mine = relationships
     .filter((r) => r.a === id || r.b === id)
-    .sort((x, y) => y.score - x.score);
+    .sort((x, y) => Number(!!y.type) - Number(!!x.type) || y.score - x.score);
 
   // Solo se nombran las relaciones con personajes desbloqueados; del resto, el número.
   const discovered = mine.flatMap((r) => {
     const other = unlockedById.get(r.a === id ? r.b : r.a);
-    return other ? [{ character: toCharacterSummary(other), shared: r.shared }] : [];
+    return other
+      ? [{ character: toCharacterSummary(other), shared: r.shared, type: r.type }]
+      : [];
   });
 
   return {

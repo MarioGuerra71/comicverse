@@ -136,6 +136,8 @@ model Character {
   syncedAt               DateTime         @default(now())
   detailsSyncedAt        DateTime?
   comics                 ComicCharacter[]
+  relationshipsAsA       CharacterRelationship[] @relation("RelationshipA")
+  relationshipsAsB       CharacterRelationship[] @relation("RelationshipB")
 
   @@unique([source, externalId])
   @@index([isCollectible])
@@ -244,4 +246,19 @@ model ReadingHistory {
 
   @@index([userId, createdAt])
   @@index([comicId])
+}
+
+// Relación curada entre dos personajes (data/relationships.json). Una fila por pareja:
+// characterAId < characterBId (CHECK en la migración), así A–B y B–A no se duplican.
+// type: texto validado en src/lib/relationship-types.ts.
+model CharacterRelationship {
+  characterAId String
+  characterBId String
+  type         String
+  note         String?
+  characterA   Character @relation("RelationshipA", fields: [characterAId], references: [id], onDelete: Cascade)
+  characterB   Character @relation("RelationshipB", fields: [characterBId], references: [id], onDelete: Cascade)
+
+  @@id([characterAId, characterBId])
+  @@index([characterBId])
 }

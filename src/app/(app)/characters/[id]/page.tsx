@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { pluralize } from "@/lib/format";
 import { READING_STATUS_LABELS } from "@/lib/reading-status";
+import { RELATIONSHIP_TYPE_LABELS } from "@/lib/relationship-types";
 import { ComicCard } from "@/components/comics/comic-card";
 import { CARD_STATE_LABELS } from "@/components/characters/character-card";
 import { requireUser } from "@/server/auth/session";
@@ -103,16 +104,23 @@ export default async function CharacterPage({
         </h2>
         {character.relationships.length > 0 ? (
           <ul className="mt-2 flex flex-wrap gap-2">
-            {character.relationships.map(({ character: other, shared }) => (
+            {character.relationships.map(({ character: other, shared, type }) => (
               <li key={other.id}>
                 <Link
                   href={`/characters/${other.id}`}
                   className="flex min-h-11 items-center rounded-md border border-foreground/20 px-3 text-sm"
                 >
                   {other.name}
-                  <span className="ml-2 opacity-60">
-                    {pluralize(shared, "cómic juntos", "cómics juntos")}
-                  </span>
+                  {type && (
+                    <span className="ml-2 rounded bg-foreground/10 px-1.5 py-0.5 text-xs font-medium">
+                      {RELATIONSHIP_TYPE_LABELS[type]}
+                    </span>
+                  )}
+                  {shared > 0 && (
+                    <span className="ml-2 opacity-60">
+                      {pluralize(shared, "cómic juntos", "cómics juntos")}
+                    </span>
+                  )}
                 </Link>
               </li>
             ))}

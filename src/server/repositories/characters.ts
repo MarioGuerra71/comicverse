@@ -97,6 +97,12 @@ export function findCoAppearancePairs(db: Db) {
     GROUP BY 1, 2`;
 }
 
+export function findCuratedRelationships(db: Db) {
+  return db.characterRelationship.findMany({
+    select: { characterAId: true, characterBId: true, type: true },
+  });
+}
+
 /** Cuántos cómics importados tiene cada coleccionable. */
 export function countComicsPerCharacter(db: Db) {
   return db.$queryRaw<{ id: string; comics: number }[]>`

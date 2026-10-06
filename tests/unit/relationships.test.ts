@@ -51,3 +51,36 @@ describe("isDiscovered", () => {
     expect(isDiscovered(rel, new Set())).toBe(false);
   });
 });
+
+describe("pickRelationships con relaciones curadas", () => {
+  const counts = new Map([
+    ["may", 377],
+    ["ben", 50],
+    ["spidey", 800],
+    ["goblin", 200],
+  ]);
+
+  it("una curada cuenta aunque no llegue a los umbrales, y lleva su tipo", () => {
+    const [rel] = pickRelationships([{ a: "ben", b: "may", shared: 2 }], counts, [
+      { a: "may", b: "ben", type: "PARTNER" }, // orden distinto: es la misma pareja
+    ]);
+    expect(rel).toMatchObject({ shared: 2, type: "PARTNER" });
+  });
+
+  it("añade el tipo a una pareja que ya era significativa", () => {
+    const [rel] = pickRelationships([{ a: "goblin", b: "spidey", shared: 150 }], counts, [
+      { a: "spidey", b: "goblin", type: "ENEMY" },
+    ]);
+    expect(rel).toMatchObject({ shared: 150, type: "ENEMY" });
+  });
+
+  it("incluye curadas sin cómics compartidos y deja sin tipo las derivadas", () => {
+    const result = pickRelationships([{ a: "goblin", b: "spidey", shared: 150 }], counts, [
+      { a: "ben", b: "goblin", type: "RIVAL" },
+    ]);
+    expect(result.map((r) => [r.shared, r.type])).toEqual([
+      [150, null],
+      [0, "RIVAL"],
+    ]);
+  });
+});

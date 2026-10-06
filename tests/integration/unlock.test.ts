@@ -244,7 +244,11 @@ describe("relaciones", () => {
 
     const after = await getCharacterDetail(db, user.id, spiderMan.id);
     expect(after?.relationships).toEqual([
-      { character: expect.objectContaining({ id: venom.id, name: "Venom" }), shared: 5 },
+      {
+        character: expect.objectContaining({ id: venom.id, name: "Venom" }),
+        shared: 5,
+        type: null,
+      },
     ]);
     expect(after?.hiddenRelationships).toBe(0);
     expect((await getCollection(db, user.id)).relationships).toEqual({ discovered: 1, total: 1 });
