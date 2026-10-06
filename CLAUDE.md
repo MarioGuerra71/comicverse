@@ -113,6 +113,7 @@ Particularidades que ya han dado problemas:
 - Prisma 7 **no genera el cliente al migrar**: ejecutar `npx prisma generate`.
 - `prisma migrate dev --create-only` **aplica antes las migraciones pendientes** (y si no hay cambios crea una vacía): para añadir SQL a mano (p. ej. un `CHECK`), crear la migración con `--create-only` **una sola vez**, editarla y luego `prisma migrate dev`. No editar migraciones ya aplicadas (obliga a reiniciar la BD).
 - Tras `prisma generate`, **reiniciar `npm run dev`**: `src/lib/db.ts` guarda el cliente en `globalThis` y el servidor sigue usando el antiguo (síntoma: `Cannot read properties of undefined (reading 'findUnique')` en un modelo nuevo).
+- `npm run build` y `npm run dev` comparten la carpeta `.next`: parar el servidor de desarrollo antes de compilar.
 - Solo puede haber un `next dev` por carpeta: si ya hay uno abierto, otro no arranca (sale en el 3001 y se cierra). Si el usuario tiene el suyo abierto, probar contra ese y **no cerrarlo**.
 - Rutas con corchetes o paréntesis (`[id]`, `(app)`, `[...all]`): crearlas desde el explorador de VS Code o con `-LiteralPath`; PowerShell las interpreta como comodines.
 - Los scripts de consola no pueden usar `src/lib/db.ts` (lleva `import "server-only"`); crean su propio `PrismaClient` con `PrismaPg`.
@@ -281,14 +282,21 @@ Convenciones: errores `{ error: "CODIGO", issues? }`; `401 UNAUTHORIZED`, `400 I
 
 ## 12. Seguridad
 
-Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en toda entrada; `pageSize` acotado; `userId` siempre de sesión; DTO explícitos; HTML externo convertido a texto; `rel="noopener noreferrer"` en enlaces externos; contraseñas cifradas por Better Auth (nunca texto plano); cookies `SameSite=Lax` (PUT/DELETE no se pueden enviar entre sitios sin permiso previo del navegador). Pendientes: **rate limiting** (revisar el que incluye Better Auth o una solución en PostgreSQL; nada de servicios de pago), revisión CSRF y cabeceras en la Fase 8, y sección de seguridad en el README (incluido el aviso conocido de `npm audit`: `deepmerge-ts` y `mysql2` cuelgan de la CLI de Prisma 7, no del código de la app; MySQL no se usa; revisar cuando Prisma publique corrección).
+Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en toda entrada; `pageSize` acotado; `userId` siempre de sesión; DTO explícitos; HTML externo convertido a texto; `rel="noopener noreferrer"` en enlaces externos; contraseñas cifradas por Better Auth (nunca texto plano); cookies `SameSite=Lax` (PUT/DELETE no se pueden enviar entre sitios sin permiso previo del navegador). **Fase 8, bloque de seguridad (hecho):**
+- **Límite de peticiones** (Better Auth, `src/lib/auth.ts`): `storage: "database"` (tabla `RateLimit`; la memoria no sirve con varias instancias en Vercel), activo salvo en tests. Reglas propias de Better Auth: 100 peticiones / 10 s por IP y **3 / 10 s** en entrar, registrarse y cambiar contraseña o email (verificado: el 4.º intento da 429). La IP sale de `X-Forwarded-For`; en local sin cabecera todas las peticiones comparten clave. **Al desplegar: comprobar que Vercel pone la IP real** (y si hace falta, `advanced.ipAddress.trustedProxies`). Las rutas `/api/v1` no tienen límite propio (requieren sesión y solo afectan a la cuenta propia); añadir si se ven abusos.
+- **`src/proxy.ts`** (en Next 16 `middleware` se llama `proxy`), reglas puras con tests en `src/lib/security.ts`:
+  - **CSRF:** escrituras (`PUT`/`PATCH`/`DELETE`/`POST`) a `/api/*` con `Origin` de otra web o `Sec-Fetch-Site: cross-site` → 403 `CROSS_SITE_REQUEST` (segunda capa tras `SameSite=Lax` y el control de origen de Better Auth). Sin `Origin` (curl) se permite: no lleva la cookie de una víctima.
+  - **CSP con nonce** en las páginas: `script-src 'self' 'nonce-…' 'strict-dynamic'` (+ `'unsafe-eval'` solo en desarrollo), `style-src 'self' 'unsafe-inline'` (React Flow y `next/image` usan `style=""`), `img-src` con `https://comicvine.gamespot.com`, `frame-ancestors 'none'`, `object-src 'none'`, `upgrade-insecure-requests` solo si la petición llega por HTTPS. El layout raíz llama a `await connection()` para que todas las páginas (también la 404) se rendericen por petición y lleven el nonce. Verificado: todos los `<script>` llevan el nonce, en desarrollo y en producción (`npm start`). **Si se añade un dominio externo (imágenes, fuentes, analítica), hay que añadirlo a la CSP.**
+- **Cabeceras** (`next.config.ts`, todas las respuestas): `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, `Permissions-Policy` (sin cámara, micrófono ni ubicación), `Strict-Transport-Security` (2 años) y sin `X-Powered-By`.
+
+Pendiente: sección de seguridad en el README (incluido el aviso conocido de `npm audit`: `deepmerge-ts` y `mysql2` cuelgan de la CLI de Prisma 7, no del código de la app; MySQL no se usa; revisar cuando Prisma publique corrección).
 
 ---
 
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **107 unitarios + 52 de integración** pasando tras el Paso 40 (Fase 7 cerrada) (los de desbloqueo están en `tests/integration/unlock.test.ts`).
+- Estado: **112 unitarios + 52 de integración** pasando tras el bloque de seguridad de la Fase 8 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -351,7 +359,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 7 (**terminada**): registro `Discovery` y `getDashboardStats` (servicio `dashboard`: biblioteca por estado + total, personajes X/N, relaciones X/N, series con algún cómic leído X/N; `toStatusCounts` compartido con `listLibrary`) (Paso 38). Dashboard (Paso 39): `getDashboard` + `getRecentDiscoveries` (lee las últimas 100 filas de `Discovery`, se queda con una por personaje y descarta los que han vuelto a bloquearse: el registro es historia, pero un bloqueado no sale al navegador), página `/dashboard` con tarjetas de progreso (enlazan a biblioteca, colección, grafo y catálogo), bienvenida para usuarios nuevos, últimos descubrimientos y últimos movimientos de la biblioteca; `GET /api/v1/dashboard`. Paso 40: `unlockedBy(userId)` en `repositories/characters` es **la única definición de "desbloqueado"** (la usan todas las consultas, también el registro: `findRecentDiscoveries` con `distinct` y `findDiscoveriesPage` filtran en la BD, así la paginación es correcta); actividad reciente en el dashboard (`getRecentActivity` sobre `ReadingHistory`, frases de `lib/activity.ts` con test); página `/discoveries` paginada y `GET /api/v1/discoveries`; componente `DiscoveryItem` compartido.
 
 **Después:**
-- **Fase 8 — Pulido:** diseño visual definitivo y `AppShell` responsive, animaciones, estados de carga/error/vacío, accesibilidad, traducir errores, rate limiting, CSRF/cabeceras, rendimiento, aviso de `vitest.config.ts` (config ESM), ajuste de ocultar descripciones.
+- **Fase 8 — Pulido** (seguridad hecha, ver sección 12): diseño visual definitivo con un sistema de diseño (usar las skills **ui-ux-pro-max** e **impeccable**) y `AppShell` responsive, rediseño del grafo, animaciones, estados de carga/error/vacío, accesibilidad, traducir errores de Better Auth, rendimiento, aviso de `vitest.config.ts` (config ESM), ajuste de ocultar descripciones.
 - **Fase 9 — IA** (solo si el usuario decide asumir costes).
 - Despliegue, README, ampliar el universo (más series y personajes, DC), logros, funciones sociales (seguir usuarios, listas públicas, comparar colecciones; la arquitectura debe permitirlas).
 - **No implementar todavía:** IA, sistema social completo, logros avanzados, DC, recomendaciones con IA.
@@ -367,7 +375,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - El importador no borra enlaces que Comic Vine retire y vuelve a descargarlo todo en cada ejecución; hacerlo incremental y reconciliar cuando haya desbloqueos de usuarios.
 - Las relaciones se recalculan en cada petición (autounión de `ComicCharacter`); si el universo crece mucho, materializarlas al importar.
 - Posible doble anotación en el historial si dos cambios a Leído llegan exactamente a la vez. Igualmente, dos lecturas simultáneas con un personaje en común pueden anunciar ese personaje como nuevo en ambas respuestas y apuntarlo dos veces en `Discovery` (solo afecta a la animación y al registro histórico; el estado calculado siempre es correcto).
-- Rate limiting y verificación de email aún no implementados.
+- Verificación de email no implementada (requeriría un servicio de correo).
 
 ---
 
