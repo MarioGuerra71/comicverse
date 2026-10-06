@@ -19,9 +19,11 @@ const RATINGS = [1, 2, 3, 4, 5];
 export function LibraryControls({
   comicId,
   entry,
+  review,
 }: {
   comicId: string;
   entry: LibraryControlsEntry | null;
+  review: { body: string; updatedAt: string } | null;
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -30,11 +32,12 @@ export function LibraryControls({
   const busy = saving || isRefreshing;
   const [error, setError] = useState<string | null>(null);
 
-  async function send(method: "PUT" | "PATCH" | "DELETE", body?: object) {
+  // path: "" para la entrada de la biblioteca, "/review" para la reseña.
+  async function send(method: "PUT" | "PATCH" | "DELETE", body?: object, path = "") {
     setSaving(true);
     setError(null);
     try {
-      const response = await fetch(`/api/v1/library/comics/${comicId}`, {
+      const response = await fetch(`/api/v1/library/comics/${comicId}${path}`, {
         method,
         headers: body ? { "Content-Type": "application/json" } : undefined,
         body: body ? JSON.stringify(body) : undefined,
@@ -127,6 +130,47 @@ export function LibraryControls({
         </div>
       ) : (
         entry && <p className="text-sm opacity-70">Podrás puntuarlo cuando lo marques como leído.</p>
+      )}
+
+      {entry?.status === "READ" && (
+        <form
+          // key: si cambia la reseña guardada, el campo se reinicia con el texto nuevo.
+          key={review?.updatedAt ?? "new"}
+          onSubmit={(event) => {
+            event.preventDefault();
+            const body = new FormData(event.currentTarget).get("body");
+            send("PUT", { body }, "/review");
+          }}
+          className="flex flex-col gap-2"
+        >
+          <label htmlFor="review-body" className="text-sm opacity-70">
+            Tu reseña (privada)
+          </label>
+          <textarea
+            id="review-body"
+            name="body"
+            required
+            maxLength={5000}
+            rows={4}
+            defaultValue={review?.body ?? ""}
+            className="rounded-md border border-foreground/20 bg-transparent p-2 text-sm"
+          />
+          <div className="flex flex-wrap gap-2">
+            <button type="submit" disabled={busy} className={buttonClass}>
+              {review ? "Guardar cambios" : "Guardar reseña"}
+            </button>
+            {review && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => send("DELETE", undefined, "/review")}
+                className="min-h-11 px-2 text-sm underline-offset-4 hover:underline disabled:opacity-50"
+              >
+                Borrar reseña
+              </button>
+            )}
+          </div>
+        </form>
       )}
 
       {error && (

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   comicIdSchema,
   librarySearchSchema,
+  reviewSchema,
   setStatusSchema,
   updateEntrySchema,
 } from "@/server/validation/library";
@@ -67,5 +68,18 @@ describe("updateEntrySchema", () => {
     expect(updateEntrySchema.parse({ isFavorite: false, userId: "otro" })).toEqual({
       isFavorite: false,
     });
+  });
+});
+
+describe("reviewSchema", () => {
+  it("recorta los espacios y rechaza reseñas vacías", () => {
+    expect(reviewSchema.parse({ body: "  Muy bueno  " })).toEqual({ body: "Muy bueno" });
+    expect(reviewSchema.safeParse({ body: "   " }).success).toBe(false);
+    expect(reviewSchema.safeParse({}).success).toBe(false);
+  });
+
+  it("limita la longitud a 5000 caracteres", () => {
+    expect(reviewSchema.safeParse({ body: "a".repeat(5000) }).success).toBe(true);
+    expect(reviewSchema.safeParse({ body: "a".repeat(5001) }).success).toBe(false);
   });
 });

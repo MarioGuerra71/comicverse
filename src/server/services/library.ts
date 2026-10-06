@@ -3,14 +3,17 @@ import {
   applyStatusChange,
   type ReadingStatus,
 } from "@/server/domain/library-status";
-import { toLibraryEntry, toLibraryItem } from "@/server/dto/library";
+import { toLibraryEntry, toLibraryItem, toReview } from "@/server/dto/library";
 import {
   addHistory,
   countByStatus,
   deleteEntry,
+  deleteReview,
   findEntry,
   findLibraryPage,
+  findReview,
   saveEntry,
+  saveReview,
   updateEntry,
 } from "@/server/repositories/library";
 import type {
@@ -36,6 +39,13 @@ export class RatingRequiresReadError extends Error {
   constructor() {
     super("Only read comics can be rated");
     this.name = "RatingRequiresReadError";
+  }
+}
+
+export class ReviewRequiresReadError extends Error {
+  constructor() {
+    super("Only read comics can be reviewed");
+    this.name = "ReviewRequiresReadError";
   }
 }
 
@@ -114,6 +124,32 @@ export async function updateLibraryEntry(
     const saved = await updateEntry(tx, userId, comicId, changes);
     return { entry: toLibraryEntry(saved) };
   });
+}
+
+/** La reseña se conserva al salir de Leído, pero (como la puntuación) solo se muestra en Leído. */
+export async function getReview(db: PrismaClient, userId: string, comicId: string) {
+  const row = await findReview(db, userId, comicId);
+  return row && row.entry.status === "READ" ? toReview(row) : null;
+}
+
+export async function writeReview(
+  db: PrismaClient,
+  userId: string,
+  comicId: string,
+  body: string,
+) {
+  return db.$transaction(async (tx) => {
+    const entry = await findEntry(tx, userId, comicId);
+    if (!entry) throw new NotInLibraryError();
+    if (entry.status !== "READ") throw new ReviewRequiresReadError();
+
+    return { review: toReview(await saveReview(tx, userId, comicId, body)) };
+  });
+}
+
+export async function removeReview(db: PrismaClient, userId: string, comicId: string) {
+  const { count } = await deleteReview(db, userId, comicId);
+  return { removed: count > 0 };
 }
 
 export async function getLibraryEntry(

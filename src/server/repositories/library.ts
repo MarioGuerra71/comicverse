@@ -40,6 +40,25 @@ export function updateEntry(
   });
 }
 
+export function findReview(db: Db, userId: string, comicId: string) {
+  return db.review.findUnique({
+    where: { userId_comicId: { userId, comicId } },
+    include: { entry: { select: { status: true } } },
+  });
+}
+
+export function saveReview(db: Db, userId: string, comicId: string, body: string) {
+  return db.review.upsert({
+    where: { userId_comicId: { userId, comicId } },
+    create: { userId, comicId, body },
+    update: { body },
+  });
+}
+
+export function deleteReview(db: Db, userId: string, comicId: string) {
+  return db.review.deleteMany({ where: { userId, comicId } });
+}
+
 export function deleteEntry(db: Db, userId: string, comicId: string) {
   return db.userComic.deleteMany({ where: { userId, comicId } });
 }

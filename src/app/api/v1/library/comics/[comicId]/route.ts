@@ -1,6 +1,5 @@
 import { db } from "@/lib/db";
-import { badRequest, getApiUser, unauthorized } from "@/server/auth/api";
-import { z } from "zod";
+import { badRequest, getApiUser, parseBody, unauthorized } from "@/server/auth/api";
 import {
   ComicNotFoundError,
   getLibraryEntry,
@@ -17,26 +16,6 @@ import {
 } from "@/server/validation/library";
 
 type Context = { params: Promise<{ comicId: string }> };
-
-/** Lee el JSON del cuerpo y lo valida; devuelve los datos o una respuesta 400. */
-async function parseBody<T>(request: Request, schema: z.ZodType<T>) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return { error: badRequest("INVALID_JSON") };
-  }
-  const parsed = schema.safeParse(body);
-  if (!parsed.success) {
-    return {
-      error: badRequest(
-        "INVALID_BODY",
-        parsed.error.issues.map((i) => ({ path: i.path.join("."), message: i.message })),
-      ),
-    };
-  }
-  return { data: parsed.data };
-}
 
 export async function GET(request: Request, { params }: Context) {
   const user = await getApiUser(request);

@@ -66,3 +66,12 @@ export function toLibraryItem(row: LibraryItemRow): LibraryItemDto {
     updatedAt: row.updatedAt.toISOString(),
   };
 }
+
+export interface ReviewDto {
+  body: string;
+  updatedAt: string;
+}
+
+export function toReview(row: { body: string; updatedAt: Date }): ReviewDto {
+  return { body: row.body, updatedAt: row.updatedAt.toISOString() };
+}

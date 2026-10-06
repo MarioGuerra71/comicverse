@@ -209,9 +209,24 @@ model UserComic {
   updatedAt  DateTime      @updatedAt
   user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   comic      Comic         @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  review     Review?
 
   @@id([userId, comicId])
   @@index([userId, status])
+  @@index([comicId])
+}
+
+// Reseña privada de un cómic de la biblioteca (una por usuario y cómic).
+// Cuelga de UserComic: al quitar el cómic de la biblioteca, la reseña se borra con él.
+model Review {
+  userId    String
+  comicId   String
+  body      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  entry     UserComic @relation(fields: [userId, comicId], references: [userId, comicId], onDelete: Cascade)
+
+  @@id([userId, comicId])
   @@index([comicId])
 }
 

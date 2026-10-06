@@ -109,6 +109,8 @@ Particularidades que ya han dado problemas:
 
 - Los archivos de configuración de Prisma se llaman **`prisma7.config.ts`** (así lo generó `prisma init`); no renombrar sin motivo.
 - Prisma 7 **no genera el cliente al migrar**: ejecutar `npx prisma generate`.
+- Tras `prisma generate`, **reiniciar `npm run dev`**: `src/lib/db.ts` guarda el cliente en `globalThis` y el servidor sigue usando el antiguo (síntoma: `Cannot read properties of undefined (reading 'findUnique')` en un modelo nuevo).
+- Solo puede haber un `next dev` por carpeta: si ya hay uno abierto, otro no arranca.
 - Rutas con corchetes o paréntesis (`[id]`, `(app)`, `[...all]`): crearlas desde el explorador de VS Code o con `-LiteralPath`; PowerShell las interpreta como comodines.
 - Los scripts de consola no pueden usar `src/lib/db.ts` (lleva `import "server-only"`); crean su propio `PrismaClient` con `PrismaPg`.
 - Avisos `LF will be replaced by CRLF` de Git en Windows: inofensivos.
@@ -183,7 +185,7 @@ Carpetas previstas más adelante: `server/services/discovery`, `server/integrati
 
 ## 8. Modelo de datos
 
-**Existentes** (migradas): `User`, `Session`, `Account`, `Verification` (Better Auth) · `Publisher`, `Series`, `Comic`, `Character`, `ComicCharacter`, `Creator`, `ComicCreator`, `Event`, `ComicEvent` (catálogo global) · `UserComic`, `ReadingHistory` (biblioteca) · enums `DataSource` (`COMICVINE`) y `ReadingStatus` (`PENDING | READING | READ | DROPPED`).
+**Existentes** (migradas): `User`, `Session`, `Account`, `Verification` (Better Auth) · `Publisher`, `Series`, `Comic`, `Character`, `ComicCharacter`, `Creator`, `ComicCreator`, `Event`, `ComicEvent` (catálogo global) · `UserComic`, `ReadingHistory`, `Review` (biblioteca) · enums `DataSource` (`COMICVINE`) y `ReadingStatus` (`PENDING | READING | READ | DROPPED`).
 
 Decisiones de diseño:
 
@@ -196,7 +198,7 @@ Decisiones de diseño:
 - `Creator`, `ComicCreator`, `Event` y `ComicEvent` existen pero **el importador aún no los rellena** (se descargarán bajo demanda al abrir un cómic, y se guardan).
 - El estado de la carta (LOCKED / DISCOVERED / COLLECTED) **no se almacena**: lo deriva `getCardState` del nº de cómics leídos (`COLLECTED_THRESHOLD = 5`).
 
-**Previstos (Fase 5 en adelante):** `UserCharacter` (`unlockedAt`, `firstComicId`, `isFavorite`; único `userId+characterId`), `RelationshipType` (tabla, no enum), `CharacterRelationship` (`CHECK a < b`, `origin`: CURATED/DERIVED), `RelationshipEvidence`, `UserRelationship` (materializada al desbloquear), `Discovery` (feed: tipo, entidad, `viaComicId`, fecha), `Review` (una por usuario y cómic), `Achievement` / `UserAchievement` (solo esquema), y más adelante tablas de IA (`AiUsage`, caché) y `pgvector`.
+**Previstos (Fase 5 en adelante):** `UserCharacter` (`unlockedAt`, `firstComicId`, `isFavorite`; único `userId+characterId`), `RelationshipType` (tabla, no enum), `CharacterRelationship` (`CHECK a < b`, `origin`: CURATED/DERIVED), `RelationshipEvidence`, `UserRelationship` (materializada al desbloquear), `Discovery` (feed: tipo, entidad, `viaComicId`, fecha), `Achievement` / `UserAchievement` (solo esquema), y más adelante tablas de IA (`AiUsage`, caché) y `pgvector`.
 
 ---
 
@@ -218,6 +220,7 @@ Decisiones de diseño:
 - Pasar a Leyendo guarda `startedAt` (se conserva si ya existía). Pasar a Leído guarda `readAt`; salir de Leído lo borra. Repetir el mismo estado no hace nada (`changed: false`).
 - **Puntuar (1–5) solo cómics en Leído** (si no, 409 `RATING_REQUIRES_READ`). Decidido (opción A): al salir de Leído la puntuación **se conserva pero no se muestra** (el DTO la devuelve como `null` fuera de Leído) y reaparece al volver a Leído. Quitarla (`rating: null`) se permite siempre.
 - Favorito: cualquier cómic de la biblioteca, en cualquier estado.
+- **Reseñas:** privadas (las públicas llegarán con las funciones sociales y deberán respetar los spoilers). Una por usuario y cómic; `Review` cuelga de `UserComic` con FK compuesta y `onDelete: Cascade` (quitar el cómic de la biblioteca la borra). Solo en Leído (409 `REVIEW_REQUIRES_READ`); fuera de Leído se conserva pero no se muestra. Texto plano, 1–5000 caracteres, recortado.
 - Cada cambio se anota en `ReadingHistory`.
 
 **Cartas:** `LOCKED` (silueta y `?`, sin nombre ni parcial), `DISCOVERED`, `COLLECTED` (≥ 5 cómics leídos). Datos de una carta: imagen, nombre, nombre real, editorial, primera aparición, cómics en tu biblioteca donde aparece, cómics leídos donde aparece, relaciones descubiertas.
@@ -258,9 +261,10 @@ Existentes:
 | `GET /library?status=&page=&pageSize=` | Biblioteca propia + contadores por estado. `pageSize` ≤ 60 |
 | `GET/PUT/DELETE /library/comics/:comicId` | Estado de un cómic / añadir o cambiar estado (`{status}`; 404 `COMIC_NOT_FOUND`) / quitar |
 | `PATCH /library/comics/:comicId` | `{rating?: 1-5 \| null, isFavorite?: boolean}` (al menos uno). 404 `NOT_IN_LIBRARY`, 409 `RATING_REQUIRES_READ` |
+| `GET/PUT/DELETE /library/comics/:comicId/review` | Reseña propia (`{body}`). 404 `NOT_IN_LIBRARY`, 409 `REVIEW_REQUIRES_READ`; borrar inexistente → `removed: false` |
 | `GET /api/health` | Comprobación de vida (sin versión) |
 
-Previstos: `GET /collection`, `GET /characters/:id` (404 u opaco si está bloqueado), `PATCH /collection/characters/:id/favorite`, `GET /graph?focus=&depth=1`, `GET /progress`, `GET /dashboard`, `GET /discoveries`, reseñas (`PUT/DELETE /library/comics/:id/review`), `POST /admin/sync/*` (protegido).
+Previstos: `GET /collection`, `GET /characters/:id` (404 u opaco si está bloqueado), `PATCH /collection/characters/:id/favorite`, `GET /graph?focus=&depth=1`, `GET /progress`, `GET /dashboard`, `GET /discoveries`, `POST /admin/sync/*` (protegido).
 
 Convenciones: errores `{ error: "CODIGO", issues? }`; `401 UNAUTHORIZED`, `400 INVALID_*`, `404`, `409` (regla de negocio incumplida). Borrar algo inexistente no es error (`removed: false`). Paginación: `{ items, page, pageSize, total, totalPages }`.
 
@@ -275,7 +279,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **80 unitarios + 12 de integración** pasando tras el Paso 25a.
+- Estado: **82 unitarios + 16 de integración** pasando tras el Paso 25 (Fase 4 cerrada).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -322,10 +326,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 0: arquitectura aprobada. Fase 1: proyecto, Docker/PostgreSQL, Prisma 7, validación de entorno, Vitest.
 - Fase 2: Better Auth (registro, login, cierre de sesión), dashboard protegido, perfil básico, layouts, portada.
 - Fase 3: catálogo (búsqueda, filtro por serie, orden, paginación) y ficha de cómic con datos reales de Comic Vine; importador del universo semilla.
-- Fase 4 (en curso): modelos `UserComic`/`ReadingHistory` y reglas de estado (`applyStatusChange`) (Paso 21); servicio y API de biblioteca con validación, DTO, repositorio, transacciones con historial y rutas `api/v1/library` (Paso 22, commit `e20aa1f`); tests de integración contra PostgreSQL real con tests del servicio de biblioteca (Paso 23); botones de estado en la ficha del cómic (Paso 24a: componente cliente que llama a la API con `fetch` y luego `router.refresh()`; se descartaron las Server Actions para mantener una sola puerta de entrada y porque la Fase 5 necesitará el resultado del desbloqueo en el cliente). Página "Mi biblioteca" (`/library`, pestañas por estado con contadores como enlaces `?status=`, paginación y enlace en la cabecera; Paso 24b). Los nombres de los estados viven en `lib/reading-status.ts` y se comparten entre cliente y servidor. Puntuación y favorito (Paso 25a: `PATCH` en la API, `updateLibraryEntry`, panel `LibraryControls` en la ficha y marcas en la biblioteca).
-
-**Fase 4 — pendiente:**
-- **Paso 25b:** reseñas (`Review`, una por usuario y cómic; `PUT/DELETE /library/comics/:id/review`).
+- Fase 4 (**terminada**): modelos `UserComic`/`ReadingHistory` y reglas de estado (`applyStatusChange`) (Paso 21); servicio y API de biblioteca con validación, DTO, repositorio, transacciones con historial y rutas `api/v1/library` (Paso 22, commit `e20aa1f`); tests de integración contra PostgreSQL real con tests del servicio de biblioteca (Paso 23); botones de estado en la ficha del cómic (Paso 24a: componente cliente que llama a la API con `fetch` y luego `router.refresh()`; se descartaron las Server Actions para mantener una sola puerta de entrada y porque la Fase 5 necesitará el resultado del desbloqueo en el cliente). Página "Mi biblioteca" (`/library`, pestañas por estado con contadores como enlaces `?status=`, paginación y enlace en la cabecera; Paso 24b). Los nombres de los estados viven en `lib/reading-status.ts` y se comparten entre cliente y servidor. Puntuación y favorito (Paso 25a: `PATCH` en la API, `updateLibraryEntry`, panel `LibraryControls` en la ficha y marcas en la biblioteca). Reseñas privadas (Paso 25b: tabla `Review`, API `/review`, formulario en la ficha). `parseBody` compartido en `server/auth/api.ts`.
 
 **Después:**
 - **Fase 5 — Descubrimiento:** `UserCharacter`, relaciones, desbloqueo transaccional con tests, `reconcile`, cartas, colección, progreso, página de personaje, `Discovery`; decidir `displayName`.

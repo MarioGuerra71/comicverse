@@ -1,12 +1,16 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import {
   ComicNotFoundError,
+  getReview,
   listLibrary,
   NotInLibraryError,
   RatingRequiresReadError,
   removeFromLibrary,
+  removeReview,
+  ReviewRequiresReadError,
   setComicStatus,
   updateLibraryEntry,
+  writeReview,
 } from "@/server/services/library";
 import { createComic, createTestDb, createUser, resetDb } from "./test-db";
 
@@ -144,6 +148,58 @@ describe("updateLibraryEntry", () => {
     await expect(
       updateLibraryEntry(db, user.id, comic.id, { isFavorite: true }),
     ).rejects.toThrow(NotInLibraryError);
+  });
+});
+
+describe("reseñas", () => {
+  it("solo se pueden escribir en cómics leídos de la biblioteca", async () => {
+    const user = await createUser(db);
+    const comic = await createComic(db);
+
+    await expect(writeReview(db, user.id, comic.id, "Genial")).rejects.toThrow(
+      NotInLibraryError,
+    );
+    await setComicStatus(db, user.id, comic.id, "READING");
+    await expect(writeReview(db, user.id, comic.id, "Genial")).rejects.toThrow(
+      ReviewRequiresReadError,
+    );
+  });
+
+  it("guardar dos veces actualiza la misma reseña", async () => {
+    const user = await createUser(db);
+    const comic = await createComic(db);
+    await setComicStatus(db, user.id, comic.id, "READ");
+
+    await writeReview(db, user.id, comic.id, "Primera versión");
+    await writeReview(db, user.id, comic.id, "Segunda versión");
+
+    expect(await db.review.count()).toBe(1);
+    expect((await getReview(db, user.id, comic.id))?.body).toBe("Segunda versión");
+  });
+
+  it("se oculta fuera de Leído y se borra al quitar el cómic de la biblioteca", async () => {
+    const user = await createUser(db);
+    const comic = await createComic(db);
+    await setComicStatus(db, user.id, comic.id, "READ");
+    await writeReview(db, user.id, comic.id, "Genial");
+
+    await setComicStatus(db, user.id, comic.id, "DROPPED");
+    expect(await getReview(db, user.id, comic.id)).toBeNull();
+    await setComicStatus(db, user.id, comic.id, "READ");
+    expect((await getReview(db, user.id, comic.id))?.body).toBe("Genial");
+
+    await removeFromLibrary(db, user.id, comic.id);
+    expect(await db.review.count()).toBe(0);
+  });
+
+  it("borrarla dos veces no es error", async () => {
+    const user = await createUser(db);
+    const comic = await createComic(db);
+    await setComicStatus(db, user.id, comic.id, "READ");
+    await writeReview(db, user.id, comic.id, "Genial");
+
+    expect(await removeReview(db, user.id, comic.id)).toEqual({ removed: true });
+    expect(await removeReview(db, user.id, comic.id)).toEqual({ removed: false });
   });
 });
 

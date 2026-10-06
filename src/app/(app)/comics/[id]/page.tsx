@@ -7,7 +7,7 @@ import { formatDate, pluralize } from "@/lib/format";
 import { buildCatalogHref } from "@/lib/catalog-url";
 import { requireUser } from "@/server/auth/session";
 import { getComicDetail } from "@/server/services/catalog";
-import { getLibraryEntry } from "@/server/services/library";
+import { getLibraryEntry, getReview } from "@/server/services/library";
 import { LibraryControls } from "@/components/library/library-controls";
 
 export default async function ComicPage({
@@ -20,9 +20,10 @@ export default async function ComicPage({
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const [comic, entry] = await Promise.all([
+  const [comic, entry, review] = await Promise.all([
     getComicDetail(db, id),
     getLibraryEntry(db, user.id, id),
+    getReview(db, user.id, id),
   ]);
   if (!comic) notFound();
 
@@ -83,7 +84,7 @@ export default async function ComicPage({
             )}
           </dl>
 
-          <LibraryControls comicId={comic.id} entry={entry} />
+          <LibraryControls comicId={comic.id} entry={entry} review={review} />
 
           <section aria-labelledby="characters-heading">
             <h2 id="characters-heading" className="font-semibold">
