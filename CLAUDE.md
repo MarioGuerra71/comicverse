@@ -342,6 +342,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
   - **Paso 32b:** relaciones curadas (59) con tipo, tabla `CharacterRelationship`, importador y tipo visible en la ficha de personaje. **Pendiente: que el usuario revise `data/relationships.json`** (curado con conocimiento general, no verificado una a una).
 - Fase 5, Paso 33: personajes favoritos (`CharacterFavorite`, solo desbloqueados; `setCharacterFavorite`, `FavoriteButton` en la ficha, ♥ en las cartas) y filtros/orden de "Mi colección" (`collectionSearchSchema`, `filterCards`, pestañas con contadores como enlaces).
 
+- **Opinión del usuario (2026-10-06): el aspecto del grafo "no me gusta nada"; hay que replantear todo lo relacionado con el grafo más adelante** (lo decidirá él). Mientras, no invertir en pulirlo: solo la funcionalidad prevista.
 - Fase 6 (en curso): `GET /api/v1/graph` (Paso 34). Página `/graph` "Universo descubierto" (Paso 35): `UniverseGraph` (cliente, React Flow con zoom/arrastre, controles y minimapa, `colorMode="system"`); posiciones con `layoutGraph` (`lib/graph-layout.ts`, `d3-force`, 300 pasos de golpe, con tests); siluetas bloqueadas en un anillo exterior sin enlaces; relaciones curadas en línea continua con su tipo y derivadas en discontinua; enlace "Grafo" en la cabecera.
 
 **Fase 6 — pendiente:**
@@ -359,7 +360,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 
 ## 18. Limitaciones y deuda técnica conocidas
 
-- `npm audit` (10 altas a 2026-10-06, iguales antes y después de instalar React Flow y d3-force): `deepmerge-ts` y `mysql2` (CLI de Prisma 7; aceptado, revisar al actualizar Prisma), `braces` (vía `eslint-config-next` → `fast-glob`) y `source-map-js` (vía Tailwind/PostCSS/Next). Todos son herramientas de desarrollo/compilación, no código que reciba datos de usuarios. `source-map-js` tiene arreglo sin `--force` (`npm audit fix`): pendiente de decidir con el usuario.
+- `npm audit` (9 altas a 2026-10-06): `deepmerge-ts` y `mysql2` (CLI de Prisma 7; aceptado, revisar al actualizar Prisma) y `braces` (vía `eslint-config-next` → `fast-glob`). Todos son herramientas de desarrollo/compilación, no código que reciba datos de usuarios. `source-map-js` se arregló con `npm audit fix` sin `--force` (1.2.1 → 1.2.2; verificado con tests y `npm run build`).
 - `vitest.config.ts` muestra un aviso por usar sintaxis ESM sin `"type": "module"`.
 - Búsqueda de cómics con `ILIKE` (`contains` + `insensitive`); con miles de cómics, añadir `pg_trgm`.
 - Orden por título alfabético (`#10` antes que `#2`); para leer en orden usar fecha.
