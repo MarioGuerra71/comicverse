@@ -169,7 +169,7 @@ comicverse/
    │  ├─ (auth)/  layout · sign-in · sign-up        (redirige al dashboard si ya hay sesión)
    │  ├─ (app)/   layout (cabecera + footer) · dashboard · profile · catalog · comics/[id] · library · collection · characters/[id] · graph
    │  └─ api/  auth/[...all] · health · v1/comics · v1/library · v1/library/comics/[comicId] (+ /review) · v1/collection · v1/characters/[id] · v1/graph
-   ├─ components/  auth/sign-out-button · comics/comic-card · library/library-controls · library/unlock-panel · characters/character-card · characters/favorite-button · graph/universe-graph
+   ├─ components/  auth/sign-out-button · comics/comic-card · library/library-controls · library/unlock-panel · characters/character-card · characters/favorite-button · graph/universe-graph · graph/relationship-list
    ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url · search-params · reading-status · relationship-types · graph-layout
    └─ server/
       ├─ auth/ session · api
@@ -268,7 +268,7 @@ Existentes:
 | `GET /collection?filter=&sort=` | Cartas desbloqueadas (`state`, `comicsRead`, `isFavorite`) + `locked` (solo el número; 0 si hay filtro) + `counts` por filtro + `progress` + `relationships: {discovered, total}`. `filter`: `all`, `favorites`, `discovered`, `collected`; `sort`: `name`, `comics` |
 | `PATCH /collection/characters/:id/favorite` | `{isFavorite: boolean}`. Bloqueado o inexistente → 404 `CHARACTER_NOT_FOUND` |
 | `GET /characters/:id` | Ficha de un personaje desbloqueado (datos, estado, `comicsRead`, primera aparición, cómics de tu biblioteca con tu estado, `relationships` solo con personajes desbloqueados + `hiddenRelationships` (número)). **Bloqueado o inexistente → el mismo 404 `CHARACTER_NOT_FOUND`** |
-| `GET /graph?focus=` | Grafo del universo descubierto. Con `focus` (uuid): ego-graph a un salto (el personaje y sus vecinos), `locked: 0` y `hiddenRelationships` (número); focus bloqueado o inexistente → 404 `CHARACTER_NOT_FOUND`. Sin focus: `nodes` (cartas desbloqueadas), `edges` (`source`, `target`, `type`, `shared`; solo relaciones descubiertas), `locked` (solo el número: siluetas sin enlaces), `progress` |
+| `GET /graph?focus=` | (La página `/graph` acepta además `view=graph|list`.) Grafo del universo descubierto. Con `focus` (uuid): ego-graph a un salto (el personaje y sus vecinos), `locked: 0` y `hiddenRelationships` (número); focus bloqueado o inexistente → 404 `CHARACTER_NOT_FOUND`. Sin focus: `nodes` (cartas desbloqueadas), `edges` (`source`, `target`, `type`, `shared`; solo relaciones descubiertas), `locked` (solo el número: siluetas sin enlaces), `progress` |
 | `GET /api/health` | Comprobación de vida (sin versión) |
 
 Previstos: `GET /progress`, `GET /dashboard`, `GET /discoveries`, `POST /admin/sync/*` (protegido).
@@ -343,10 +343,8 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 5, Paso 33: personajes favoritos (`CharacterFavorite`, solo desbloqueados; `setCharacterFavorite`, `FavoriteButton` en la ficha, ♥ en las cartas) y filtros/orden de "Mi colección" (`collectionSearchSchema`, `filterCards`, pestañas con contadores como enlaces).
 
 - **Opinión del usuario (2026-10-06): el aspecto del grafo "no me gusta nada"; hay que replantear todo lo relacionado con el grafo más adelante** (lo decidirá él). Mientras, no invertir en pulirlo: solo la funcionalidad prevista.
-- Fase 6 (en curso): `GET /api/v1/graph` (Paso 34). Página `/graph` "Universo descubierto" (Paso 35): `UniverseGraph` (cliente, React Flow con zoom/arrastre, controles y minimapa, `colorMode="system"`); posiciones con `layoutGraph` (`lib/graph-layout.ts`, `d3-force`, 300 pasos de golpe, con tests); siluetas bloqueadas en un anillo exterior sin enlaces; relaciones curadas en línea continua con su tipo y derivadas en discontinua; enlace "Grafo" en la cabecera. Ego-graph (Paso 36): `/graph?focus=<id>` ("Universo de X", personaje resaltado con un anillo), tocar un nodo abre su ficha (`onNodeClick`), y la ficha enlaza "Ver en el grafo".
-
-**Fase 6 — pendiente:**
-- **Paso 37:** móvil (pantalla completa, *bottom sheet*) y vista alternativa en lista (accesibilidad).
+- Fase 6 (**terminada**, salvo móvil: ver abajo): `GET /api/v1/graph` (Paso 34). Página `/graph` "Universo descubierto" (Paso 35): `UniverseGraph` (cliente, React Flow con zoom/arrastre, controles y minimapa, `colorMode="system"`); posiciones con `layoutGraph` (`lib/graph-layout.ts`, `d3-force`, 300 pasos de golpe, con tests); siluetas bloqueadas en un anillo exterior sin enlaces; relaciones curadas en línea continua con su tipo y derivadas en discontinua; enlace "Grafo" en la cabecera. Ego-graph (Paso 36): `/graph?focus=<id>` ("Universo de X", personaje resaltado con un anillo), tocar un nodo abre su ficha (`onNodeClick`), y la ficha enlaza "Ver en el grafo". Vista en lista (Paso 37): `/graph?view=list` (también con `focus`), `RelationshipList` (componente de servidor, sin JS: títulos y listas con enlaces, tipo y cómics juntos), conmutador Grafo/Lista que conserva el foco.
+- **Aplazado al rediseño del grafo (decisión del usuario):** grafo a pantalla completa en móvil y *bottom sheet* al tocar un nodo; no tiene sentido hacerlo antes de decidir el nuevo diseño.
 
 **Después:**
 - **Fase 7 — Dashboard** (estadísticas, actividad, descubrimientos, progreso).
