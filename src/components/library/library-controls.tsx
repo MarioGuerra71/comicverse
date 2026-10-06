@@ -7,6 +7,7 @@ import {
   READING_STATUSES,
   type ReadingStatusKey as Status,
 } from "@/lib/reading-status";
+import { UnlockPanel, type UnlockView } from "@/components/library/unlock-panel";
 
 export interface LibraryControlsEntry {
   status: Status;
@@ -31,6 +32,8 @@ export function LibraryControls({
   const [isRefreshing, startTransition] = useTransition();
   const busy = saving || isRefreshing;
   const [error, setError] = useState<string | null>(null);
+  // Resultado del último cambio de estado que afectó a los desbloqueos.
+  const [unlock, setUnlock] = useState<UnlockView | null>(null);
 
   // path: "" para la entrada de la biblioteca, "/review" para la reseña.
   async function send(method: "PUT" | "PATCH" | "DELETE", body?: object, path = "") {
@@ -43,6 +46,11 @@ export function LibraryControls({
         body: body ? JSON.stringify(body) : undefined,
       });
       if (!response.ok) throw new Error(String(response.status));
+      // Solo los cambios de estado (PUT/DELETE de la entrada) traen `unlock`.
+      if (path === "" && method !== "PATCH") {
+        const data = (await response.json()) as { unlock: UnlockView | null };
+        setUnlock(data.unlock);
+      }
       // Vuelve a pedir la página al servidor para mostrar lo guardado.
       startTransition(() => router.refresh());
     } catch {
@@ -172,6 +180,8 @@ export function LibraryControls({
           </div>
         </form>
       )}
+
+      {unlock && <UnlockPanel unlock={unlock} onClose={() => setUnlock(null)} />}
 
       {error && (
         <p role="alert" className="text-sm text-red-600">
