@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-import { getDashboardStats } from "@/server/services/dashboard";
+import { getDashboard, getDashboardStats, getRecentDiscoveries } from "@/server/services/dashboard";
 import { setComicStatus } from "@/server/services/library";
 import { createCharacter, createComic, createTestDb, createUser, resetDb } from "./test-db";
 
@@ -85,5 +85,45 @@ describe("getDashboardStats", () => {
     expect(stats.library.total).toBe(0);
     expect(stats.characters.unlocked).toBe(0);
     expect(stats.series.discovered).toBe(0);
+  });
+});
+
+describe("getRecentDiscoveries", () => {
+  it("devuelve uno por personaje, el más reciente primero, con el cómic", async () => {
+    const { user, comicA } = await seed();
+    const goblin = await createCharacter(db, "Green Goblin");
+    const comicC = await createComic(db, [goblin]);
+    await setComicStatus(db, user.id, comicA.id, "READ");
+    await setComicStatus(db, user.id, comicC.id, "READ");
+
+    const recent = await getRecentDiscoveries(db, user.id, 10);
+
+    expect(recent[0]).toMatchObject({
+      character: { name: "Green Goblin" },
+      viaComic: { id: comicC.id, title: comicC.title },
+    });
+    expect(recent.map((d) => d.character.name).sort()).toEqual(["Green Goblin", "Spider-Man", "Venom"]);
+    expect(await getRecentDiscoveries(db, user.id, 1)).toHaveLength(1);
+  });
+
+  it("no muestra personajes que han vuelto a bloquearse, aunque sigan en el registro", async () => {
+    const { user, comicA, comicB } = await seed();
+    await setComicStatus(db, user.id, comicA.id, "READ"); // Spider-Man + Venom
+    await setComicStatus(db, user.id, comicB.id, "READ"); // Spider-Man (ya estaba)
+    await setComicStatus(db, user.id, comicA.id, "DROPPED"); // Venom vuelve a bloquearse
+
+    const recent = await getRecentDiscoveries(db, user.id, 10);
+
+    expect(recent.map((d) => d.character.name)).toEqual(["Spider-Man"]);
+    expect(JSON.stringify(await getDashboard(db, user.id))).not.toContain("Venom");
+  });
+
+  it("un redescubrimiento cuenta una sola vez", async () => {
+    const { user, comicA } = await seed();
+    await setComicStatus(db, user.id, comicA.id, "READ");
+    await setComicStatus(db, user.id, comicA.id, "DROPPED");
+    await setComicStatus(db, user.id, comicA.id, "READ");
+
+    expect(await getRecentDiscoveries(db, user.id, 10)).toHaveLength(2);
   });
 });
