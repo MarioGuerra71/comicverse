@@ -4,6 +4,7 @@ import {
   CharacterNotFoundError,
   getCharacterDetail,
   getCollection,
+  getGraph,
   setCharacterFavorite,
 } from "@/server/services/discovery";
 import { removeFromLibrary, setComicStatus } from "@/server/services/library";
@@ -316,5 +317,30 @@ describe("personajes favoritos", () => {
 
     const theirs = await getCollection(db, other.id, { filter: "favorites", sort: "name" });
     expect(theirs.cards).toEqual([]);
+  });
+});
+
+describe("getGraph", () => {
+  it("solo enlaza personajes desbloqueados y de los bloqueados envía solo el número", async () => {
+    const user = await createUser(db);
+    const spiderMan = await createCharacter(db, "Spider-Man");
+    const venom = await createCharacter(db, "Venom");
+    const goblin = await createCharacter(db, "Green Goblin");
+    const together = [];
+    for (let i = 0; i < 5; i++) together.push(await createComic(db, [spiderMan, venom]));
+    for (let i = 0; i < 5; i++) await createComic(db, [spiderMan, goblin]);
+    await setComicStatus(db, user.id, together[0].id, "READ");
+
+    const graph = await getGraph(db, user.id);
+
+    expect(graph.nodes.map((n) => n.name).sort()).toEqual(["Spider-Man", "Venom"]);
+    expect(graph.edges).toHaveLength(1);
+    expect([graph.edges[0].source, graph.edges[0].target].sort()).toEqual(
+      [spiderMan.id, venom.id].sort(),
+    );
+    expect(graph.locked).toBe(1);
+    const json = JSON.stringify(graph);
+    expect(json).not.toContain("Green Goblin");
+    expect(json).not.toContain(goblin.id);
   });
 });

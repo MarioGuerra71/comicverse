@@ -127,6 +127,31 @@ export async function getCollection(
   };
 }
 
+export interface GraphEdgeDto {
+  source: string;
+  target: string;
+  type: RelationshipType | null;
+  shared: number;
+}
+
+/**
+ * Grafo del universo descubierto: nodos = personajes desbloqueados; enlaces = relaciones
+ * descubiertas (los dos extremos desbloqueados). De los bloqueados solo va el número:
+ * se dibujan como siluetas sueltas, sin enlaces, para no dar pistas.
+ */
+export async function getGraph(db: PrismaClient, userId: string) {
+  const [rows, relationships] = await Promise.all([
+    findCollection(db, userId),
+    getRelationships(db),
+  ]);
+  const { cards, locked, progress } = toCollection(rows);
+  const unlockedIds = idsOf(cards);
+  const edges: GraphEdgeDto[] = relationships
+    .filter((r) => isDiscovered(r, unlockedIds))
+    .map((r) => ({ source: r.a, target: r.b, type: r.type, shared: r.shared }));
+  return { nodes: cards, edges, locked, progress };
+}
+
 /** Ficha de un personaje; null si no existe, no es coleccionable o está bloqueado. */
 export async function getCharacterDetail(db: PrismaClient, userId: string, id: string) {
   const row = await findCharacterWithLibrary(db, id, userId);

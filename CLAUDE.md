@@ -168,7 +168,7 @@ comicverse/
    │  ├─ page.tsx                      portada
    │  ├─ (auth)/  layout · sign-in · sign-up        (redirige al dashboard si ya hay sesión)
    │  ├─ (app)/   layout (cabecera + footer) · dashboard · profile · catalog · comics/[id] · library · collection · characters/[id]
-   │  └─ api/  auth/[...all] · health · v1/comics · v1/library · v1/library/comics/[comicId] (+ /review) · v1/collection · v1/characters/[id]
+   │  └─ api/  auth/[...all] · health · v1/comics · v1/library · v1/library/comics/[comicId] (+ /review) · v1/collection · v1/characters/[id] · v1/graph
    ├─ components/  auth/sign-out-button · comics/comic-card · library/library-controls · library/unlock-panel · characters/character-card · characters/favorite-button
    ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url · search-params · reading-status
    └─ server/
@@ -268,9 +268,10 @@ Existentes:
 | `GET /collection?filter=&sort=` | Cartas desbloqueadas (`state`, `comicsRead`, `isFavorite`) + `locked` (solo el número; 0 si hay filtro) + `counts` por filtro + `progress` + `relationships: {discovered, total}`. `filter`: `all`, `favorites`, `discovered`, `collected`; `sort`: `name`, `comics` |
 | `PATCH /collection/characters/:id/favorite` | `{isFavorite: boolean}`. Bloqueado o inexistente → 404 `CHARACTER_NOT_FOUND` |
 | `GET /characters/:id` | Ficha de un personaje desbloqueado (datos, estado, `comicsRead`, primera aparición, cómics de tu biblioteca con tu estado, `relationships` solo con personajes desbloqueados + `hiddenRelationships` (número)). **Bloqueado o inexistente → el mismo 404 `CHARACTER_NOT_FOUND`** |
+| `GET /graph` | Grafo del universo descubierto: `nodes` (cartas desbloqueadas), `edges` (`source`, `target`, `type`, `shared`; solo relaciones descubiertas), `locked` (solo el número: siluetas sin enlaces), `progress` |
 | `GET /api/health` | Comprobación de vida (sin versión) |
 
-Previstos: `GET /graph?focus=&depth=1`, `GET /progress`, `GET /dashboard`, `GET /discoveries`, `POST /admin/sync/*` (protegido).
+Previstos: `GET /graph?focus=&depth=1` (ego-graph), `GET /progress`, `GET /dashboard`, `GET /discoveries`, `POST /admin/sync/*` (protegido).
 
 Convenciones: errores `{ error: "CODIGO", issues? }`; `401 UNAUTHORIZED`, `400 INVALID_*`, `404`, `409` (regla de negocio incumplida). Borrar algo inexistente no es error (`removed: false`). Paginación: `{ items, page, pageSize, total, totalPages }`.
 
@@ -285,7 +286,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **102 unitarios + 39 de integración** pasando tras el Paso 33 (Fase 5 cerrada) (los de desbloqueo están en `tests/integration/unlock.test.ts`).
+- Estado: **102 unitarios + 40 de integración** pasando tras el Paso 34 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
