@@ -64,7 +64,7 @@ La IA es una **capa futura opcional**; la experiencia principal no depende de el
 | BD | PostgreSQL **17** en Docker Compose (local) | Producción prevista: Neon o Supabase (planes gratuitos) |
 | ORM | Prisma **7.10.0** + `@prisma/adapter-pg` + `pg` | Cliente generado en `generated/prisma` (ignorado por Git) |
 | Autenticación | Better Auth **1.7.x** con adaptador Prisma | Email + contraseña; sesiones en BD con cookie; **sin verificación de email** (requeriría servicio de correo) |
-| Tests | Vitest **5** (`tests/**/*.test.ts`) | Integración con BD de pruebas pendiente |
+| Tests | Vitest **5** (`tests/unit` y `tests/integration`) | Integración contra PostgreSQL real (`comicverse_test`) |
 | Scripts | `tsx` (con `--env-file=.env`) | Importadores y utilidades de consola |
 | Node / npm | Node **24** LTS, npm **11** | Gestor: **npm** (no pnpm/yarn) |
 | Grafo (Fase 6) | React Flow (`@xyflow/react`) + `d3-force` para el layout | Plan B si hay miles de nodos: Sigma.js |
@@ -89,6 +89,7 @@ npx prisma studio                    # explorador de datos
 npm run dev                          # http://localhost:3000
 npm test                             # Vitest (una vez)
 npm run test:watch
+npm run test:integration             # tests contra PostgreSQL real (BD comicverse_test; Docker en marcha)
 npm run typecheck                    # tsc --noEmit
 npm run lint
 npm run universe:resolve             # resuelve candidatos -> data/universe.resolved.json (no versionado)
@@ -151,11 +152,12 @@ Convenciones de capas:
 
 ```
 comicverse/
-├─ CLAUDE.md · README.md (pendiente) · docker-compose.yml · vitest.config.ts
+├─ CLAUDE.md · README.md (pendiente) · docker-compose.yml · vitest.config.ts · vitest.integration.config.ts
 ├─ prisma/ ............ schema.prisma · migrations/        prisma7.config.ts
 ├─ data/ .............. universe-candidates.json · universe.json   (universe.resolved.json no se versiona)
 ├─ scripts/ ........... resolve-universe.ts · import-universe.ts
 ├─ tests/unit/ ........ *.test.ts
+├─ tests/integration/ . global-setup · test-db (cliente, resetDb, createUser, createComic) · *.test.ts
 └─ src/
    ├─ app/
    │  ├─ page.tsx                      portada
@@ -175,7 +177,7 @@ comicverse/
       └─ jobs/ import-universe
 ```
 
-Carpetas previstas más adelante: `server/services/discovery`, `server/integrations/ai/` (AIProvider/AIGateway, sin implementación), `components/{characters,graph,layout}`, `features/` (hooks y queries del cliente), `tests/integration/`, `docs/` (arquitectura, ER, ADR).
+Carpetas previstas más adelante: `server/services/discovery`, `server/integrations/ai/` (AIProvider/AIGateway, sin implementación), `components/{characters,graph,layout}`, `features/` (hooks y queries del cliente), `docs/` (arquitectura, ER, ADR).
 
 ---
 
@@ -270,12 +272,12 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 
 ## 13. Testing
 
-- Vitest, `tests/unit/*.test.ts`, alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **76 tests** pasando tras el Paso 22. El repositorio y el servicio de biblioteca aún no tienen tests (necesitan BD real: Paso 23).
+- Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
+- Estado: **76 unitarios + 8 de integración** pasando tras el Paso 23.
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
-- **Pendiente (Paso 23): tests de integración** contra PostgreSQL real: BD `comicverse_test` en el mismo contenedor, `.env.test`, `prisma migrate deploy` en el setup global, limpieza entre tests, configuración/proyecto Vitest separado y script `test:integration`. Imprescindible para los tests de desbloqueo y concurrencia.
+- **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
-- Antes de cada commit: `npm test`, `npm run typecheck`, `npm run lint`.
+- Antes de cada commit: `npm test`, `npm run typecheck`, `npm run lint` (y `npm run test:integration` si se toca BD, repositorios o servicios).
 
 ---
 
@@ -318,10 +320,9 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 0: arquitectura aprobada. Fase 1: proyecto, Docker/PostgreSQL, Prisma 7, validación de entorno, Vitest.
 - Fase 2: Better Auth (registro, login, cierre de sesión), dashboard protegido, perfil básico, layouts, portada.
 - Fase 3: catálogo (búsqueda, filtro por serie, orden, paginación) y ficha de cómic con datos reales de Comic Vine; importador del universo semilla.
-- Fase 4 (en curso): modelos `UserComic`/`ReadingHistory` y reglas de estado (`applyStatusChange`) (Paso 21); servicio y API de biblioteca con validación, DTO, repositorio, transacciones con historial y rutas `api/v1/library` (Paso 22, commit `e20aa1f`).
+- Fase 4 (en curso): modelos `UserComic`/`ReadingHistory` y reglas de estado (`applyStatusChange`) (Paso 21); servicio y API de biblioteca con validación, DTO, repositorio, transacciones con historial y rutas `api/v1/library` (Paso 22, commit `e20aa1f`); tests de integración contra PostgreSQL real con tests del servicio de biblioteca (Paso 23).
 
 **Fase 4 — pendiente:**
-- **Paso 23:** tests de integración con BD de pruebas (ver sección 13).
 - **Paso 24:** botones de estado en la ficha del cómic y página "Mi biblioteca" (pestañas por estado con contadores).
 - **Paso 25:** puntuación (1–5, solo Leído), favoritos y reseñas (`Review`).
 

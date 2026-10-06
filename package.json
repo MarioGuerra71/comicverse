@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit",
     "universe:resolve": "tsx --env-file=.env scripts/resolve-universe.ts",
     "universe:import": "tsx --env-file=.env scripts/import-universe.ts"
