@@ -38,6 +38,7 @@ model User {
   libraryEntries UserComic[]
   readingHistory ReadingHistory[]
   favoriteCharacters CharacterFavorite[]
+  discoveries        Discovery[]
 }
 
 model Session {
@@ -112,6 +113,7 @@ model Comic {
   events        ComicEvent[]
   userEntries    UserComic[]
   readingHistory ReadingHistory[]
+  discoveries    Discovery[]
 
   @@unique([source, externalId])
   @@index([seriesId])
@@ -140,6 +142,7 @@ model Character {
   relationshipsAsA       CharacterRelationship[] @relation("RelationshipA")
   relationshipsAsB       CharacterRelationship[] @relation("RelationshipB")
   favorites              CharacterFavorite[]
+  discoveries            Discovery[]
 
   @@unique([source, externalId])
   @@index([isCollectible])
@@ -275,4 +278,21 @@ model CharacterFavorite {
 
   @@id([userId, characterId])
   @@index([characterId])
+}
+
+// Registro (solo crece) de cada vez que un usuario desbloquea un personaje, y con qué cómic.
+// Es historia: si luego desmarca el cómic, la fila se queda (el estado actual se calcula aparte).
+model Discovery {
+  id          String    @id @default(uuid())
+  userId      String
+  characterId String
+  viaComicId  String?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  viaComic    Comic?    @relation(fields: [viaComicId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([characterId])
+  @@index([viaComicId])
 }

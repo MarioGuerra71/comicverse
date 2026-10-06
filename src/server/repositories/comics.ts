@@ -18,6 +18,17 @@ export const comicListSelect = {
   _count: { select: { characters: true } },
 } satisfies Prisma.ComicSelect;
 
+/** Series con al menos un cómic leído por el usuario, y el total de series. */
+export async function countSeriesProgress(db: PrismaClient, userId: string) {
+  const [discovered, total] = await Promise.all([
+    db.series.count({
+      where: { comics: { some: { userEntries: { some: { userId, status: "READ" } } } } },
+    }),
+    db.series.count(),
+  ]);
+  return { discovered, total };
+}
+
 function buildWhere(input: ComicSearchInput): Prisma.ComicWhereInput {
   const where: Prisma.ComicWhereInput = {};
 

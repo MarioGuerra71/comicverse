@@ -21,6 +21,7 @@ import {
   saveReview,
   updateEntry,
 } from "@/server/repositories/library";
+import { recordDiscoveries } from "@/server/repositories/discoveries";
 import type {
   LibrarySearchInput,
   UpdateEntryInput,
@@ -91,6 +92,10 @@ export async function setComicStatus(
     const unlock: UnlockResult | null = before
       ? await buildUnlockResult(tx, userId, before)
       : null;
+    if (unlock?.newCharacters.length) {
+      const newIds = unlock.newCharacters.map((c) => c.id);
+      await recordDiscoveries(tx, userId, comicId, newIds);
+    }
 
     return {
       entry: toLibraryEntry(saved),
@@ -176,6 +181,13 @@ export async function getLibraryEntry(
   return entry ? toLibraryEntry(entry) : null;
 }
 
+/** Contadores por estado, con 0 en los estados sin cómics. */
+export function toStatusCounts(grouped: { status: ReadingStatus; _count: { _all: number } }[]) {
+  const counts: Record<ReadingStatus, number> = { PENDING: 0, READING: 0, READ: 0, DROPPED: 0 };
+  for (const group of grouped) counts[group.status] = group._count._all;
+  return counts;
+}
+
 export async function listLibrary(
   db: PrismaClient,
   userId: string,
@@ -186,17 +198,9 @@ export async function listLibrary(
     countByStatus(db, userId),
   ]);
 
-  const counts: Record<ReadingStatus, number> = {
-    PENDING: 0,
-    READING: 0,
-    READ: 0,
-    DROPPED: 0,
-  };
-  for (const group of grouped) counts[group.status] = group._count._all;
-
   return {
     items: rows.map(toLibraryItem),
-    counts,
+    counts: toStatusCounts(grouped),
     page: input.page,
     pageSize: input.pageSize,
     total,
