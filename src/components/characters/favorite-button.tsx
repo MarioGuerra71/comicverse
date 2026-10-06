@@ -48,7 +48,7 @@ export function FavoriteButton({
         {isFavorite ? "♥ Favorito" : "♡ Añadir a favoritos"}
       </button>
       {error && (
-        <p role="alert" className="mt-2 text-sm text-red-600">
+        <p role="alert" className="mt-2 text-sm text-danger">
           No se ha podido guardar el cambio. Inténtalo de nuevo.
         </p>
       )}

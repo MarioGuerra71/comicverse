@@ -184,7 +184,7 @@ export function LibraryControls({
       {unlock && <UnlockPanel unlock={unlock} onClose={() => setUnlock(null)} />}
 
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       )}

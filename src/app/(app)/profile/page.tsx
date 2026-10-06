@@ -1,4 +1,5 @@
 import { requireUser } from "@/server/auth/session";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 
 export default async function ProfilePage() {
   const user = await requireUser();
@@ -23,6 +24,7 @@ export default async function ProfilePage() {
           <dd>{memberSince}</dd>
         </div>
       </dl>
+      <SignOutButton showLabel className="mt-8 -ml-3" />
     </main>
   );
 }

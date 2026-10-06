@@ -34,7 +34,7 @@ export default function SignInPage() {
       <h1 className="text-2xl font-bold">Iniciar sesión</h1>
 
       {error && (
-        <p role="alert" className="text-sm text-red-500">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       )}

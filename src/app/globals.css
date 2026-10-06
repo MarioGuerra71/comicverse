@@ -1,33 +1,50 @@
 @import "tailwindcss";
 
+/*
+ * Sistema de diseño "Atlas estelar" (ver .impeccable/surfaces/ y PRODUCT.md).
+ * Una carta celeste grabada, de noche: suelo azul de Prusia, planchas un tono más
+ * claras, filetes de 1 px y texto en blanco estelar. El dorado se reserva para lo
+ * recién descubierto y lo coleccionado. Solo tema oscuro: la escena es de noche.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  --night: #0b1220; /* suelo */
+  --plate: #15233f; /* planchas: barras, tarjetas, campos */
+  --plate-raised: #1c2d50; /* plancha al pasar el ratón o seleccionada */
+  --line: rgb(127 147 184 / 0.28); /* filetes de grabado */
+  --line-strong: rgb(127 147 184 / 0.55);
+  --star: #eef1f7; /* texto principal (15.9:1 sobre el suelo) */
+  --dim: #a9b6ce; /* texto secundario (9:1 sobre el suelo, 7:1 sobre plancha) */
+  --gold: #e2b04a; /* recién descubierto, coleccionado, foco */
+  --danger: #f08a7e; /* errores (7:1 sobre el suelo) */
+
+  /* Nombres genéricos que ya usan las pantallas: apuntan al nuevo mundo. */
+  --background: var(--night);
+  --foreground: var(--star);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-night: var(--night);
+  --color-plate: var(--plate);
+  --color-plate-raised: var(--plate-raised);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-star: var(--star);
+  --color-dim: var(--dim);
+  --color-gold: var(--gold);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Romana grabada de las cartas celestes: marca, títulos y números de catálogo. */
+  --font-display: var(--font-marcellus);
 }
 
 /* Animación de desbloqueo: aparece y crece un poco. Se usa con motion-safe:. */
 @theme {
-  --animate-pop-in: pop-in 400ms ease-out both;
+  --animate-pop-in: pop-in 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes pop-in {
@@ -39,4 +56,62 @@ body {
     opacity: 1;
     transform: none;
   }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  /* Cifras de ancho fijo: los contadores (6 / 32) no bailan al cambiar. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lo que dibuja el navegador también es parte del diseño. */
+::selection {
+  background: var(--gold);
+  color: var(--night);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+html {
+  caret-color: var(--gold);
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+a {
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+/* Campos de formulario sobre plancha, en lugar del gris del sistema. */
+input,
+select,
+textarea {
+  accent-color: var(--gold);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--dim);
+  opacity: 1;
+}
+
+/* Barras de progreso nativas en el color del mundo. */
+progress {
+  appearance: none;
+  background: var(--plate);
+  border: none;
+}
+progress::-webkit-progress-bar {
+  background: var(--plate);
+}
+progress::-webkit-progress-value {
+  background: var(--star);
+}
+progress::-moz-progress-bar {
+  background: var(--star);
 }

@@ -158,7 +158,7 @@ Convenciones de capas:
 
 ```
 comicverse/
-├─ CLAUDE.md · README.md (pendiente) · docker-compose.yml · vitest.config.ts · vitest.integration.config.ts
+├─ CLAUDE.md · PRODUCT.md (verdad de producto para el diseño) · README.md (pendiente) · docker-compose.yml · vitest.config.ts · vitest.integration.config.ts
 ├─ prisma/ ............ schema.prisma · migrations/        prisma7.config.ts
 ├─ data/ .............. universe-candidates.json · universe.json · relationships.json   (universe.resolved.json y relationships.suggested.json no se versionan)
 ├─ scripts/ ........... resolve-universe.ts · import-universe.ts · suggest-relationships.ts · import-relationships.ts
@@ -170,7 +170,7 @@ comicverse/
    │  ├─ (auth)/  layout · sign-in · sign-up        (redirige al dashboard si ya hay sesión)
    │  ├─ (app)/   layout (cabecera + footer) · dashboard · profile · catalog · comics/[id] · library · collection · characters/[id] · graph · discoveries
    │  └─ api/  auth/[...all] · health · v1/comics · v1/library · v1/library/comics/[comicId] (+ /review) · v1/collection · v1/characters/[id] · v1/graph · v1/dashboard · v1/discoveries
-   ├─ components/  auth/sign-out-button · comics/comic-card · library/library-controls · library/unlock-panel · characters/character-card · characters/favorite-button · graph/universe-graph · graph/relationship-list · characters/discovery-item
+   ├─ components/  layout/app-shell · layout/app-nav · ui/icons · auth/sign-out-button · comics/comic-card · library/library-controls · library/unlock-panel · characters/character-card · characters/favorite-button · graph/universe-graph · graph/relationship-list · characters/discovery-item
    ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url · search-params · reading-status · relationship-types · graph-layout · activity
    └─ server/
       ├─ auth/ session · api
@@ -312,7 +312,10 @@ Pendiente: sección de seguridad en el README (incluido el aviso conocido de `np
   - **Móvil:** barra de navegación inferior de 5 pestañas (Inicio, Catálogo, Colección, Grafo, Biblioteca); perfil en un menú superior.
   - Un `AppShell` cambia entre Sidebar, Rail y BottomNav. Las cartas usan container queries y sirven como rejilla, lista o nodo de grafo.
 - **Estilo:** moderno, profesional, **no infantil**. Inspiración: interfaces de videojuegos/RPG, apps de coleccionismo, streaming, Goodreads, Letterboxd, MyAnimeList. Usar cards, animaciones sutiles, estados de desbloqueo, progreso, badges, grafos y transiciones. **Evitar** exceso de colores, de sombras, de animaciones y diseño sobrecargado.
-- **Estado actual: diseño provisional y funcional** (utilidades Tailwind sencillas). El diseño visual definitivo se rehace en la **Fase 8**; no invertir tiempo en estética antes.
+- **Dirección visual elegida (2026-10-06): «Atlas estelar»** (con la skill impeccable; contrato completo en `.impeccable/surfaces/src-app-app-layout-tsx.md`, producto en `PRODUCT.md`). La colección como un cielo nocturno grabado: leer enciende estrellas, las relaciones trazan constelaciones. Solo tema oscuro (escena: de noche, móvil, sofá). Tokens en `globals.css`: `night` #0B1220 (suelo), `plate` #15233F, `plate-raised`, `line`/`line-strong` (filetes de 1 px), `star` #EEF1F7 (texto), `dim` #A9B6CE (secundario), `gold` #E2B04A (**reservado** a recién descubierto, coleccionado y foco), `danger`. Fuentes: Geist (interfaz) y **Marcellus** (`font-display`: marca, títulos y números de catálogo; servida por `next/font`, compatible con la CSP). Iconos SVG propios en `components/ui/icons.tsx` (trazo 1,5): **no usar emojis ni símbolos Unicode como iconos** (quedan ♥ ♡ ★ en favoritos y puntuación: sustituirlos al rediseñar esas pantallas). Sin brillos, neón, sombras de color, degradados en texto ni «etiquetas encima de títulos».
+- **Hecho:** sistema de tokens y `AppShell` (barra inferior de 5 pestañas en móvil: Inicio, Catálogo, Biblioteca, Colección, Universo; carril de iconos en tablet; barra lateral en escritorio; cerrar sesión también en el perfil). Revisado con capturas reales (Chrome DevTools MCP) a 390, 820 y 1440 px.
+- **Siguiente:** la Colección con «tu cielo» encima de la rejilla (primera superficie); después el grafo como carta celeste (incluye el móvil aplazado), y el resto de pantallas. Al terminar la Colección: revisión final de impeccable y `DESIGN.md`.
+- **Capturas para revisar:** Chrome DevTools MCP (`npx chrome-devtools-mcp@latest`, configurado en `~/.claude.json`); iniciar sesión con un usuario de prueba desde `/sign-in` en un contexto aislado. Las capturas van a `.impeccable/review/` (no versionado).
 - **Animación de desbloqueo** (rápida, no molesta): al marcar Leído aparece "COMPLETADO" → "N NUEVOS DESCUBRIMIENTOS" → aparecen las cartas desbloqueadas → se actualiza el grafo.
 - **Grafo:** React Flow con nodos que son componentes (misma `CharacterCard`), zoom/pan/pinch táctil, minimapa. Un grafo **por usuario** ("Universo descubierto"); endpoint de **ego-graph** (subgrafo alrededor de un personaje, `depth=1`, expandible al tocar un nodo). Nodos bloqueados: silueta con `?`, **sin nombre ni imagen**. En móvil: pantalla completa, foco en un personaje y *bottom sheet* para el detalle. Vista alternativa en lista (accesibilidad).
 - **Pantallas del MVP:** dashboard (progreso, actividad, últimos cómics y personajes), catálogo, ficha de cómic ("Personajes que descubrirás": solo un contador, p. ej. "contiene 5 personajes que aún no has descubierto"), biblioteca por estados, "Mi colección" (filtros: todos, desbloqueados, bloqueados, favoritos, editorial, tipo, popularidad, apariciones), página de personaje (info, tus estadísticas, relaciones descubiertas, cómics relacionados), descubrimientos recientes, perfil.
