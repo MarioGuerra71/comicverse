@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { connection } from "next/server";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,7 +18,10 @@ export const metadata: Metadata = {
   description: "Descubre el universo de los cómics mientras lo lees.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Todas las páginas se generan en cada petición: así llevan el nonce de la CSP
+  // (una página estática, como la 404, se quedaría sin JavaScript).
+  await connection();
   return (
     <html
       lang="es"

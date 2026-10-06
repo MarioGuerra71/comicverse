@@ -12,4 +12,12 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
   },
+  // Límite de peticiones por IP. Reglas de Better Auth: 100 peticiones / 10 s en general y
+  // 3 / 10 s para entrar, registrarse y cambiar contraseña o email (fuerza bruta).
+  // En BD para que funcione con varias instancias (Vercel). Activo también en desarrollo
+  // para poder probarlo; desactivado en los tests.
+  rateLimit: {
+    enabled: env.NODE_ENV !== "test",
+    storage: "database",
+  },
 });

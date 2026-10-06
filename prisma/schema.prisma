@@ -70,6 +70,15 @@ model Account {
   updatedAt             DateTime
 }
 
+// Contadores del límite de peticiones de Better Auth (storage: "database"): en Vercel hay
+// varias instancias a la vez y la memoria no se comparte; PostgreSQL sí.
+model RateLimit {
+  id          String @id @default(uuid())
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+}
+
 model Verification {
   id         String    @id
   identifier String
