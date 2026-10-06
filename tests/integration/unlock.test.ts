@@ -331,7 +331,7 @@ describe("getGraph", () => {
     for (let i = 0; i < 5; i++) await createComic(db, [spiderMan, goblin]);
     await setComicStatus(db, user.id, together[0].id, "READ");
 
-    const graph = await getGraph(db, user.id);
+    const graph = (await getGraph(db, user.id))!;
 
     expect(graph.nodes.map((n) => n.name).sort()).toEqual(["Spider-Man", "Venom"]);
     expect(graph.edges).toHaveLength(1);
@@ -342,5 +342,48 @@ describe("getGraph", () => {
     const json = JSON.stringify(graph);
     expect(json).not.toContain("Green Goblin");
     expect(json).not.toContain(goblin.id);
+  });
+});
+
+describe("getGraph con focus (ego-graph)", () => {
+  // Spider-Man–Venom y Venom–Carnage relacionados; Green Goblin–Spider-Man también.
+  async function seedChain() {
+    const user = await createUser(db);
+    const spiderMan = await createCharacter(db, "Spider-Man");
+    const venom = await createCharacter(db, "Venom");
+    const carnage = await createCharacter(db, "Carnage");
+    const goblin = await createCharacter(db, "Green Goblin");
+    const comics = [];
+    for (let i = 0; i < 5; i++) comics.push(await createComic(db, [spiderMan, venom]));
+    for (let i = 0; i < 5; i++) comics.push(await createComic(db, [venom, carnage]));
+    for (let i = 0; i < 5; i++) await createComic(db, [spiderMan, goblin]);
+    return { user, spiderMan, venom, carnage, goblin, comics };
+  }
+
+  it("muestra el personaje y sus vecinos directos, no los de dos saltos", async () => {
+    const { user, spiderMan, venom, comics } = await seedChain();
+    await setComicStatus(db, user.id, comics[0].id, "READ"); // Spider-Man + Venom
+    await setComicStatus(db, user.id, comics[5].id, "READ"); // Venom + Carnage
+
+    const graph = await getGraph(db, user.id, spiderMan.id);
+
+    expect(graph?.nodes.map((n) => n.name).sort()).toEqual(["Spider-Man", "Venom"]);
+    expect(graph?.edges).toHaveLength(1);
+    expect(graph?.locked).toBe(0);
+    expect(graph?.focus).toBe(spiderMan.id);
+    // Green Goblin sigue bloqueado: su relación con Spider-Man solo cuenta como número.
+    expect(graph?.hiddenRelationships).toBe(1);
+    expect(JSON.stringify(graph)).not.toContain("Green Goblin");
+
+    const aroundVenom = await getGraph(db, user.id, venom.id);
+    expect(aroundVenom?.nodes.map((n) => n.name).sort()).toEqual(["Carnage", "Spider-Man", "Venom"]);
+  });
+
+  it("devuelve null si el personaje del centro está bloqueado o no existe", async () => {
+    const { user, goblin, comics } = await seedChain();
+    await setComicStatus(db, user.id, comics[0].id, "READ");
+
+    expect(await getGraph(db, user.id, goblin.id)).toBeNull();
+    expect(await getGraph(db, user.id, "00000000-0000-4000-8000-000000000000")).toBeNull();
   });
 });

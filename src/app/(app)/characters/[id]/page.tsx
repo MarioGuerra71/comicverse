@@ -28,9 +28,14 @@ export default async function CharacterPage({
 
   return (
     <main className="mx-auto max-w-4xl p-6">
-      <Link href="/collection" className="text-sm underline">
-        ← Volver a mi colección
-      </Link>
+      <div className="flex flex-wrap justify-between gap-2 text-sm">
+        <Link href="/collection" className="underline">
+          ← Volver a mi colección
+        </Link>
+        <Link href={`/graph?focus=${character.id}`} className="underline">
+          Ver en el grafo →
+        </Link>
+      </div>
 
       <div className="mt-4 grid gap-6 sm:grid-cols-[minmax(0,16rem)_1fr]">
         <div className="relative aspect-3/4 w-full max-w-64 overflow-hidden rounded-md bg-foreground/10">

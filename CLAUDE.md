@@ -177,7 +177,7 @@ comicverse/
       ├─ dto/ comic · library · character
       ├─ repositories/ comics · library · characters
       ├─ services/ catalog · library · discovery
-      ├─ validation/ catalog · library · collection
+      ├─ validation/ catalog · library · collection · graph
       ├─ integrations/comic-sources/comicvine/ client · mappers · types · character-matching
       └─ jobs/ import-universe · import-relationships
 ```
@@ -268,10 +268,10 @@ Existentes:
 | `GET /collection?filter=&sort=` | Cartas desbloqueadas (`state`, `comicsRead`, `isFavorite`) + `locked` (solo el número; 0 si hay filtro) + `counts` por filtro + `progress` + `relationships: {discovered, total}`. `filter`: `all`, `favorites`, `discovered`, `collected`; `sort`: `name`, `comics` |
 | `PATCH /collection/characters/:id/favorite` | `{isFavorite: boolean}`. Bloqueado o inexistente → 404 `CHARACTER_NOT_FOUND` |
 | `GET /characters/:id` | Ficha de un personaje desbloqueado (datos, estado, `comicsRead`, primera aparición, cómics de tu biblioteca con tu estado, `relationships` solo con personajes desbloqueados + `hiddenRelationships` (número)). **Bloqueado o inexistente → el mismo 404 `CHARACTER_NOT_FOUND`** |
-| `GET /graph` | Grafo del universo descubierto: `nodes` (cartas desbloqueadas), `edges` (`source`, `target`, `type`, `shared`; solo relaciones descubiertas), `locked` (solo el número: siluetas sin enlaces), `progress` |
+| `GET /graph?focus=` | Grafo del universo descubierto. Con `focus` (uuid): ego-graph a un salto (el personaje y sus vecinos), `locked: 0` y `hiddenRelationships` (número); focus bloqueado o inexistente → 404 `CHARACTER_NOT_FOUND`. Sin focus: `nodes` (cartas desbloqueadas), `edges` (`source`, `target`, `type`, `shared`; solo relaciones descubiertas), `locked` (solo el número: siluetas sin enlaces), `progress` |
 | `GET /api/health` | Comprobación de vida (sin versión) |
 
-Previstos: `GET /graph?focus=&depth=1` (ego-graph), `GET /progress`, `GET /dashboard`, `GET /discoveries`, `POST /admin/sync/*` (protegido).
+Previstos: `GET /progress`, `GET /dashboard`, `GET /discoveries`, `POST /admin/sync/*` (protegido).
 
 Convenciones: errores `{ error: "CODIGO", issues? }`; `401 UNAUTHORIZED`, `400 INVALID_*`, `404`, `409` (regla de negocio incumplida). Borrar algo inexistente no es error (`removed: false`). Paginación: `{ items, page, pageSize, total, totalPages }`.
 
@@ -286,7 +286,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **106 unitarios + 40 de integración** pasando tras el Paso 35 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
+- Estado: **106 unitarios + 42 de integración** pasando tras el Paso 36 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -343,10 +343,9 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 5, Paso 33: personajes favoritos (`CharacterFavorite`, solo desbloqueados; `setCharacterFavorite`, `FavoriteButton` en la ficha, ♥ en las cartas) y filtros/orden de "Mi colección" (`collectionSearchSchema`, `filterCards`, pestañas con contadores como enlaces).
 
 - **Opinión del usuario (2026-10-06): el aspecto del grafo "no me gusta nada"; hay que replantear todo lo relacionado con el grafo más adelante** (lo decidirá él). Mientras, no invertir en pulirlo: solo la funcionalidad prevista.
-- Fase 6 (en curso): `GET /api/v1/graph` (Paso 34). Página `/graph` "Universo descubierto" (Paso 35): `UniverseGraph` (cliente, React Flow con zoom/arrastre, controles y minimapa, `colorMode="system"`); posiciones con `layoutGraph` (`lib/graph-layout.ts`, `d3-force`, 300 pasos de golpe, con tests); siluetas bloqueadas en un anillo exterior sin enlaces; relaciones curadas en línea continua con su tipo y derivadas en discontinua; enlace "Grafo" en la cabecera.
+- Fase 6 (en curso): `GET /api/v1/graph` (Paso 34). Página `/graph` "Universo descubierto" (Paso 35): `UniverseGraph` (cliente, React Flow con zoom/arrastre, controles y minimapa, `colorMode="system"`); posiciones con `layoutGraph` (`lib/graph-layout.ts`, `d3-force`, 300 pasos de golpe, con tests); siluetas bloqueadas en un anillo exterior sin enlaces; relaciones curadas en línea continua con su tipo y derivadas en discontinua; enlace "Grafo" en la cabecera. Ego-graph (Paso 36): `/graph?focus=<id>` ("Universo de X", personaje resaltado con un anillo), tocar un nodo abre su ficha (`onNodeClick`), y la ficha enlaza "Ver en el grafo".
 
 **Fase 6 — pendiente:**
-- **Paso 36:** ego-graph (`?focus=`, un salto) y abrir la ficha al tocar un nodo.
 - **Paso 37:** móvil (pantalla completa, *bottom sheet*) y vista alternativa en lista (accesibilidad).
 
 **Después:**

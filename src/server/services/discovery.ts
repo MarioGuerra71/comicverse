@@ -138,8 +138,9 @@ export interface GraphEdgeDto {
  * Grafo del universo descubierto: nodos = personajes desbloqueados; enlaces = relaciones
  * descubiertas (los dos extremos desbloqueados). De los bloqueados solo va el número:
  * se dibujan como siluetas sueltas, sin enlaces, para no dar pistas.
+ * Con `focus`: solo ese personaje y sus vecinos directos (un salto); null si está bloqueado.
  */
-export async function getGraph(db: PrismaClient, userId: string) {
+export async function getGraph(db: PrismaClient, userId: string, focus?: string) {
   const [rows, relationships] = await Promise.all([
     findCollection(db, userId),
     getRelationships(db),
@@ -149,7 +150,26 @@ export async function getGraph(db: PrismaClient, userId: string) {
   const edges: GraphEdgeDto[] = relationships
     .filter((r) => isDiscovered(r, unlockedIds))
     .map((r) => ({ source: r.a, target: r.b, type: r.type, shared: r.shared }));
-  return { nodes: cards, edges, locked, progress };
+
+  if (!focus) return { nodes: cards, edges, locked, progress, focus: null, hiddenRelationships: 0 };
+  if (!unlockedIds.has(focus)) return null;
+
+  const around = new Set([focus]);
+  for (const e of edges) {
+    if (e.source === focus) around.add(e.target);
+    if (e.target === focus) around.add(e.source);
+  }
+  return {
+    nodes: cards.filter((c) => around.has(c.id)),
+    edges: edges.filter((e) => around.has(e.source) && around.has(e.target)),
+    locked: 0,
+    progress,
+    focus,
+    // Relaciones del personaje aún sin descubrir: solo el número (como en su ficha).
+    hiddenRelationships: relationships.filter(
+      (r) => (r.a === focus || r.b === focus) && !isDiscovered(r, unlockedIds),
+    ).length,
+  };
 }
 
 /** Ficha de un personaje; null si no existe, no es coleccionable o está bloqueado. */

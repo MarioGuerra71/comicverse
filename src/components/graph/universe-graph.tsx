@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Background,
@@ -22,9 +23,15 @@ export interface GraphData {
   nodes: { id: string; name: string; imageThumbUrl: string | null; state: string }[];
   edges: { source: string; target: string; type: RelationshipType | null; shared: number }[];
   locked: number;
+  focus: string | null;
 }
 
-type CharacterNodeData = { name: string; imageThumbUrl: string | null; collected: boolean };
+type CharacterNodeData = {
+  name: string;
+  imageThumbUrl: string | null;
+  collected: boolean;
+  isFocus: boolean;
+};
 type CharacterNode = Node<CharacterNodeData, "character">;
 type LockedNode = Node<Record<string, never>, "locked">;
 
@@ -33,11 +40,11 @@ const centerHandle = "!left-1/2 !top-1/2 !h-1 !w-1 !min-h-0 !min-w-0 !border-0 !
 
 function CharacterNodeView({ data }: NodeProps<CharacterNode>) {
   return (
-    <div className="flex w-[72px] flex-col items-center gap-1 text-center">
+    <div className="flex w-[72px] cursor-pointer flex-col items-center gap-1 text-center">
       <div
         className={`relative h-14 w-14 overflow-hidden rounded-full border-2 bg-background ${
           data.collected ? "border-foreground" : "border-foreground/30"
-        }`}
+        } ${data.isFocus ? "ring-4 ring-foreground/40" : ""}`}
       >
         {data.imageThumbUrl && (
           <Image src={data.imageThumbUrl} alt="" fill unoptimized className="object-cover" />
@@ -66,6 +73,7 @@ function LockedNodeView() {
 const nodeTypes = { character: CharacterNodeView, locked: LockedNodeView };
 
 export function UniverseGraph({ data }: { data: GraphData }) {
+  const router = useRouter();
   const { nodes, edges } = useMemo(() => {
     const { positions, radius } = layoutGraph(
       data.nodes.map((n) => n.id),
@@ -76,7 +84,12 @@ export function UniverseGraph({ data }: { data: GraphData }) {
       id: n.id,
       type: "character",
       position: positions.get(n.id)!,
-      data: { name: n.name, imageThumbUrl: n.imageThumbUrl, collected: n.state === "COLLECTED" },
+      data: {
+        name: n.name,
+        imageThumbUrl: n.imageThumbUrl,
+        collected: n.state === "COLLECTED",
+        isFocus: n.id === data.focus,
+      },
     }));
 
     // Siluetas en un anillo exterior, sin enlaces: no dan pistas de con quién se relacionan.
@@ -114,6 +127,10 @@ export function UniverseGraph({ data }: { data: GraphData }) {
       fitView
       minZoom={0.2}
       nodesConnectable={false}
+      // Tocar un personaje abre su ficha (las siluetas no hacen nada).
+      onNodeClick={(_, node) => {
+        if (node.type === "character") router.push(`/characters/${node.id}`);
+      }}
     >
       <Background />
       <Controls showInteractive={false} />
