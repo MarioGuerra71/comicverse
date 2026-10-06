@@ -1,5 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { findUnlockedCharacters } from "@/server/repositories/characters";
+import { getCollection } from "@/server/services/discovery";
 import { removeFromLibrary, setComicStatus } from "@/server/services/library";
 import { createCharacter, createComic, createTestDb, createUser, resetDb } from "./test-db";
 
@@ -131,5 +132,22 @@ describe("desbloqueo de personajes", () => {
     ]);
 
     expect(await unlockedNames(user.id)).toEqual(["Green Goblin", "Spider-Man", "Venom"]);
+  });
+});
+
+describe("getCollection", () => {
+  it("cuenta los cómics leídos por personaje y oculta los bloqueados", async () => {
+    const { user, comicA, comicB } = await seed();
+    await setComicStatus(db, user.id, comicA.id, "READ");
+    await setComicStatus(db, user.id, comicB.id, "PENDING");
+
+    const collection = await getCollection(db, user.id);
+
+    expect(collection.cards.map((c) => [c.name, c.comicsRead])).toEqual([
+      ["Spider-Man", 1],
+      ["Venom", 1],
+    ]);
+    expect(collection.locked).toBe(1);
+    expect(JSON.stringify(collection)).not.toContain("Green Goblin");
   });
 });

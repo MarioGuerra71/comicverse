@@ -1,8 +1,14 @@
 import type { Prisma } from "../../../generated/prisma/client";
 import { diffById } from "@/server/domain/unlock";
-import { toCharacterSummary, type CharacterSummaryDto } from "@/server/dto/character";
+import type { PrismaClient } from "../../../generated/prisma/client";
+import {
+  toCharacterSummary,
+  toCollection,
+  type CharacterSummaryDto,
+} from "@/server/dto/character";
 import {
   countCollectibleCharacters,
+  findCollection,
   findUnlockedCharacters,
 } from "@/server/repositories/characters";
 
@@ -35,4 +41,8 @@ export async function buildUnlockResult(
     lostCharacters: lost.map(toCharacterSummary),
     progress: { unlocked: after.length, total },
   };
+}
+
+export async function getCollection(db: PrismaClient, userId: string) {
+  return toCollection(await findCollection(db, userId));
 }

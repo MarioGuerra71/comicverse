@@ -27,6 +27,25 @@ export function findUnlockedCharacters(db: Db, userId: string) {
   });
 }
 
+/** Todos los coleccionables con cuántos cómics leídos por el usuario aparecen. */
+export function findCollection(db: Db, userId: string) {
+  return db.character.findMany({
+    where: { isCollectible: true },
+    select: {
+      ...characterSummarySelect,
+      realName: true,
+      _count: {
+        select: {
+          comics: {
+            where: { comic: { userEntries: { some: { userId, status: "READ" } } } },
+          },
+        },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+}
+
 export function countCollectibleCharacters(db: Db) {
   return db.character.count({ where: { isCollectible: true } });
 }

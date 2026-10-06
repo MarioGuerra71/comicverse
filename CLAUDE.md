@@ -164,9 +164,9 @@ comicverse/
    ├─ app/
    │  ├─ page.tsx                      portada
    │  ├─ (auth)/  layout · sign-in · sign-up        (redirige al dashboard si ya hay sesión)
-   │  ├─ (app)/   layout (cabecera + footer) · dashboard · profile · catalog · comics/[id] · library
-   │  └─ api/  auth/[...all] · health · v1/comics · v1/library · v1/library/comics/[comicId]
-   ├─ components/  auth/sign-out-button · comics/comic-card · library/library-controls
+   │  ├─ (app)/   layout (cabecera + footer) · dashboard · profile · catalog · comics/[id] · library · collection
+   │  └─ api/  auth/[...all] · health · v1/comics · v1/library · v1/library/comics/[comicId] (+ /review) · v1/collection
+   ├─ components/  auth/sign-out-button · comics/comic-card · library/library-controls · characters/character-card
    ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url · search-params · reading-status
    └─ server/
       ├─ auth/ session · api
@@ -260,9 +260,10 @@ Existentes:
 | `GET/PUT/DELETE /library/comics/:comicId` | Estado de un cómic / añadir o cambiar estado (`{status}`; 404 `COMIC_NOT_FOUND`) / quitar |
 | `PATCH /library/comics/:comicId` | `{rating?: 1-5 \| null, isFavorite?: boolean}` (al menos uno). 404 `NOT_IN_LIBRARY`, 409 `RATING_REQUIRES_READ` |
 | `GET/PUT/DELETE /library/comics/:comicId/review` | Reseña propia (`{body}`). 404 `NOT_IN_LIBRARY`, 409 `REVIEW_REQUIRES_READ`; borrar inexistente → `removed: false` |
+| `GET /collection` | Cartas desbloqueadas (`state`, `comicsRead`) + `locked` (solo el número) + `progress` |
 | `GET /api/health` | Comprobación de vida (sin versión) |
 
-Previstos: `GET /collection`, `GET /characters/:id` (404 u opaco si está bloqueado), `PATCH /collection/characters/:id/favorite`, `GET /graph?focus=&depth=1`, `GET /progress`, `GET /dashboard`, `GET /discoveries`, `POST /admin/sync/*` (protegido).
+Previstos: `GET /characters/:id` (404 u opaco si está bloqueado), `PATCH /collection/characters/:id/favorite`, `GET /graph?focus=&depth=1`, `GET /progress`, `GET /dashboard`, `GET /discoveries`, `POST /admin/sync/*` (protegido).
 
 Convenciones: errores `{ error: "CODIGO", issues? }`; `401 UNAUTHORIZED`, `400 INVALID_*`, `404`, `409` (regla de negocio incumplida). Borrar algo inexistente no es error (`removed: false`). Paginación: `{ items, page, pageSize, total, totalPages }`.
 
@@ -277,7 +278,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **86 unitarios + 26 de integración** pasando tras el Paso 27 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
+- Estado: **88 unitarios + 27 de integración** pasando tras el Paso 28 (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -326,10 +327,9 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 3: catálogo (búsqueda, filtro por serie, orden, paginación) y ficha de cómic con datos reales de Comic Vine; importador del universo semilla.
 - Fase 4 (**terminada**): modelos `UserComic`/`ReadingHistory` y reglas de estado (`applyStatusChange`) (Paso 21); servicio y API de biblioteca con validación, DTO, repositorio, transacciones con historial y rutas `api/v1/library` (Paso 22, commit `e20aa1f`); tests de integración contra PostgreSQL real con tests del servicio de biblioteca (Paso 23); botones de estado en la ficha del cómic (Paso 24a: componente cliente que llama a la API con `fetch` y luego `router.refresh()`; se descartaron las Server Actions para mantener una sola puerta de entrada y porque la Fase 5 necesitará el resultado del desbloqueo en el cliente). Página "Mi biblioteca" (`/library`, pestañas por estado con contadores como enlaces `?status=`, paginación y enlace en la cabecera; Paso 24b). Los nombres de los estados viven en `lib/reading-status.ts` y se comparten entre cliente y servidor. Puntuación y favorito (Paso 25a: `PATCH` en la API, `updateLibraryEntry`, panel `LibraryControls` en la ficha y marcas en la biblioteca). Reseñas privadas (Paso 25b: tabla `Review`, API `/review`, formulario en la ficha). `parseBody` compartido en `server/auth/api.ts`.
 
-- Fase 5 (en curso): `displayName` de personajes y regla de `cleanRealName` (Paso 26). Núcleo del desbloqueo (Paso 27): `findUnlockedCharacters` (repositorio `characters`), `diffById` (dominio `unlock`), `snapshotUnlocked`/`buildUnlockResult` (servicio `discovery`); `setComicStatus` y `removeFromLibrary` devuelven `unlock: UnlockResult | null` (null si el cómic no entra ni sale de Leído), y la API lo devuelve tal cual.
+- Fase 5 (en curso): `displayName` de personajes y regla de `cleanRealName` (Paso 26). Núcleo del desbloqueo (Paso 27): `findUnlockedCharacters` (repositorio `characters`), `diffById` (dominio `unlock`), `snapshotUnlocked`/`buildUnlockResult` (servicio `discovery`); `setComicStatus` y `removeFromLibrary` devuelven `unlock: UnlockResult | null` (null si el cómic no entra ni sale de Leído), y la API lo devuelve tal cual. "Mi colección" (Paso 28): página `/collection` y `GET /api/v1/collection`; `toCollection` envía solo las cartas desbloqueadas y, de las bloqueadas, **solo el número** (`locked`), así que ni su id, ni su nombre, ni su posición llegan al navegador; verificado buscando los 32 personajes en el HTML.
 
 **Fase 5 — pendiente** (desbloqueos calculados, ver sección 9):
-- **Paso 28:** "Mi colección" (cartas, progreso X / N; DTO sin datos de bloqueados).
 - **Paso 29:** página de personaje (404 si bloqueado).
 - **Paso 30:** animación sencilla de desbloqueo al marcar Leído.
 - **Paso 31:** relaciones (fuente: curadas y/o "aparecen juntos"; descubiertas calculadas).
