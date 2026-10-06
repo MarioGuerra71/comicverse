@@ -7,18 +7,23 @@ import { formatDate, pluralize } from "@/lib/format";
 import { buildCatalogHref } from "@/lib/catalog-url";
 import { requireUser } from "@/server/auth/session";
 import { getComicDetail } from "@/server/services/catalog";
+import { getLibraryEntry } from "@/server/services/library";
+import { StatusButtons } from "@/components/library/status-buttons";
 
 export default async function ComicPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireUser();
+  const user = await requireUser();
 
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const comic = await getComicDetail(db, id);
+  const [comic, entry] = await Promise.all([
+    getComicDetail(db, id),
+    getLibraryEntry(db, user.id, id),
+  ]);
   if (!comic) notFound();
 
   const seriesLabel = comic.series.startYear
@@ -77,6 +82,8 @@ export default async function ComicPage({
               </>
             )}
           </dl>
+
+          <StatusButtons comicId={comic.id} status={entry?.status ?? null} />
 
           <section aria-labelledby="characters-heading">
             <h2 id="characters-heading" className="font-semibold">

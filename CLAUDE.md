@@ -164,7 +164,7 @@ comicverse/
    │  ├─ (auth)/  layout · sign-in · sign-up        (redirige al dashboard si ya hay sesión)
    │  ├─ (app)/   layout (cabecera + footer) · dashboard · profile · catalog · comics/[id]
    │  └─ api/  auth/[...all] · health · v1/comics · v1/library · v1/library/comics/[comicId]
-   ├─ components/  auth/sign-out-button · comics/comic-card
+   ├─ components/  auth/sign-out-button · comics/comic-card · library/status-buttons
    ├─ lib/  auth · auth-client · db (server-only) · env · format · catalog-url
    └─ server/
       ├─ auth/ session · api
@@ -320,10 +320,10 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
 - Fase 0: arquitectura aprobada. Fase 1: proyecto, Docker/PostgreSQL, Prisma 7, validación de entorno, Vitest.
 - Fase 2: Better Auth (registro, login, cierre de sesión), dashboard protegido, perfil básico, layouts, portada.
 - Fase 3: catálogo (búsqueda, filtro por serie, orden, paginación) y ficha de cómic con datos reales de Comic Vine; importador del universo semilla.
-- Fase 4 (en curso): modelos `UserComic`/`ReadingHistory` y reglas de estado (`applyStatusChange`) (Paso 21); servicio y API de biblioteca con validación, DTO, repositorio, transacciones con historial y rutas `api/v1/library` (Paso 22, commit `e20aa1f`); tests de integración contra PostgreSQL real con tests del servicio de biblioteca (Paso 23).
+- Fase 4 (en curso): modelos `UserComic`/`ReadingHistory` y reglas de estado (`applyStatusChange`) (Paso 21); servicio y API de biblioteca con validación, DTO, repositorio, transacciones con historial y rutas `api/v1/library` (Paso 22, commit `e20aa1f`); tests de integración contra PostgreSQL real con tests del servicio de biblioteca (Paso 23); botones de estado en la ficha del cómic (Paso 24a: componente cliente que llama a la API con `fetch` y luego `router.refresh()`; se descartaron las Server Actions para mantener una sola puerta de entrada y porque la Fase 5 necesitará el resultado del desbloqueo en el cliente).
 
 **Fase 4 — pendiente:**
-- **Paso 24:** botones de estado en la ficha del cómic y página "Mi biblioteca" (pestañas por estado con contadores).
+- **Paso 24b:** página "Mi biblioteca" (`/library`, pestañas por estado con contadores, enlace en la cabecera).
 - **Paso 25:** puntuación (1–5, solo Leído), favoritos y reseñas (`Review`).
 
 **Después:**
