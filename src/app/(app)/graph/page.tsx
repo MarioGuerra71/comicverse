@@ -6,6 +6,7 @@ import { pluralize } from "@/lib/format";
 import { normalizeParams, type SearchParams } from "@/lib/search-params";
 import { UniverseGraph } from "@/components/graph/universe-graph";
 import { RelationshipList } from "@/components/graph/relationship-list";
+import { inkTab, PageHeader } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { getGraph } from "@/server/services/discovery";
 import { graphSearchSchema } from "@/server/validation/graph";
@@ -36,11 +37,13 @@ export default async function GraphPage({
   };
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-col p-6">
-      <h1 className="text-2xl font-bold">
-        {focusName ? `Universo de ${focusName}` : "Universo descubierto"}
-      </h1>
-      <p className="mt-1 text-sm opacity-80">
+    <main className="mx-auto flex max-w-6xl flex-col px-4 py-6 md:px-8 md:py-8">
+      <PageHeader
+        title={focusName ? `Universo de ${focusName}` : "Universo"}
+        figure={focusName ? undefined : graph.edges.length}
+        figureLabel="relaciones"
+      >
+      <p className="px-4 py-2 text-xs text-ink-soft">
         {focusName ? (
           <>
             {/* Sus relaciones = sus vecinos (el subgrafo también une a los vecinos entre sí). */}
@@ -48,29 +51,27 @@ export default async function GraphPage({
             {graph.hiddenRelationships > 0 &&
               ` y ${pluralize(graph.hiddenRelationships, "por descubrir", "por descubrir")}`}
             .{" "}
-            <Link href={view === "list" ? "/graph?view=list" : "/graph"} className="underline">
+            <Link href={view === "list" ? "/graph?view=list" : "/graph"} className="text-ink underline">
               Ver todo el universo
             </Link>
           </>
         ) : (
           <>
-            {graph.progress.unlocked} / {graph.progress.total} personajes ·{" "}
-            {graph.edges.length} relaciones descubiertas.
+            {graph.progress.unlocked} de {graph.progress.total} personajes descubiertos.
           </>
         )}{" "}
         {view === "graph" &&
           "Toca un personaje para abrir su ficha. Línea continua: relación con nombre (aliado, enemigo…); discontinua: aparecen juntos a menudo."}
       </p>
+      </PageHeader>
 
-      <nav aria-label="Forma de ver el universo" className="mt-3 flex gap-2 text-sm">
+      <nav aria-label="Forma de ver el universo" className="mt-6 flex gap-2">
         {(["graph", "list"] as const).map((v) => (
           <Link
             key={v}
             href={hrefFor(v)}
             aria-current={view === v ? "page" : undefined}
-            className={`flex min-h-11 items-center rounded-md border border-foreground/20 px-3 ${
-              view === v ? "bg-foreground text-background" : ""
-            }`}
+            className={inkTab(view === v)}
           >
             {v === "graph" ? "Grafo" : "Lista"}
           </Link>
@@ -78,17 +79,17 @@ export default async function GraphPage({
       </nav>
 
       {graph.nodes.length === 0 ? (
-        <p className="mt-6 text-sm opacity-80">
+        <p className="mt-6 text-sm text-ink-soft">
           Tu universo aún está vacío. Marca un cómic como leído para descubrir a sus
           personajes.{" "}
-          <Link href="/catalog" className="underline">
+          <Link href="/catalog" className="text-ink underline">
             Ir al catálogo
           </Link>
         </p>
       ) : view === "list" ? (
         <RelationshipList data={graph} />
       ) : (
-        <div className="mt-4 h-[70vh] min-h-96 w-full overflow-hidden rounded-md border border-foreground/20">
+        <div className="mt-4 h-[70vh] min-h-96 w-full overflow-hidden border-2 border-ink bg-sheet">
           {/* key: al cambiar de foco se recalcula el encuadre (fitView). */}
           <UniverseGraph key={graph.focus ?? "all"} data={graph} />
         </div>

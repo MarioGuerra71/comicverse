@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
-  Background,
   Controls,
   Handle,
   MiniMap,
@@ -42,15 +41,16 @@ function CharacterNodeView({ data }: NodeProps<CharacterNode>) {
   return (
     <div className="flex w-[72px] cursor-pointer flex-col items-center gap-1 text-center">
       <div
-        className={`relative h-14 w-14 overflow-hidden rounded-full border-2 bg-background ${
-          data.collected ? "border-foreground" : "border-foreground/30"
-        } ${data.isFocus ? "ring-4 ring-foreground/40" : ""}`}
+        // Viñeta entintada; coleccionado = filete más grueso; foco = recuadro del editor.
+        className={`relative h-[72px] w-14 overflow-hidden border-ink bg-sheet ${
+          data.collected ? "border-[3px]" : "border-2"
+        } ${data.isFocus ? "outline-2 outline-offset-4 outline-editor" : ""}`}
       >
         {data.imageThumbUrl && (
           <Image src={data.imageThumbUrl} alt="" fill unoptimized className="object-cover" />
         )}
       </div>
-      <span className="rounded bg-background/80 px-1 text-[10px] font-medium leading-tight">
+      <span className="bg-paper px-1 text-[10px] leading-tight font-bold text-ink">
         {data.name}
       </span>
       <Handle type="target" position={Position.Top} className={centerHandle} />
@@ -63,9 +63,12 @@ function LockedNodeView() {
   return (
     <div
       aria-label="Personaje por descubrir"
-      className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-foreground/20 text-lg font-bold opacity-50"
+      // Hueco a lápiz azul con su aspa, como las viñetas por descubrir de la colección.
+      className="h-[72px] w-14 border-[1.5px] border-blue bg-sheet"
     >
-      ?
+      <svg viewBox="0 0 56 72" className="h-full w-full text-blue" aria-hidden="true">
+        <path d="M0 0 56 72M56 0 0 72" stroke="currentColor" strokeWidth="1" />
+      </svg>
     </div>
   );
 }
@@ -111,8 +114,12 @@ export function UniverseGraph({ data }: { data: GraphData }) {
       target: e.target,
       type: "straight",
       label: e.type ? RELATIONSHIP_TYPE_LABELS[e.type] : undefined,
-      // Curadas: línea continua; "aparecen juntos": discontinua y más suave.
-      style: e.type ? { strokeWidth: 2 } : { strokeDasharray: "4 4", opacity: 0.5 },
+      // Curadas: línea de tinta continua con su tipo a mano; "aparecen juntos": discontinua.
+      style: e.type
+        ? { stroke: "var(--ink)", strokeWidth: 2 }
+        : { stroke: "var(--line-strong)", strokeDasharray: "4 4" },
+      labelStyle: { fill: "var(--editor-ink)", fontFamily: "var(--font-caveat)", fontSize: 15, fontWeight: 700 },
+      labelBgStyle: { fill: "var(--paper)" },
     }));
 
     return { nodes: [...characterNodes, ...lockedNodes], edges: graphEdges };
@@ -123,7 +130,7 @@ export function UniverseGraph({ data }: { data: GraphData }) {
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
-      colorMode="system"
+      colorMode="light"
       fitView
       minZoom={0.2}
       nodesConnectable={false}
@@ -132,9 +139,9 @@ export function UniverseGraph({ data }: { data: GraphData }) {
         if (node.type === "character") router.push(`/characters/${node.id}`);
       }}
     >
-      <Background />
+      {/* Papel liso: sin retícula de fondo (ver DESIGN.md, "Plain Paper"). */}
       <Controls showInteractive={false} />
-      <MiniMap pannable zoomable />
+      <MiniMap pannable zoomable nodeColor="#55534d" maskColor="rgb(244 241 234 / 0.7)" />
     </ReactFlow>
   );
 }

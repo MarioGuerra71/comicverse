@@ -14,7 +14,7 @@ export function RelationshipList({ data }: { data: GraphData }) {
     : [...data.nodes].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <ul className="mt-4 flex flex-col gap-6">
+    <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {people.map((person) => {
         // Sus relaciones descubiertas: primero las curadas (con tipo), luego por cómics juntos.
         const relations = data.edges
@@ -24,23 +24,27 @@ export function RelationshipList({ data }: { data: GraphData }) {
 
         return (
           <li key={person.id}>
-            <h2 className="font-semibold">
-              <Link href={`/characters/${person.id}`} className="underline">
+            <h2 className="border-b-2 border-ink pb-1 text-lg font-extrabold text-ink">
+              <Link href={`/characters/${person.id}`} className="hover:underline">
                 {person.name}
               </Link>
             </h2>
             {relations.length === 0 ? (
-              <p className="mt-1 text-sm opacity-70">Aún sin relaciones descubiertas.</p>
+              <p className="mt-2 text-sm text-ink-soft">Aún sin relaciones descubiertas.</p>
             ) : (
-              <ul className="mt-1 flex flex-col gap-1 text-sm">
+              <ul className="mt-2 flex flex-col gap-1 text-sm text-ink">
                 {relations.map((r) => (
                   <li key={r.other.id}>
-                    <Link href={`/characters/${r.other.id}`} className="underline">
+                    <Link href={`/characters/${r.other.id}`} className="font-semibold underline">
                       {r.other.name}
                     </Link>
-                    {r.type && ` · ${RELATIONSHIP_TYPE_LABELS[r.type]}`}
+                    {r.type && (
+                      <span className="ml-1.5 font-hand text-lg leading-none text-editor-ink">
+                        {RELATIONSHIP_TYPE_LABELS[r.type].toLowerCase()}
+                      </span>
+                    )}
                     {r.shared > 0 && (
-                      <span className="opacity-60">
+                      <span className="text-ink-soft">
                         {" "}
                         · {pluralize(r.shared, "cómic juntos", "cómics juntos")}
                       </span>
