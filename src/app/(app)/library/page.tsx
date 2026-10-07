@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { READING_STATUS_LABELS, READING_STATUSES } from "@/lib/reading-status";
 import { normalizeParams, type SearchParams } from "@/lib/search-params";
 import { ComicCard } from "@/components/comics/comic-card";
+import { inkTab, PageHeader, Pagination } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { listLibrary } from "@/server/services/library";
 import { librarySearchSchema } from "@/server/validation/library";
@@ -43,10 +44,14 @@ export default async function LibraryPage({
   ];
 
   return (
-    <main className="mx-auto max-w-6xl p-6">
-      <h1 className="text-2xl font-bold">Mi biblioteca</h1>
+    <main className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
+      <PageHeader title="Mi biblioteca" figure={totalInLibrary} figureLabel={totalInLibrary === 1 ? "cómic" : "cómics"} />
 
-      <nav aria-label="Estados de lectura" className="mt-4 flex flex-wrap gap-2">
+      {/* En el móvil, las pestañas se desplazan en horizontal en vez de partirse. */}
+      <nav
+        aria-label="Estados de lectura"
+        className="-mx-4 mt-6 flex gap-2 overflow-x-auto px-4 whitespace-nowrap scrollbar-none md:mx-0 md:px-0"
+      >
         {tabs.map((tab) => {
           const active = tab.status === input.status;
           return (
@@ -54,37 +59,37 @@ export default async function LibraryPage({
               key={tab.label}
               href={libraryHref(tab.status)}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-11 items-center rounded-md border border-foreground/20 px-3 text-sm ${
-                active ? "bg-foreground text-background" : ""
-              }`}
+              className={inkTab(active)}
             >
-              {tab.label} ({tab.count})
+              {tab.label}
+              <span className="ml-1.5 font-normal">{tab.count}</span>
             </Link>
           );
         })}
       </nav>
 
       {result.items.length === 0 ? (
-        <div className="mt-10 text-center">
-          <p>
+        <div className="mt-10">
+          <p className="text-ink">
             {input.status
               ? `No tienes cómics en «${READING_STATUS_LABELS[input.status]}».`
               : "Aún no tienes cómics en tu biblioteca."}
           </p>
-          <Link href="/catalog" className="mt-2 inline-block text-sm underline">
+          <Link href="/catalog" className="mt-2 inline-block text-sm text-ink underline">
             Explorar el catálogo
           </Link>
         </div>
       ) : (
-        <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {result.items.map((item, index) => (
-            <li key={item.comic.id} className="flex flex-col gap-1">
+            <li key={item.comic.id} className="flex flex-col">
               <ComicCard comic={item.comic} eager={index < 6} />
-              <p className="text-xs font-medium opacity-80">
+              {/* Notas a lápiz del lector bajo la viñeta, como en el Inicio. */}
+              <p className="mt-1 font-hand text-lg leading-tight font-bold text-ink">
                 {[
-                  !input.status && READING_STATUS_LABELS[item.status],
-                  item.rating !== null && `Nota ${item.rating}/5`,
-                  item.isFavorite && "Favorito",
+                  !input.status && READING_STATUS_LABELS[item.status].toLowerCase(),
+                  item.rating !== null && `${item.rating}/5`,
+                  item.isFavorite && "favorito",
                 ]
                   .filter(Boolean)
                   .join(" · ")}
@@ -94,30 +99,11 @@ export default async function LibraryPage({
         </ul>
       )}
 
-      {result.totalPages > 1 && (
-        <nav
-          aria-label="Paginación"
-          className="mt-8 flex items-center justify-between text-sm"
-        >
-          {result.page > 1 ? (
-            <Link href={libraryHref(input.status, result.page - 1)} className="underline">
-              ← Anterior
-            </Link>
-          ) : (
-            <span aria-hidden="true" />
-          )}
-          <span className="opacity-70">
-            Página {result.page} de {result.totalPages}
-          </span>
-          {result.page < result.totalPages ? (
-            <Link href={libraryHref(input.status, result.page + 1)} className="underline">
-              Siguiente →
-            </Link>
-          ) : (
-            <span aria-hidden="true" />
-          )}
-        </nav>
-      )}
+      <Pagination
+        page={result.page}
+        totalPages={result.totalPages}
+        hrefFor={(page) => libraryHref(input.status, page)}
+      />
     </main>
   );
 }

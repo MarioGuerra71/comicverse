@@ -108,3 +108,40 @@ export function SectionHeading({
     </div>
   );
 }
+
+/** Paginación anterior/siguiente; `hrefFor` construye el enlace de cada página. */
+export function Pagination({
+  page,
+  totalPages,
+  hrefFor,
+}: {
+  page: number;
+  totalPages: number;
+  hrefFor: (page: number) => string;
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <nav
+      aria-label="Paginación"
+      className="mt-8 flex items-center justify-between border-t-2 border-ink pt-2 text-sm"
+    >
+      {page > 1 ? (
+        <Link href={hrefFor(page - 1)} className="flex min-h-11 items-center text-ink underline">
+          ← Anterior
+        </Link>
+      ) : (
+        <span aria-hidden="true" />
+      )}
+      <span className="text-ink-soft">
+        Página <span className="font-hand text-xl font-bold text-ink">{page}</span> de {totalPages}
+      </span>
+      {page < totalPages ? (
+        <Link href={hrefFor(page + 1)} className="flex min-h-11 items-center text-ink underline">
+          Siguiente →
+        </Link>
+      ) : (
+        <span aria-hidden="true" />
+      )}
+    </nav>
+  );
+}
