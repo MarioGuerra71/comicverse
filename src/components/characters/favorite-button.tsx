@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { HeartIcon } from "@/components/ui/icons";
+import { inkTab } from "@/components/ui/page-parts";
 
 export function FavoriteButton({
   characterId,
@@ -42,9 +43,7 @@ export function FavoriteButton({
         aria-pressed={isFavorite}
         disabled={busy}
         onClick={toggle}
-        className={`inline-flex min-h-11 items-center gap-2 rounded-md border border-foreground/20 px-3 py-2 text-sm disabled:opacity-50 ${
-          isFavorite ? "bg-foreground text-background" : ""
-        }`}
+className={`${inkTab(isFavorite)} gap-2 disabled:opacity-50`}
       >
         <HeartIcon filled={isFavorite} size={18} />
         {isFavorite ? "Favorito" : "Añadir a favoritos"}

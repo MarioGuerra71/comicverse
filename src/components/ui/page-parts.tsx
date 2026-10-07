@@ -45,11 +45,13 @@ export function PageHeader({
   return (
     <header className="border-2 border-ink bg-sheet">
       <div className="grid grid-cols-[1fr_auto]">
-        <div className="flex items-center px-4 py-3">
-          <h1 className="text-3xl font-extrabold tracking-tight text-ink md:text-4xl">{title}</h1>
+        <div className="flex min-w-0 items-center px-4 py-3">
+          <h1 className="text-2xl font-extrabold tracking-tight break-words text-ink sm:text-3xl md:text-4xl">
+            {title}
+          </h1>
         </div>
         {figure !== undefined && (
-          <div className="border-l-2 border-ink px-4 py-2 text-right">
+          <div className="border-l-2 border-ink px-4 py-2 text-right whitespace-nowrap">
             <p className="font-hand text-4xl leading-none font-bold text-ink">{figure}</p>
             {figureLabel && <p className="text-xs text-ink-soft">{figureLabel}</p>}
           </div>
