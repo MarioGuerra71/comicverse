@@ -243,4 +243,4 @@ Selección de texto en color del editor con texto en papel; foco visible como co
 - **Don't** usar logos ni tipografías de Marvel o DC: la editorial se expresa solo con color.
 - **Don't** usar lápiz azul (blue) como texto ni como relleno.
 - **Don't** añadir tema oscuro: el sistema es solo claro.
-- **Don't** tomar como referencia las pantallas pendientes de migrar (inicio, catálogo, ficha de cómic, biblioteca, ficha de personaje, universo, acceso y portada): todavía usan las clases genéricas `bg-foreground` / `text-background` / `border-foreground/20` y `rounded-md`, que no forman parte del sistema.
+- **Don't** escribir estilos sueltos para cabeceras, pestañas, botones, campos o paginación: usa las piezas de `src/components/ui/page-parts.tsx` (`PageHeader`, `HeaderField`, `SectionHeading`, `Pagination`, `inkTab`, `inkButton`, `outlineButton`, `quietLink`, `inkField`).

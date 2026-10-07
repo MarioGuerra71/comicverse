@@ -283,22 +283,7 @@
         "--editor": "#0476f2",
         "--editor-ink": "#0258b8"
       }
-    },
-    "pendingMigration": [
-      "src/app/(app)/dashboard",
-      "src/app/(app)/catalog",
-      "src/app/(app)/comics/[id]",
-      "src/app/(app)/library",
-      "src/app/(app)/characters/[id]",
-      "src/app/(app)/graph",
-      "src/app/(auth)",
-      "src/app/page.tsx",
-      "src/components/characters/discovery-item.tsx",
-      "src/components/characters/favorite-button.tsx",
-      "src/components/comics/comic-card.tsx",
-      "src/components/graph/universe-graph.tsx",
-      "src/components/library/"
-    ]
+    }
   },
   "components": [
     {

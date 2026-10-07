@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { inkButton, inkField } from "@/components/ui/page-parts";
 import { signUp } from "@/lib/auth-client";
 
 export default function SignUpPage() {
@@ -31,8 +32,8 @@ export default function SignUpPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-bold">Crear cuenta</h1>
+    <div className="flex flex-col gap-6">
+      <h1 className="text-3xl font-extrabold tracking-tight text-ink">Crear cuenta</h1>
 
       {error && (
         <p role="alert" className="text-sm text-danger">
@@ -41,26 +42,26 @@ export default function SignUpPage() {
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
           Nombre
           <input
             name="name"
             required
             autoComplete="name"
-            className="rounded-md border border-foreground/20 bg-transparent px-3 py-2"
+            className={`${inkField} font-normal`}
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
           Correo electrónico
           <input
             name="email"
             type="email"
             required
             autoComplete="email"
-            className="rounded-md border border-foreground/20 bg-transparent px-3 py-2"
+            className={`${inkField} font-normal`}
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
           Contraseña (mínimo 8 caracteres)
           <input
             name="password"
@@ -68,24 +69,24 @@ export default function SignUpPage() {
             required
             minLength={8}
             autoComplete="new-password"
-            className="rounded-md border border-foreground/20 bg-transparent px-3 py-2"
+            className={`${inkField} font-normal`}
           />
         </label>
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-foreground px-4 py-2 font-medium text-background disabled:opacity-50"
+          className={inkButton}
         >
           {loading ? "Creando cuenta…" : "Crear cuenta"}
         </button>
       </form>
 
-      <p className="text-sm">
+      <p className="text-sm text-ink-soft">
         ¿Ya tienes cuenta?{" "}
-        <Link href="/sign-in" className="underline">
+        <Link href="/sign-in" className="text-ink underline">
           Inicia sesión
         </Link>
       </p>
-    </main>
+    </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { inkButton, inkField } from "@/components/ui/page-parts";
 import { signIn } from "@/lib/auth-client";
 
 export default function SignInPage() {
@@ -30,8 +31,8 @@ export default function SignInPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-bold">Iniciar sesión</h1>
+    <div className="flex flex-col gap-6">
+      <h1 className="text-3xl font-extrabold tracking-tight text-ink">Iniciar sesión</h1>
 
       {error && (
         <p role="alert" className="text-sm text-danger">
@@ -40,41 +41,41 @@ export default function SignInPage() {
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
           Correo electrónico
           <input
             name="email"
             type="email"
             required
             autoComplete="email"
-            className="rounded-md border border-foreground/20 bg-transparent px-3 py-2"
+            className={`${inkField} font-normal`}
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
           Contraseña
           <input
             name="password"
             type="password"
             required
             autoComplete="current-password"
-            className="rounded-md border border-foreground/20 bg-transparent px-3 py-2"
+            className={`${inkField} font-normal`}
           />
         </label>
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-foreground px-4 py-2 font-medium text-background disabled:opacity-50"
+          className={inkButton}
         >
           {loading ? "Entrando…" : "Entrar"}
         </button>
       </form>
 
-      <p className="text-sm">
+      <p className="text-sm text-ink-soft">
         ¿No tienes cuenta?{" "}
-        <Link href="/sign-up" className="underline">
+        <Link href="/sign-up" className="text-ink underline">
           Regístrate
         </Link>
       </p>
-    </main>
+    </div>
   );
 }
