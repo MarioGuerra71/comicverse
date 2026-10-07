@@ -127,10 +127,6 @@ export async function getCollection(
       discovered: relationships.filter((r) => isDiscovered(r, unlockedIds)).length,
       total: relationships.length,
     },
-    // Constelaciones del cielo: solo relaciones con los dos extremos desbloqueados.
-    constellations: relationships
-      .filter((r) => isDiscovered(r, unlockedIds))
-      .map((r) => ({ a: r.a, b: r.b, curated: r.type !== null, shared: r.shared })),
   };
 }
 

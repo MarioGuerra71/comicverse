@@ -5,24 +5,24 @@ primary_target: "src/app/(app)/layout.tsx"
 related_targets: ["src/app/(app)/collection/page.tsx"]
 ---
 
-Scope: shell privado de la app (AppShell y sistema de diseño) y, después, la Colección como primera pantalla. Modo: Operate.
+Scope: shell privado de la app (AppShell y sistema de diseño) y "Mi colección" como primera pantalla. Modo: Operate. Sustituye al mundo "Atlas estelar", rechazado por el usuario por genérico.
 
-Audiencia y tarea: lector de cómics, de noche, en el móvil, desde el sofá, nada más leer; y entrevistadores en una demo corta. Tarea: saber dónde está todo, marcar lecturas y ver crecer la colección.
+Audiencia y tarea: lector de cómics que lleva su colección semana a semana y entrevistadores en una demo corta. Tarea: saber dónde está todo, marcar lecturas y ver crecer la colección.
 
-Restricciones: navegación y controles estándar; spoilers (nada de un bloqueado llega al navegador); fuentes servidas desde el proyecto (CSP); sin marca de Marvel; atribución a Comic Vine visible.
+Restricciones: navegación y controles estándar; spoilers (de un bloqueado solo viaja su número de catálogo); fuentes servidas desde el proyecto (CSP); paleta por editorial (rojo inspirado en Marvel, azul inspirado en DC) sin logos ni tipografías de las editoriales; atribución a Comic Vine visible; solo tema claro (decisión del usuario).
 
 ## Direction contract
 
-THESIS: La colección es un cielo nocturno grabado: leer enciende estrellas. Rechaza el "streaming oscuro con un acento neón" y el pop-art de tramas.
+THESIS: Cada pantalla es una página de arte original a lápiz y tinta, y la colección se entinta al leer. Rechaza la app oscura de streaming con un acento y el pop-art de tramas y tipos condensados.
 
-OWN-WORLD: Azul de Prusia muy oscuro (#0B1220) como suelo, planchas un tono más claras (#15233F), filetes de 1 px en azul pálido (#7F93B8 a baja opacidad), texto en blanco estelar (#EEF1F7), dorado (#E2B04A) reservado a "recién descubierto" y a lo coleccionado. Rótulos en romana grabada de mayúsculas (Marcellus) para títulos y números de catálogo; Geist para la interfaz. Sin brillos, sin sombras de color, sin degradados en el texto. Portadas como láminas sin tintar con su crédito de fuente.
+OWN-WORLD: Cartulina lisa #F4F1EA (sin cuadrícula de fondo: es una seña de UI generada), lápiz azul #8EC5E8 solo en las viñetas por dibujar, tinta #141414 a plumilla para texto, filetes de 2 px y bordes de viñeta, papel #FBFAF6 en barras. El lápiz del editor es el color de la editorial (#E62429 Marvel / #0476F2 DC; texto en #B81A1F / #0258B8) y solo marca identidad, sección activa, lo nuevo y lo coleccionado. El color pleno vive solo dentro de las viñetas (portadas e imágenes). Geist pesada para títulos e interfaz; Caveat a mano para números de catálogo y notas del editor.
 
-STORY: El lector entiende en un vistazo cuánto universo ha descubierto, ve qué se acaba de encender y vuelve a leer para completar el cielo.
+STORY: El lector ve su página de colección: viñetas entintadas (descubiertos) y viñetas por dibujar con el aspa azul (bloqueados), sabe cuánto lleva y qué acaba de entintarse, y vuelve a leer para completar la página.
 
-FIRST VIEWPORT: Móvil: barra inferior de 5 pestañas (Inicio, Catálogo, Biblioteca, Colección, Universo) con iconos SVG propios y etiqueta; arriba una barra fina con la marca ComicVerse en romana grabada y el acceso al perfil. Tablet: carril lateral de iconos. Escritorio: barra lateral con etiquetas y la marca. En Colección, el cielo (posiciones de los 32 personajes, encendidas y unidas por constelaciones) encabeza la rejilla de cartas con "Nº 006 / 032".
+FIRST VIEWPORT: Móvil: barra superior de papel con la marca (icono de viñetas + ComicVerse) y el perfil, filete de tinta; barra inferior de 5 pestañas con la activa en el color del editor. En Colección: el cajetín entintado (título "Mi colección" y "15/32 personajes" a mano), pestañas de filtro entintadas (activa en tinta llena), ordenación discreta subrayada en el color del editor, y la rejilla de viñetas numeradas a mano en orden de catálogo con los huecos en su sitio.
 
-FORM: Atlas estelar, candidato 7 de 7 de la lista propia; seed 6e1bb28c. Raises: número de catálogo fijo (Saville), dorado de "nuevo" hasta que se ve (panel de puertas), cambio de estado en su sitio sin recolocar la rejilla (split-flap), pocos valores y filetes a 1 px (edición crítica), láminas sin tintar con crédito (anuario).
+FORM: Página de arte original, candidato 7 de 7 de la lista propia (re-roll 1); seed 6e1bb28c. Raises: color de editorial reservado a identidad y orientación (señalización), color pleno solo dentro de las viñetas (léxico con láminas), números de catálogo grandes como el número de una portada (espécimen bitmap).
 
-ADAPTACIONES (revisión final, 2026-10-07): el crédito de fuente de las láminas no se repite en cada portada; lo cubre el pie global visible en todas las pantallas ("Datos e imágenes… Comic Vine"), porque el usuario pidió un diseño no sobrecargado y en una rejilla de 32 cartas el crédito por lámina sería ruido. Las cifras de los números de catálogo van en Geist tabular ("Nº" sigue en Marcellus): en Marcellus a 12-14 px el 0 y el 1 se leen como O e I. Las constelaciones del cielo son solo las relaciones curadas, como máximo 3 por estrella (las de más cómics juntos), para que el personaje central no convierta el cielo en un diagrama de red; las de "aparecen juntos" se ven en Universo.
+ADAPTACIONES: el crédito de fuente no se repite en cada viñeta: lo cubre el pie global visible ("no sobrecargado"). Las notas del editor van bajo el nombre y no junto al número (en tres columnas de móvil no caben). El grafo con "constelaciones" del mundo anterior desaparece de la colección; las relaciones se ven en Universo.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

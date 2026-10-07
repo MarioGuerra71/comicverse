@@ -129,3 +129,13 @@ export function RatingStarIcon({ filled = false, ...props }: IconProps & { fille
     </Svg>
   );
 }
+
+/** Marca: dos viñetas entintadas separadas por la calle (gutter), como una página. */
+export function PanelMark(props: IconProps) {
+  return (
+    <Svg {...props} strokeWidth={2}>
+      <rect x="3" y="3" width="10" height="18" />
+      <path d="M16 3h5v8h-5zM16 14h5v7h-5z" />
+    </Svg>
+  );
+}

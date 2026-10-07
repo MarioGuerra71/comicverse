@@ -127,7 +127,7 @@ export function LibraryControls({
               <RatingStarIcon
                 size={20}
                 filled={entry.rating !== null && value <= entry.rating}
-                className={entry.rating !== null && value <= entry.rating ? "text-star" : "text-dim"}
+                className={entry.rating !== null && value <= entry.rating ? "text-ink" : "text-ink-soft"}
               />
             </button>
           ))}

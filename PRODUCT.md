@@ -44,7 +44,9 @@ Descubrir, coleccionar y organizar cómics y personajes (empieza con Marvel; pre
 
 ## Brand Commitments
 
-- Nombre: **ComicVerse** (se mantiene). Todo lo visual (logo, colores, tipografía) está por decidir: libertad total.
+- Nombre: **ComicVerse** (se mantiene). Logo y tipografía por decidir.
+- **Paleta por editorial (requisito fijado por el usuario, 2026-10-07):** al estar en la zona de Marvel (sus cómics, personajes, colección), la interfaz usa una paleta **inspirada** en Marvel (rojo intenso); en la de DC, una inspirada en DC (azul). El sistema debe permitir cambiar de paleta por editorial sin rehacer componentes. Solo color: **nunca** logos, tipografías ni elementos de identidad de las editoriales (ver restricción de marca).
+- El usuario **rechaza** el primer estilo construido («Atlas estelar»: azul de Prusia casi negro + dorado + romana grabada) por parecer genérico, «de IA». No volver a esa combinación.
 - Tono pedido: moderno y profesional, **no infantil**. Referencias de producto citadas por el usuario: interfaces de videojuegos/RPG, apps de coleccionismo, streaming, Goodreads, Letterboxd, MyAnimeList. Evitar exceso de colores, sombras y animaciones, y el diseño sobrecargado.
 
 ## Evidence on Hand

@@ -1,45 +1,60 @@
 @import "tailwindcss";
 
 /*
- * Sistema de diseño "Atlas estelar" (ver .impeccable/surfaces/ y PRODUCT.md).
- * Una carta celeste grabada, de noche: suelo azul de Prusia, planchas un tono más
- * claras, filetes de 1 px y texto en blanco estelar. El dorado se reserva para lo
- * recién descubierto y lo coleccionado. Solo tema oscuro: la escena es de noche.
+ * Sistema de diseño "Página de arte original" (ver DESIGN.md, PRODUCT.md y
+ * .impeccable/surfaces/). Cada pantalla es una página de cómic a lápiz y tinta:
+ * cartulina, lápiz azul de boceto, tinta negra y el lápiz del editor
+ * en el color de la editorial. El color pleno solo vive dentro de las viñetas
+ * (portadas e imágenes). Solo tema claro (decisión del usuario).
  */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  --night: #0b1220; /* suelo */
-  --plate: #15233f; /* planchas: barras, tarjetas, campos */
-  --plate-raised: #1c2d50; /* plancha al pasar el ratón o seleccionada */
-  --line: rgb(127 147 184 / 0.28); /* filetes de grabado */
-  --line-strong: rgb(127 147 184 / 0.55);
-  --star: #eef1f7; /* texto principal (15.9:1 sobre el suelo) */
-  --dim: #a9b6ce; /* texto secundario (9:1 sobre el suelo, 7:1 sobre plancha) */
-  --gold: #e2b04a; /* recién descubierto, coleccionado, foco */
-  --danger: #f08a7e; /* errores (7:1 sobre el suelo) */
+  --paper: #f4f1ea; /* cartulina: suelo */
+  --sheet: #fbfaf6; /* papel de barras y paneles */
+  --sheet-raised: #ece7dc; /* papel al pasar el ratón o seleccionado */
+  --line: rgb(20 20 20 / 0.14); /* filetes neutros */
+  --line-strong: rgb(20 20 20 / 0.32);
+  --ink: #141414; /* tinta: texto y viñetas (16:1 sobre la cartulina) */
+  --ink-soft: #55534d; /* tinta suave: secundario (6,7:1) */
+  --blue: #8ec5e8; /* lápiz azul no fotográfico: retícula y bocetos (solo líneas) */
+  --blue-ink: #2f72a3; /* lápiz azul legible para texto (4,7:1) */
+  --danger: #b3261e; /* errores (6:1) */
 
-  /* Nombres genéricos que ya usan las pantallas: apuntan al nuevo mundo. */
-  --background: var(--night);
-  --foreground: var(--star);
+  /* Lápiz del editor = color de la editorial. Marvel por defecto (rojo inspirado). */
+  --editor: #e62429; /* marcas, rodeos, sección activa */
+  --editor-ink: #b81a1f; /* el mismo color, legible como texto (6:1) */
+
+  /* Nombres genéricos que aún usan las pantallas sin rediseñar. */
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+/* Zona de DC: el lápiz del editor pasa al azul inspirado en DC (solo color, sin marca). */
+[data-publisher="dc"] {
+  --editor: #0476f2;
+  --editor-ink: #0258b8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-night: var(--night);
-  --color-plate: var(--plate);
-  --color-plate-raised: var(--plate-raised);
+  --color-paper: var(--paper);
+  --color-sheet: var(--sheet);
+  --color-sheet-raised: var(--sheet-raised);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
-  --color-star: var(--star);
-  --color-dim: var(--dim);
-  --color-gold: var(--gold);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-blue: var(--blue);
+  --color-blue-ink: var(--blue-ink);
+  --color-editor: var(--editor);
+  --color-editor-ink: var(--editor-ink);
   --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* Romana grabada de las cartas celestes: marca, títulos y números de catálogo. */
-  --font-display: var(--font-marcellus);
+  /* Letra del editor a mano: notas al margen y números de catálogo. */
+  --font-hand: var(--font-caveat);
 }
 
 /* Animación de desbloqueo: aparece y crece un poco. Se usa con motion-safe:. */
@@ -59,26 +74,27 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  /* Cartulina lisa: el lápiz azul solo aparece donde dice algo (viñetas por dibujar). */
+  background-color: var(--paper);
+  color: var(--ink);
   font-family: var(--font-sans), system-ui, sans-serif;
-  /* Cifras de ancho fijo: los contadores (6 / 32) no bailan al cambiar. */
+  /* Cifras de ancho fijo: los contadores no bailan al cambiar. */
   font-variant-numeric: tabular-nums;
 }
 
 /* Lo que dibuja el navegador también es parte del diseño. */
 ::selection {
-  background: var(--gold);
-  color: var(--night);
+  background: var(--editor);
+  color: var(--sheet);
 }
 
 :focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--editor);
   outline-offset: 2px;
 }
 
 html {
-  caret-color: var(--gold);
+  caret-color: var(--editor);
   scrollbar-color: var(--line-strong) transparent;
 }
 
@@ -87,31 +103,29 @@ a {
   text-decoration-thickness: 1px;
 }
 
-/* Campos de formulario sobre plancha, en lugar del gris del sistema. */
 input,
 select,
 textarea {
-  accent-color: var(--gold);
+  accent-color: var(--editor);
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: var(--dim);
+  color: var(--ink-soft);
   opacity: 1;
 }
 
-/* Barras de progreso nativas en el color del mundo. */
 progress {
   appearance: none;
-  background: var(--plate);
+  background: var(--sheet-raised);
   border: none;
 }
 progress::-webkit-progress-bar {
-  background: var(--plate);
+  background: var(--sheet-raised);
 }
 progress::-webkit-progress-value {
-  background: var(--star);
+  background: var(--ink);
 }
 progress::-moz-progress-bar {
-  background: var(--star);
+  background: var(--ink);
 }

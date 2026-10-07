@@ -36,10 +36,10 @@ export function SidebarNav() {
             href={href}
             aria-current={active ? "page" : undefined}
             title={label}
-            className={`flex min-h-11 items-center justify-center gap-3 rounded-md px-3 text-sm transition-colors lg:justify-start ${
+            className={`flex min-h-11 items-center justify-center gap-3 rounded-sm px-3 text-sm transition-colors lg:justify-start ${
               active
-                ? "bg-plate-raised text-star"
-                : "text-dim hover:bg-plate-raised/60 hover:text-star"
+                ? "bg-sheet-raised font-semibold text-editor-ink"
+                : "text-ink-soft hover:bg-sheet-raised hover:text-ink"
             }`}
           >
             <Icon />
@@ -51,13 +51,13 @@ export function SidebarNav() {
   );
 }
 
-/** Barra inferior del móvil: 5 pestañas con icono y texto; la activa se "enciende". */
+/** Barra inferior del móvil: 5 pestañas con icono y texto; la activa, con el lápiz del editor. */
 export function BottomNav() {
   const pathname = usePathname();
   return (
     <nav
       aria-label="Principal"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-plate pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-ink bg-sheet pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       <ul className="grid grid-cols-5">
         {SECTIONS.map(({ href, label, Icon, match }) => {
@@ -68,13 +68,13 @@ export function BottomNav() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={`relative flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium ${
-                  active ? "text-star" : "text-dim"
+                  active ? "font-semibold text-editor-ink" : "text-ink-soft"
                 }`}
               >
                 {active && (
                   <span
                     aria-hidden="true"
-                    className="absolute top-1.5 h-1 w-1 rounded-full bg-star"
+                    className="absolute top-0 h-0.5 w-8 bg-editor"
                   />
                 )}
                 <Icon size={22} />

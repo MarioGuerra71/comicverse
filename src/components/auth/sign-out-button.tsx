@@ -25,7 +25,7 @@ export function SignOutButton({
       type="button"
       onClick={handleClick}
       title="Cerrar sesión"
-      className={`flex min-h-11 items-center gap-3 rounded-md px-3 text-sm text-dim transition-colors hover:bg-plate-raised/60 hover:text-star ${className}`}
+      className={`flex min-h-11 items-center gap-3 rounded-sm px-3 text-sm text-ink-soft transition-colors hover:bg-sheet-raised hover:text-ink ${className}`}
     >
       <SignOutIcon />
       <span className={showLabel ? "" : "sr-only lg:not-sr-only"}>Cerrar sesión</span>

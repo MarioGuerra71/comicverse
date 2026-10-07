@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Marcellus } from "next/font/google";
+import { Caveat, Geist, Geist_Mono } from "next/font/google";
 import { connection } from "next/server";
 import "./globals.css";
 
@@ -13,11 +13,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Romana grabada de las cartas celestes (OFL). next/font la sirve desde el propio
-// dominio, así que la CSP (font-src 'self') no cambia.
-const marcellus = Marcellus({
-  variable: "--font-marcellus",
-  weight: "400",
+// Letra a mano del editor (OFL): notas al margen y números de catálogo. next/font la
+// sirve desde el propio dominio, así que la CSP (font-src 'self') no cambia.
+const caveat = Caveat({
+  variable: "--font-caveat",
   subsets: ["latin", "latin-ext"],
 });
 
@@ -33,7 +32,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} ${marcellus.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
