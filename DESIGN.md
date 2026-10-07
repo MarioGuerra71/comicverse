@@ -2,44 +2,31 @@
 name: ComicVerse
 description: Descubre el universo de los cómics mientras lo lees.
 colors:
-  night: "#0b1220"
-  plate: "#15233f"
-  plate-raised: "#1c2d50"
-  line: "rgb(127 147 184 / 0.28)"
-  line-strong: "rgb(127 147 184 / 0.55)"
-  star: "#eef1f7"
-  dim: "#a9b6ce"
-  gold: "#e2b04a"
-  danger: "#f08a7e"
+  paper: "#f4f1ea"
+  sheet: "#fbfaf6"
+  sheet-raised: "#ece7dc"
+  line: "rgb(20 20 20 / 0.14)"
+  line-strong: "rgb(20 20 20 / 0.32)"
+  ink: "#141414"
+  ink-soft: "#55534d"
+  blue: "#8ec5e8"
+  blue-ink: "#2f72a3"
+  editor: "#e62429"
+  editor-ink: "#b81a1f"
+  editor-dc: "#0476f2"
+  editor-ink-dc: "#0258b8"
+  danger: "#b3261e"
 typography:
   display:
-    fontFamily: "Marcellus, Georgia, serif"
-    fontSize: "2.25rem"
-    fontWeight: 400
-    lineHeight: 1.11
-    letterSpacing: "0.025em"
-  headline:
-    fontFamily: "Marcellus, Georgia, serif"
-    fontSize: "1.875rem"
-    fontWeight: 400
-    lineHeight: 1.2
-    letterSpacing: "0.025em"
-  brand:
-    fontFamily: "Marcellus, Georgia, serif"
-    fontSize: "1.125rem"
-    fontWeight: 400
-    lineHeight: 1.55
-    letterSpacing: "0.025em"
-  counter:
     fontFamily: "Geist, system-ui, sans-serif"
-    fontSize: "1.5rem"
-    fontWeight: 600
-    lineHeight: 1.33
-    fontFeature: "tnum"
+    fontSize: "1.875rem"
+    fontWeight: 800
+    lineHeight: 1.2
+    letterSpacing: "-0.025em"
   title:
     fontFamily: "Geist, system-ui, sans-serif"
     fontSize: "0.875rem"
-    fontWeight: 500
+    fontWeight: 700
     lineHeight: 1.25
   body:
     fontFamily: "Geist, system-ui, sans-serif"
@@ -52,210 +39,208 @@ typography:
     fontSize: "0.75rem"
     fontWeight: 400
     lineHeight: 1.33
-    fontFeature: "tnum"
-  nav-label:
-    fontFamily: "Geist, system-ui, sans-serif"
-    fontSize: "11px"
-    fontWeight: 500
-    lineHeight: 1.33
+  hand-number:
+    fontFamily: "Caveat, cursive"
+    fontSize: "2.25rem"
+    fontWeight: 700
+    lineHeight: 1
+  hand-note:
+    fontFamily: "Caveat, cursive"
+    fontSize: "1.25rem"
+    fontWeight: 700
+    lineHeight: 1.25
 rounded:
-  sm: "4px"
-  md: "6px"
-  full: "9999px"
+  none: "0px"
+  avatar: "9999px"
 spacing:
-  xs: "8px"
-  sm: "12px"
+  xs: "4px"
+  sm: "8px"
   md: "16px"
   lg: "24px"
   xl: "32px"
-  touch: "44px"
 components:
+  tab-filter:
+    backgroundColor: "{colors.sheet}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    padding: "0 12px"
+    height: "44px"
+  tab-filter-hover:
+    backgroundColor: "{colors.sheet-raised}"
+  tab-filter-active:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.paper}"
   nav-item:
-    textColor: "{colors.dim}"
-    typography: "{typography.body}"
-    rounded: "{rounded.md}"
+    textColor: "{colors.ink-soft}"
+    rounded: "{rounded.none}"
     padding: "0 12px"
     height: "44px"
   nav-item-active:
-    backgroundColor: "{colors.plate-raised}"
-    textColor: "{colors.star}"
-    rounded: "{rounded.md}"
-  bottom-tab:
-    textColor: "{colors.dim}"
-    typography: "{typography.nav-label}"
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.paper}"
+  bottom-nav-item-active:
+    textColor: "{colors.editor-ink}"
     height: "64px"
-  bottom-tab-active:
-    textColor: "{colors.star}"
-  filter-pill:
-    textColor: "{colors.dim}"
-    typography: "{typography.body}"
-    rounded: "{rounded.md}"
-    padding: "0 12px"
-    height: "44px"
-  filter-pill-active:
-    backgroundColor: "{colors.plate-raised}"
-    textColor: "{colors.star}"
-    rounded: "{rounded.md}"
-  character-card:
-    backgroundColor: "{colors.plate}"
-    textColor: "{colors.star}"
-    rounded: "{rounded.sm}"
-  locked-slot:
-    backgroundColor: "{colors.night}"
-    textColor: "{colors.line-strong}"
-    rounded: "{rounded.sm}"
-  sky-chart:
-    backgroundColor: "{colors.night}"
-    rounded: "{rounded.md}"
+  bar:
+    backgroundColor: "{colors.sheet}"
+    textColor: "{colors.ink}"
+    height: "56px"
+  title-block:
+    backgroundColor: "{colors.sheet}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+  character-panel:
+    backgroundColor: "{colors.sheet}"
+    rounded: "{rounded.none}"
+  locked-panel:
+    textColor: "{colors.blue-ink}"
+    rounded: "{rounded.none}"
 ---
 
 # Design System: ComicVerse
 
 ## Overview
 
-**Creative North Star: "Atlas estelar"**
+**Creative North Star: "Página de arte original"**
 
-La colección es un cielo nocturno grabado: leer enciende estrellas. El sistema es una carta celeste de noche, pensada para el móvil en el sofá justo después de leer. Suelo azul de Prusia casi negro, planchas un tono más claras, filetes de grabado de 1 px y texto en blanco estelar. Hay pocos valores y casi ningún adorno: la profundidad y el orden vienen del filete y del cambio de tono, nunca del brillo.
+Cada pantalla es una página de cómic original a lápiz y tinta, sobre la mesa del dibujante: cartulina lisa, filetes de plumilla, viñetas entintadas y viñetas aún por dibujar en lápiz azul no fotográfico. Encima, el editor ha pasado con su lápiz graso en el color de la editorial para marcar lo que importa: dónde estás, qué es nuevo, qué ya tienes. La colección se entinta al leer.
 
-El único color con voz es el dorado, y está racionado: marca lo coleccionado, lo recién descubierto (hasta que se ha visto) y el foco del teclado. Los rótulos usan una romana grabada de mayúsculas (Marcellus) solo para la marca, los títulos de página y el "Nº" de catálogo; todo lo demás es Geist con cifras tabulares. Las portadas e imágenes de personaje se muestran como láminas sin tintar.
+La interfaz es plana, de papel y tinta. Los límites son filetes de 2 px en tinta, no sombras ni tonos. El color pleno solo existe dentro de las viñetas (portadas e imágenes de personajes); todo lo demás es cartulina, tinta, lápiz azul y el lápiz del editor. Solo hay tema claro (decisión del usuario).
 
-Rechazos confirmados: el "streaming oscuro con un acento neón" y el pop-art de tramas. Solo hay tema oscuro (`color-scheme: dark`), elegido por la escena de uso; no existe tema claro.
-
-**Cobertura.** El sistema está aplicado en el shell privado (barra superior y barra inferior en el móvil, carril de iconos en tablet, barra lateral en escritorio, pie de atribución), en Mi colección (cielo y rejilla de cartas) y en la 404. El resto de pantallas (inicio, catálogo, ficha de cómic, biblioteca, ficha de personaje, universo, acceso) todavía no se han rediseñado: heredan el suelo y el texto a través de los alias genéricos `background` / `foreground` y siguen usando sus clases antiguas (`bg-foreground`, `border-foreground/20`…). Al rediseñarlas, deben pasar a los tokens con nombre de este documento.
+Rechazos confirmados: la app oscura de streaming con un acento, el pop-art de tramas y tipos condensados, y el mundo anterior "Atlas estelar" (marino, oro, Marcellus), rechazado por genérico. La paleta por editorial (rojo inspirado en Marvel, azul inspirado en DC) es solo color: nunca logos ni tipografías de las editoriales.
 
 **Key Characteristics:**
-- Solo tema oscuro; suelo `night`, planchas `plate` / `plate-raised`.
-- Filetes de 1 px en azul pálido translúcido como única estructura.
-- Dorado reservado a coleccionado, nuevo y foco.
-- Romana grabada para marca, títulos y "Nº"; Geist tabular para la interfaz y las cifras.
-- Iconos SVG propios de trazo 1,5 px sobre rejilla de 24.
-- Nada bloqueado se revela: un hueco solo muestra su número de catálogo.
+- Cartulina lisa como suelo, sin cuadrícula ni textura de fondo.
+- Filetes y bordes de viñeta en tinta de 2 px; esquinas rectas.
+- Tinta llena = seleccionado, en toda la app.
+- Lápiz del editor (color de la editorial) solo para identidad, sección activa, lo nuevo y lo coleccionado.
+- Caveat a mano para números de catálogo y notas del editor; Geist para todo lo demás.
+- Iconos propios en SVG de trazo, nunca emojis ni Unicode.
 
 ## Colors
 
-Una noche de pocos valores: tres azules de suelo y plancha, dos tintas de texto, un dorado racionado y un rojo de error.
+Cartulina, tinta y dos lápices: uno azul para lo que aún no existe y uno del editor para lo que importa.
 
 ### Primary
-- **Dorado de constelación** (gold): estrellas y cartas coleccionadas (relleno de la estrella, filete de la carta, marca de estrella junto al número), el aro y la etiqueta "Nuevo" de lo recién descubierto, el contorno de foco (2 px, separación 2 px), la selección de texto (sobre `night`), el cursor de escritura y `accent-color` de los controles nativos.
+- **Lápiz del editor, rojo** (editor): marcas del editor sobre la página: recuadro alrededor de una viñeta nueva, barra de 2 px de la pestaña activa en el móvil, subrayado de la ordenación activa, selección de texto, anillo de foco y cursor. Nunca como texto.
+- **Lápiz del editor, rojo legible** (editor-ink): el mismo color cuando es texto: notas a mano "¡nuevo!" y "coleccionado", etiqueta de la pestaña activa del móvil (6:1).
+- **Lápiz del editor, azul DC** (editor-dc / editor-ink-dc): sustituyen a los dos anteriores dentro de `[data-publisher="dc"]`. Mismos papeles, mismo reparto.
+
+### Secondary
+- **Lápiz azul no fotográfico** (blue): solo líneas: borde de 1,5 px y aspa de las viñetas por dibujar (personajes bloqueados). Nunca texto ni relleno.
+- **Lápiz azul legible** (blue-ink): el número de catálogo de un bloqueado, única información que viaja de él (4,7:1).
 
 ### Neutral
-- **Noche de Prusia** (night): suelo de todas las pantallas y de la barra superior del móvil; color del halo detrás de los rótulos del cielo.
-- **Plancha** (plate): barra lateral, barra inferior, fondo de las láminas y de las barras de progreso nativas. Al 40 % de opacidad, fondo del cielo; al 30 %, fondo del hueco bloqueado.
-- **Plancha alzada** (plate-raised): elemento de navegación o filtro activo; al 60 % de opacidad, su estado hover.
-- **Filete** (line): bordes de barras, tarjetas, pills inactivas, pie y graduación del cielo.
-- **Filete marcado** (line-strong): borde de la pill activa y del avatar, elipse exterior del cielo, líneas de constelación, puntos de personajes bloqueados, "?" del hueco bloqueado, barra de scroll.
-- **Blanco estelar** (star): texto principal, estrellas descubiertas, enlaces subrayados, valor de las barras de progreso. 15,9:1 sobre `night`.
-- **Tinta tenue** (dim): texto secundario, iconos y etiquetas inactivas, placeholders, rótulos del cielo. 9:1 sobre `night`, 7:1 sobre `plate`.
-- **Rojo de error** (danger): mensajes de error. 7:1 sobre `night`. Definido en el sistema; aún sin uso en las pantallas rediseñadas.
+- **Cartulina** (paper): suelo de toda la app; también el texto sobre tinta llena.
+- **Papel** (sheet): barras (superior, lateral, inferior, pie), cajetín, pestañas en reposo y fondo de la viñeta sin imagen.
+- **Papel trabajado** (sheet-raised): hover de pestañas y pista de las barras de progreso.
+- **Tinta** (ink): texto principal, filetes de 2 px, bordes de viñeta, relleno del estado seleccionado, corazón de favorito, valor de progreso (16:1).
+- **Tinta suave** (ink-soft): texto secundario, enlaces de navegación en reposo, placeholders (6,7:1).
+- **Filete fino / filete marcado** (line / line-strong): separadores neutros y barra de scroll.
+- **Error** (danger): solo mensajes de error (6:1).
 
 ### Named Rules
-**The Gold Ration Rule.** El dorado solo significa "coleccionado", "nuevo hasta que se ve" o "foco". Nunca decora, nunca marca un estado activo de navegación (eso es `plate-raised` + `star`) y nunca es un botón.
+**The Editor's Pencil Rule.** El color de la editorial marca solo cuatro cosas: identidad (selección, foco, cursor), sección activa, lo nuevo y lo coleccionado. No marca favoritos (el corazón va en tinta) ni decora. Si no responde a "dónde estoy" o "qué ha cambiado en mi colección", no lleva color del editor.
 
-**The No Glow Rule.** Sin brillos, sin sombras de color y sin degradados en el texto. Una estrella destaca por tamaño y relleno, no por halo luminoso.
+**The Colour-Inside-Panels Rule.** El color pleno vive solo dentro de las viñetas: portadas e imágenes. Fuera de ellas, la página es cartulina, tinta y lápiz.
+
+**The Publisher Switch Rule.** La editorial cambia el color por atributo, no por componente: `[data-publisher="dc"]` redefine `--editor` y `--editor-ink`. Los componentes solo usan los tokens del editor, nunca un rojo o azul literal.
+
+**The Plain Paper Rule.** El suelo es cartulina lisa. Nada de cuadrículas, puntos, tramas ni degradados de fondo: la retícula de fondo es una seña de UI generada. El lápiz azul aparece solo donde dice algo (una viñeta por dibujar).
 
 ## Typography
 
-**Display Font:** Marcellus (con Georgia, serif), peso 400, servida desde el propio dominio con next/font.
-**Body Font:** Geist (con system-ui, sans-serif).
-**Label/Mono Font:** Geist Mono está cargada pero sin uso en las pantallas rediseñadas.
+**Display Font:** Geist (con system-ui, sans-serif), servida desde el proyecto con next/font
+**Body Font:** Geist
+**Hand Font:** Caveat (con cursive), servida desde el proyecto con next/font
 
-**Character:** Una romana de inscripción, como los rótulos de un atlas grabado, sobre una sans neutra y precisa. La romana nombra; la sans informa.
+**Character:** Geist pesada y apretada hace de rotulación de interfaz; Caveat es la mano del editor que numera las viñetas y anota al margen. Cifras tabulares en todo el cuerpo para que los contadores no bailen.
 
 ### Hierarchy
-- **Display** (Marcellus 400, 36 px en md+, interlineado 1,11, tracking 0,025em): título de página ("Mi colección").
-- **Headline** (Marcellus 400, 30 px, 1,2): el mismo título en el móvil; título de la 404.
-- **Brand** (Marcellus 400, 18 px, tracking 0,025em): la palabra ComicVerse junto a la marca de estrella.
-- **Counter** (Geist 600, 24 px, tabular): la cifra principal de progreso ("6 / 32").
-- **Title** (Geist 500, 14 px, 1,25): nombre del personaje bajo la lámina.
-- **Body** (Geist 400, 14 px, 1,43): texto de interfaz, navegación, filtros; párrafos limitados a `max-w-prose`.
-- **Label** (Geist 400, 12 px): número de catálogo, nombre real, "cómics leídos", pie de atribución.
-- **Nav label** (Geist 500, 11 px): etiqueta bajo el icono en la barra inferior.
+- **Display** (800, 1.875rem en móvil y 2.25rem desde md, tracking -0.025em): título de pantalla en el cajetín ("Mi colección") y en la 404.
+- **Brand** (800, 1.125rem, tracking -0.025em): "ComicVerse" junto a la marca de viñetas.
+- **Title** (700, 0.875rem, 1.25): nombre del personaje bajo la viñeta.
+- **Body** (400, 0.875rem): texto corriente, pestañas (600), enlaces de navegación; párrafos a max-w-prose.
+- **Label** (400, 0.75rem): metadatos (nombre real, cómics leídos), pie de atribución, unidad del contador; en la barra inferior, 11px a 500 (600 activa).
+- **Hand number** (Caveat 700): contador del cajetín a 2.25rem con el total a 1.5rem en tinta suave; número de viñeta "001/032" a 1.5rem con "/032" a 1rem y 500.
+- **Hand note** (Caveat 700, 1.25rem "¡nuevo!", 1.125rem "coleccionado"): notas del editor bajo el nombre.
 
 ### Named Rules
-**The Tabular Rule.** Todas las cifras son tabulares (`font-variant-numeric: tabular-nums` en `body`): los contadores no bailan al cambiar.
+**The Handwritten Digits Rule.** Los números de catálogo y el recuento de la colección se escriben a mano en Caveat, siempre con tres cifras (001) y su total. Caveat no se usa para títulos, botones ni texto corrido.
 
-**The Catalog Number Rule.** El número de catálogo se escribe "Nº 014 / 032": "Nº" en Marcellus, cifras en Geist tabular a tres dígitos, el total en `dim`. Las cifras nunca van en Marcellus por debajo de tamaño de título: a 12-14 px su 0 y su 1 se leen como O e I.
-
-**The Engraved Title Rule.** Marcellus solo para marca, títulos de página, "Nº" y rótulos del cielo. Nunca para párrafos, botones ni etiquetas.
+**The Weight-Not-Opacity Rule.** Lo secundario dentro de un número a mano se aligera por tamaño y peso, no por transparencia (en azul la opacidad bajaba el contraste).
 
 ## Layout
 
-- **Shell.** Móvil (< 768 px): barra superior pegajosa de 56 px (marca a la izquierda, avatar a la derecha) y barra inferior fija de 5 pestañas de 64 px de alto con `safe-area-inset-bottom`; el contenido reserva 80 px abajo. Tablet (md, 768 px): carril lateral fijo de 80 px solo con iconos (la marca queda en `sr-only`). Escritorio (lg, 1024 px): barra lateral de 240 px con iconos, etiquetas y marca. Perfil y "Cerrar sesión" van al pie de la barra lateral, separados por un filete.
-- **Contenido.** Ancho máximo 72 rem (`max-w-6xl`), centrado; márgenes de 16 px en el móvil y 32 px desde md; 24 px arriba en el móvil, 32 px desde md.
-- **Rejilla de cartas.** 3 columnas en el móvil, 4 desde sm, 5 desde md, 6 desde lg; separación de 12 px en horizontal y 24 px en vertical.
-- **Filas de controles.** En el móvil, los filtros y la ordenación se desplazan en horizontal en una sola línea (sin barra de scroll visible) en vez de partirse; desde lg se reparten a los extremos de una fila.
-- **Ritmo.** Pasos de 8 / 12 / 16 / 24 / 32 px. Todo objetivo táctil mide al menos 44 px (`min-h-11`), aunque se vea más pequeño.
-- **Pie de atribución.** "Datos e imágenes de cómics proporcionados por Comic Vine" en todas las pantallas privadas, 12 px `dim` con enlace en `star`, sobre filete superior.
+Columna central de hasta 72rem (max-w-6xl) con márgenes de 16px en móvil y 32px desde md; respiro vertical de 24px y 32px. El shell cambia por tamaño: en móvil, barra superior de 56px y barra inferior fija de 5 pestañas (64px de alto, con safe-area); en tablet (md, 768px), carril lateral de iconos de 80px; en escritorio (lg, 1024px), barra lateral de 240px con iconos y texto. El pie de atribución a Comic Vine cierra todas las páginas privadas y deja 96px de relleno inferior en móvil para no quedar bajo la barra.
 
-### Named Rules
-**The Fixed Slot Rule.** En orden de catálogo y sin filtro, cada hueco ocupa siempre su sitio: al desbloquear un personaje la casilla cambia de estado en su lugar y la rejilla no se recoloca.
+La rejilla de colección es un álbum: 3 columnas en móvil, 4 en sm, 5 en md y 6 en lg, con calles de 16px en horizontal y 28px en vertical. En orden de catálogo y sin filtro, los huecos bloqueados ocupan su sitio, de modo que al desbloquear la viñeta se entinta sin recolocar la página. En móvil, las filas de filtros y de ordenación se desplazan en horizontal en lugar de partirse.
+
+Toda zona táctil mide al menos 44px (min-h-11).
 
 ## Elevation & Depth
 
-Sistema plano. No hay `box-shadow` en ningún componente. La profundidad se construye con tono (suelo `night` < plancha `plate` < plancha alzada `plate-raised`) y con filetes de 1 px. Las barras de navegación son planchas sobre el suelo, separadas por un filete; el cielo es una plancha translúcida al 40 %.
+Plano por completo. No hay sombras ni brillo: la profundidad la dan los filetes de tinta de 2px, el cambio de papel (sheet sobre paper, sheet-raised al pasar) y el relleno de tinta del estado seleccionado. Lo único que sobresale es el recuadro del editor alrededor de una viñeta nueva: un contorno de 2px en color del editor separado 4px del borde, como un rodeo a lápiz.
 
 ### Named Rules
-**The Plate Not Shadow Rule.** Para separar o elevar algo, sube un tono de plancha o añade un filete. Nunca una sombra.
+**The Ink-Not-Shadow Rule.** Ni sombras, ni glow, ni degradados. Si algo necesita separarse, lleva un filete de tinta o cambia de papel.
 
 ## Shapes
 
-Esquinas casi rectas, como planchas de imprenta. Las láminas (cartas y huecos) usan 4 px (`rounded.sm`), proporción 3:4 y un filete de 1 px. Los contenedores interactivos (navegación, pills, cielo) usan 6 px (`rounded.md`). Lo circular queda para lo que es un punto: avatar con la inicial, punto de la pestaña activa, estrellas. Los iconos son trazos de 1,5 px con extremos y uniones redondeados en una rejilla de 24, en `currentColor`; la marca es una estrella de cuatro puntas rellena.
+Esquinas rectas en todo: barras, cajetín, pestañas, enlaces de navegación y viñetas tienen radio 0, como el corte de una plancha. Los bordes son de tinta a 2px; la viñeta por dibujar usa lápiz azul a 1,5px con un aspa de esquina a esquina. Única excepción: la inicial del perfil va en un círculo entintado de 2px (avatar). Nada de píldoras.
+
+Iconos propios en SVG sobre una rejilla de 24, trazo de 1,5px con extremos redondeados en currentColor; la marca (dos viñetas separadas por la calle) usa trazo de 2px. El set: Inicio (hoja con esquina doblada), Catálogo (cómic abierto), Biblioteca (lomos en balda), Colección (cartas apiladas), Universo (viñetas unidas), corazón, estrella de puntuación, salir.
 
 ## Components
 
-### Navegación
-Carril tranquilo: lo activo se ilumina en blanco, no en color.
-- **Barra lateral / carril:** elementos de 44 px de alto, 6 px de radio, icono de 24 px + etiqueta de 14 px (etiqueta solo en lg). Inactivo `dim`; hover `star` sobre `plate-raised` al 60 %; activo `star` sobre `plate-raised`, con `aria-current="page"`.
-- **Barra inferior (móvil):** 5 columnas iguales (Inicio, Catálogo, Biblioteca, Colección, Universo), icono de 22 px sobre etiqueta de 11 px. Inactiva `dim`; activa `star` con un punto de 4 px en `star` en el borde superior: la pestaña "se enciende".
-- Cada sección agrupa sus rutas hijas (la ficha de un personaje pertenece a Colección).
+### Navigation
+Rotulación de borde de página: sobria en reposo, entintada al estar activa.
+- **Barras:** papel (sheet) con filete de tinta de 2px hacia el contenido (abajo en la superior, a la derecha en la lateral, arriba en la inferior y en el pie).
+- **Lateral y carril:** enlaces de 44px con borde de 2px transparente; hover = borde de tinta y texto en tinta; activo = caja de tinta llena con texto en cartulina, igual que las pestañas de filtro. Perfil y "Cerrar sesión" bajo un filete de tinta, con el mismo hover.
+- **Barra inferior (móvil):** 5 pestañas de icono 22px y etiqueta de 11px en tinta suave; la activa pasa a editor-ink y lleva una barra de 2px × 32px en color del editor en el borde superior.
 
-### Chips (filtros)
-- **Style:** pill de 44 px de alto, 6 px de radio, 12 px de relleno lateral, filete `line`, texto `dim`, con el recuento a continuación en `dim`.
-- **State:** activa con filete `line-strong`, fondo `plate-raised` y texto `star`; hover sube el filete a `line-strong` y el texto a `star`.
-- **Ordenación:** secundaria, enlaces de texto sin caja (44 px de alto por relleno); el activo en `star` subrayado a 6 px, los demás en `dim`.
+### Chips / Filter tabs
+- **Style:** caja recta de 44px, borde de tinta de 2px, papel (sheet), texto 600 en tinta, con el recuento al lado en peso normal.
+- **State:** hover = papel trabajado; activa = tinta llena con texto en cartulina.
 
-### Cards / Containers (láminas de personaje)
-- **Corner Style:** 4 px.
-- **Background:** imagen sin tintar a sangre sobre `plate`; sin imagen, "Sin imagen" en `dim`.
-- **Shadow Strategy:** ninguna (ver Elevation & Depth).
-- **Border:** filete `line`; `gold` si está coleccionada o es nueva.
-- **Debajo de la lámina:** número de catálogo (Catalog Number Rule) con "Nuevo" en `gold` o, si está coleccionada y ya vista, la marca de estrella de 12 px en `gold`; nombre en Title con corazón relleno si es favorito; nombre real y "N cómics leídos" en Label `dim`.
-- **Hover:** la imagen escala a 1,03 en 300 ms ease-out.
+### Sort links
+Ordenación secundaria y discreta: enlaces de texto en tinta suave con zona táctil de 44px por relleno; el activo va en tinta, 600, subrayado de 2px en color del editor separado 6px.
 
-### Hueco bloqueado
-Ausencia, no misterio. Misma lámina 3:4 de 4 px con filete `line` sobre `plate` al 30 %, un "?" en Marcellus de 30 px en `line-strong` y el número de catálogo al 70 % de opacidad. Ningún nombre, imagen ni id llega al navegador; "por descubrir" solo existe en el `aria-label`. No es enlace.
+### Title block (cajetín)
+El cajetín impreso de una página de arte original: caja de tinta de 2px sobre papel, título display a la izquierda, contador a mano a la derecha tras un filete vertical, y debajo, tras un filete horizontal, una línea de label con las relaciones y un enlace subrayado en tinta.
 
-### Tu cielo (componente firma)
-Una carta celeste grabada en SVG del servidor, sin JavaScript (viewBox 1000 × 360), dentro de una plancha al 40 % con filete y 6 px de radio.
-- **Grabado:** elipse exterior en `line-strong`, 120 marcas de graduación en `line` (una larga cada 10), elipse interior y eclíptica punteadas (2 6). Trazos de 1 px que no escalan.
-- **Posiciones:** espiral de girasol (ángulo áureo) que depende solo del número de catálogo, así un hueco bloqueado ocupa su sitio sin revelar quién es.
-- **Estrellas:** descubiertas en `star`, coleccionadas en `gold`; el radio crece con lo leído (7 + 1,6 por cómic, hasta 5). Recién descubiertas con un aro `gold` de 2,5 px. Bloqueadas: puntos de radio 4 en `line-strong`, sin enlace.
-- **Constelaciones:** solo relaciones curadas descubiertas, en `line-strong`, como máximo 3 por estrella (las de más cómics juntos).
-- **Rótulos:** solo desde md, solo para coleccionadas, nuevas o con 3+ cómics; Marcellus 17 en `dim` con halo `night` de 6 px para que las líneas no los tachen; se colocan a la derecha, si chocan a la izquierda, y si chocan en ambos lados se omiten.
-- **Interacción:** estrellas pulsables solo desde md (en el móvil quedan demasiado juntas; las cartas llevan los mismos enlaces); hover y foco escalan la estrella a 1,25 en 200 ms.
+### Character panel (carta)
+- **Número:** "001/032" a mano en tinta sobre la viñeta.
+- **Viñeta:** proporción 3:4, borde de tinta de 2px, radio 0, imagen a todo color dentro (único sitio con color pleno); al pasar, la imagen crece a 1.03 en 300ms ease-out. Sin imagen: "Sin imagen" en label tinta suave sobre papel.
+- **Nuevo:** recuadro del editor (contorno 2px, separación 4px) y nota "¡nuevo!" a mano en editor-ink bajo el nombre.
+- **Coleccionado:** nota "coleccionado" a mano en editor-ink bajo el nombre.
+- **Favorito:** corazón relleno de 14px en tinta junto al nombre, con texto oculto "(favorito)".
 
-### Movimiento
-- **Pop-in** (400 ms, `cubic-bezier(0.16, 1, 0.3, 1)`; de opacidad 0, 8 px abajo y escala 0,95 a reposo): animación de desbloqueo, siempre tras `motion-safe:`.
-- Transiciones de color de 150 ms por defecto en navegación y filtros.
+### Locked panel (viñeta por dibujar)
+Solo lápiz azul: viñeta 3:4 con borde de 1,5px y aspa de 1px, y el número a mano en blue-ink. Ni nombre, ni imagen, ni id: del bloqueado solo viaja su número de catálogo.
+
+### Browser chrome
+Selección de texto en color del editor con texto en papel; foco visible como contorno de 2px en color del editor separado 2px; cursor y controles nativos (accent-color) en color del editor; barras de progreso en tinta sobre papel trabajado.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** usar los tokens con nombre (`night`, `plate`, `plate-raised`, `line`, `line-strong`, `star`, `dim`, `gold`, `danger`) en toda pantalla nueva o rediseñada.
-- **Do** reservar `gold` a coleccionado, nuevo-hasta-visto y foco (Gold Ration Rule).
-- **Do** escribir los números de catálogo como "Nº 014 / 032" con "Nº" en Marcellus y cifras en Geist tabular.
-- **Do** separar con filetes de 1 px y con tonos de plancha, no con sombras.
-- **Do** dar 44 px de zona táctil a todo control, aunque se dibuje más pequeño.
-- **Do** dibujar iconos nuevos con trazo de 1,5 px en rejilla de 24, extremos redondeados y `currentColor`.
-- **Do** mostrar un personaje bloqueado solo por su número de catálogo.
-- **Do** mantener visible en todas las pantallas el pie de atribución a Comic Vine.
+- **Do** separar zonas con filetes de tinta de 2px y cambios de papel (paper, sheet, sheet-raised).
+- **Do** marcar lo seleccionado con tinta llena y texto en cartulina, en navegación lateral y pestañas por igual.
+- **Do** usar el color del editor solo para identidad, sección activa, lo nuevo y lo coleccionado, siempre por los tokens `--editor` / `--editor-ink`.
+- **Do** cambiar de editorial con `data-publisher="dc"` en un contenedor, sin tocar componentes.
+- **Do** escribir números de catálogo y recuentos a mano en Caveat, con tres cifras y su total.
+- **Do** dibujar los personajes bloqueados solo en lápiz azul y con su número, nada más.
+- **Do** usar los iconos SVG propios de `icons.tsx` (trazo 1,5px, currentColor).
+- **Do** mantener zonas táctiles de 44px y contraste AA en todo texto (editor-ink y blue-ink existen para eso).
 
 ### Don't:
-- **Don't** usar brillos, sombras de color, neones ni degradados en el texto.
-- **Don't** introducir tramas ni recursos de pop-art.
-- **Don't** añadir un tema claro: el sistema es solo oscuro.
-- **Don't** usar emojis ni símbolos Unicode (★, ♥, →) como iconos; los iconos son los SVG propios. El "?" grabado del hueco bloqueado es un rótulo tipográfico, no un icono.
-- **Don't** poner cifras en Marcellus a tamaño de texto o etiqueta.
-- **Don't** exponer nombre, imagen o id de un personaje bloqueado, ni en el HTML.
-- **Don't** tintar las portadas ni las imágenes de personaje.
-- **Don't** dibujar en el cielo las relaciones de "aparecen juntos" ni más de 3 líneas por estrella; esas van en Universo.
+- **Don't** usar el color del editor en favoritos, decoración, fondos ni iconos en reposo.
+- **Don't** poner color pleno fuera de las viñetas (portadas e imágenes).
+- **Don't** poner cuadrícula, puntos, tramas ni texturas en el fondo.
+- **Don't** usar píldoras ni esquinas redondeadas (salvo el círculo del avatar), sombras, glow ni degradados.
+- **Don't** usar emojis ni caracteres Unicode como iconos.
+- **Don't** usar logos ni tipografías de Marvel o DC: la editorial se expresa solo con color.
+- **Don't** usar lápiz azul (blue) como texto ni como relleno.
+- **Don't** añadir tema oscuro: el sistema es solo claro.
+- **Don't** tomar como referencia las pantallas pendientes de migrar (inicio, catálogo, ficha de cómic, biblioteca, ficha de personaje, universo, acceso y portada): todavía usan las clases genéricas `bg-foreground` / `text-background` / `border-foreground/20` y `rounded-md`, que no forman parte del sistema.

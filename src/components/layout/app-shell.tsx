@@ -38,11 +38,11 @@ export function AppShell({ userName, children }: { userName: string; children: R
         <div className="mt-6 flex-1">
           <SidebarNav />
         </div>
-        <div className="flex flex-col gap-1 border-t border-line px-3 pt-3">
+        <div className="flex flex-col gap-1 border-t-2 border-ink px-3 pt-3">
           <Link
             href="/profile"
             title="Perfil"
-            className="flex min-h-11 items-center justify-center gap-3 rounded-sm px-3 text-sm text-ink-soft transition-colors hover:bg-sheet-raised hover:text-ink lg:justify-start"
+            className="flex min-h-11 items-center justify-center gap-3 border-2 border-transparent px-3 text-sm text-ink-soft transition-colors hover:border-ink hover:text-ink lg:justify-start"
           >
             <span
               aria-hidden="true"
@@ -69,9 +69,10 @@ export function AppShell({ userName, children }: { userName: string; children: R
         </Link>
       </header>
 
-      <div className="flex min-h-screen flex-col pb-20 md:pb-0">
+      <div className="flex min-h-screen flex-col">
         <div className="flex-1">{children}</div>
-        <footer className="border-t border-line bg-sheet px-6 py-4 text-xs text-ink-soft">
+        {/* En el móvil el relleno inferior deja sitio a la barra de pestañas fija. */}
+        <footer className="border-t-2 border-ink bg-sheet px-6 pt-4 pb-24 text-xs text-ink-soft md:pb-4">
           Datos e imágenes de cómics proporcionados por{" "}
           <a
             href="https://comicvine.gamespot.com"

@@ -123,7 +123,7 @@ export default async function CollectionPage({
               className={tab(input.filter === f.value)}
             >
               {f.label}
-              <span className="ml-1.5 font-normal opacity-70">{counts[f.value]}</span>
+              <span className="ml-1.5 font-normal">{counts[f.value]}</span>
             </Link>
           ))}
         </nav>

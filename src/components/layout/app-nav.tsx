@@ -36,10 +36,11 @@ export function SidebarNav() {
             href={href}
             aria-current={active ? "page" : undefined}
             title={label}
-            className={`flex min-h-11 items-center justify-center gap-3 rounded-sm px-3 text-sm transition-colors lg:justify-start ${
+            className={`flex min-h-11 items-center justify-center gap-3 border-2 px-3 text-sm transition-colors lg:justify-start ${
+              // Igual que las pestañas de filtro: relleno de tinta = seleccionado.
               active
-                ? "bg-sheet-raised font-semibold text-editor-ink"
-                : "text-ink-soft hover:bg-sheet-raised hover:text-ink"
+                ? "border-ink bg-ink font-semibold text-paper"
+                : "border-transparent text-ink-soft hover:border-ink hover:text-ink"
             }`}
           >
             <Icon />

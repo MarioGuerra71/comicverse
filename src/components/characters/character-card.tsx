@@ -20,7 +20,8 @@ function HandNumber({ number, total, className }: { number: number | null; total
   return (
     <span className={`font-hand text-2xl leading-none font-bold ${className}`}>
       {number === null ? "—" : pad(number)}
-      <span className="text-base font-medium opacity-70">/{pad(total)}</span>
+      {/* Menos peso por tamaño, no por transparencia: en azul la opacidad bajaba el contraste. */}
+      <span className="text-base font-medium">/{pad(total)}</span>
     </span>
   );
 }
@@ -56,7 +57,7 @@ export function CharacterCard({ card, total }: { card: CollectionCardDto; total:
         <span>{card.name}</span>
         {card.isFavorite && (
           <>
-            <HeartIcon filled size={14} className="mt-0.5 shrink-0 text-editor" />
+            <HeartIcon filled size={14} className="mt-0.5 shrink-0 text-ink" />
             <span className="sr-only">(favorito)</span>
           </>
         )}

@@ -52,7 +52,6 @@
   --color-editor-ink: var(--editor-ink);
   --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
   /* Letra del editor a mano: notas al margen y números de catálogo. */
   --font-hand: var(--font-caveat);
 }

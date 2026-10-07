@@ -24,14 +24,12 @@ function Svg({ size = 24, children, ...props }: IconProps) {
   );
 }
 
-/** Inicio: un observatorio (cúpula abierta). */
+/** Inicio: una hoja con la esquina doblada (sin viñetas, para no confundirse con la marca). */
 export function HomeIcon(props: IconProps) {
   return (
     <Svg {...props}>
-      <path d="M4 20h16" />
-      <path d="M6 20v-7a6 6 0 0 1 12 0v7" />
-      <path d="M12 7v4" />
-      <path d="M10 20v-4h4v4" />
+      <path d="M6 3h9l4 4v14H6z" />
+      <path d="M15 3v4h4" />
     </Svg>
   );
 }
@@ -70,15 +68,14 @@ export function CollectionIcon(props: IconProps) {
   );
 }
 
-/** Universo: una constelación de tres estrellas. */
+/** Universo: tres viñetas unidas, como personajes relacionados. */
 export function UniverseIcon(props: IconProps) {
   return (
     <Svg {...props}>
-      <path d="m6 17 5-8 7 3" strokeOpacity={0.6} />
-      <circle cx="6" cy="17" r="1.8" />
-      <circle cx="11" cy="9" r="1.8" />
-      <circle cx="18" cy="12" r="1.8" />
-      <path d="M17 4.5v2M16 5.5h2" />
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="8" width="7" height="7" />
+      <rect x="6" y="15" width="7" height="6" />
+      <path d="M10 6.5h6.5V8M9.5 15v-5" />
     </Svg>
   );
 }
@@ -93,18 +90,6 @@ export function SignOutIcon(props: IconProps) {
   );
 }
 
-/** Marca: estrella de cuatro puntas, como en las cartas grabadas. */
-export function StarMark(props: IconProps) {
-  return (
-    <Svg {...props}>
-      <path
-        d="M12 2.5c.6 5 4.5 8.9 9.5 9.5-5 .6-8.9 4.5-9.5 9.5-.6-5-4.5-8.9-9.5-9.5 5-.6 8.9-4.5 9.5-9.5Z"
-        fill="currentColor"
-        stroke="none"
-      />
-    </Svg>
-  );
-}
 
 /** Favorito: corazón de trazo; `filled` lo rellena. */
 export function HeartIcon({ filled = false, ...props }: IconProps & { filled?: boolean }) {

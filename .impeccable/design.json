@@ -1,132 +1,431 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-07T00:00:00Z",
+  "generatedAt": "2026-10-07T15:26:56.788Z",
   "title": "Design System: ComicVerse",
   "extensions": {
     "colorMeta": {
-      "gold": { "role": "primary", "displayName": "Dorado de constelación", "canonical": "#e2b04a", "tonalRamp": ["#3a2a08", "#5c4410", "#80601a", "#a67d26", "#c99836", "#e2b04a", "#eecb85", "#f8e7c4"] },
-      "night": { "role": "neutral", "displayName": "Noche de Prusia", "canonical": "#0b1220", "tonalRamp": ["#05080f", "#0b1220", "#15233f", "#1c2d50", "#33476e", "#5a6f96", "#a9b6ce", "#eef1f7"] },
-      "plate": { "role": "neutral", "displayName": "Plancha", "canonical": "#15233f", "tonalRamp": ["#05080f", "#0b1220", "#15233f", "#1c2d50", "#33476e", "#5a6f96", "#a9b6ce", "#eef1f7"] },
-      "plate-raised": { "role": "neutral", "displayName": "Plancha alzada", "canonical": "#1c2d50", "tonalRamp": ["#05080f", "#0b1220", "#15233f", "#1c2d50", "#33476e", "#5a6f96", "#a9b6ce", "#eef1f7"] },
-      "line": { "role": "neutral", "displayName": "Filete", "canonical": "rgb(127 147 184 / 0.28)" },
-      "line-strong": { "role": "neutral", "displayName": "Filete marcado", "canonical": "rgb(127 147 184 / 0.55)" },
-      "star": { "role": "neutral", "displayName": "Blanco estelar", "canonical": "#eef1f7" },
-      "dim": { "role": "neutral", "displayName": "Tinta tenue", "canonical": "#a9b6ce" },
-      "danger": { "role": "error", "displayName": "Rojo de error", "canonical": "#f08a7e", "tonalRamp": ["#3d100b", "#621c14", "#8a2c21", "#b54232", "#dc6656", "#f08a7e", "#f6b6ad", "#fbe1dd"] }
+      "editor": {
+        "role": "primary",
+        "displayName": "Lápiz del editor, rojo",
+        "canonical": "oklch(59% 0.22 27)",
+        "purpose": "Marcas del editor: recuadro de lo nuevo, barra activa del móvil, subrayado de ordenación, selección, foco, cursor. Nunca texto.",
+        "tonalRamp": [
+          "oklch(15% 0.19 27)",
+          "oklch(26% 0.19 27)",
+          "oklch(37% 0.19 27)",
+          "oklch(48% 0.19 27)",
+          "oklch(59% 0.19 27)",
+          "oklch(70% 0.19 27)",
+          "oklch(82% 0.19 27)",
+          "oklch(95% 0.19 27)"
+        ]
+      },
+      "editor-ink": {
+        "role": "primary",
+        "displayName": "Lápiz del editor, rojo legible",
+        "canonical": "oklch(50% 0.19 27)",
+        "purpose": "El color del editor como texto: notas a mano y pestaña activa del móvil (6:1).",
+        "tonalRamp": [
+          "oklch(15% 0.17 27)",
+          "oklch(26% 0.17 27)",
+          "oklch(37% 0.17 27)",
+          "oklch(48% 0.17 27)",
+          "oklch(59% 0.17 27)",
+          "oklch(70% 0.17 27)",
+          "oklch(82% 0.17 27)",
+          "oklch(95% 0.17 27)"
+        ]
+      },
+      "editor-dc": {
+        "role": "primary",
+        "displayName": "Lápiz del editor, azul DC",
+        "canonical": "oklch(57% 0.2 257)",
+        "purpose": "Sustituye a editor dentro de [data-publisher=\"dc\"].",
+        "tonalRamp": [
+          "oklch(15% 0.17 257)",
+          "oklch(26% 0.17 257)",
+          "oklch(37% 0.17 257)",
+          "oklch(48% 0.17 257)",
+          "oklch(59% 0.17 257)",
+          "oklch(70% 0.17 257)",
+          "oklch(82% 0.17 257)",
+          "oklch(95% 0.17 257)"
+        ]
+      },
+      "editor-ink-dc": {
+        "role": "primary",
+        "displayName": "Lápiz del editor, azul DC legible",
+        "canonical": "oklch(47% 0.17 258)",
+        "purpose": "Sustituye a editor-ink dentro de [data-publisher=\"dc\"].",
+        "tonalRamp": [
+          "oklch(15% 0.15 258)",
+          "oklch(26% 0.15 258)",
+          "oklch(37% 0.15 258)",
+          "oklch(48% 0.15 258)",
+          "oklch(59% 0.15 258)",
+          "oklch(70% 0.15 258)",
+          "oklch(82% 0.15 258)",
+          "oklch(95% 0.15 258)"
+        ]
+      },
+      "blue": {
+        "role": "secondary",
+        "displayName": "Lápiz azul no fotográfico",
+        "canonical": "oklch(79% 0.075 237)",
+        "purpose": "Solo líneas: borde y aspa de las viñetas por dibujar.",
+        "tonalRamp": [
+          "oklch(15% 0.075 237)",
+          "oklch(26% 0.075 237)",
+          "oklch(37% 0.075 237)",
+          "oklch(48% 0.075 237)",
+          "oklch(59% 0.075 237)",
+          "oklch(70% 0.075 237)",
+          "oklch(82% 0.075 237)",
+          "oklch(95% 0.075 237)"
+        ]
+      },
+      "blue-ink": {
+        "role": "secondary",
+        "displayName": "Lápiz azul legible",
+        "canonical": "oklch(53% 0.11 245)",
+        "purpose": "Número de catálogo de un bloqueado (4,7:1).",
+        "tonalRamp": [
+          "oklch(15% 0.1 245)",
+          "oklch(26% 0.1 245)",
+          "oklch(37% 0.1 245)",
+          "oklch(48% 0.1 245)",
+          "oklch(59% 0.1 245)",
+          "oklch(70% 0.1 245)",
+          "oklch(82% 0.1 245)",
+          "oklch(95% 0.1 245)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Cartulina",
+        "canonical": "oklch(95.6% 0.008 85)",
+        "purpose": "Suelo liso de toda la app; texto sobre tinta llena.",
+        "tonalRamp": [
+          "oklch(15% 0.008 85)",
+          "oklch(26% 0.008 85)",
+          "oklch(37% 0.008 85)",
+          "oklch(48% 0.008 85)",
+          "oklch(59% 0.008 85)",
+          "oklch(70% 0.008 85)",
+          "oklch(82% 0.008 85)",
+          "oklch(95% 0.008 85)"
+        ]
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Papel",
+        "canonical": "oklch(98.4% 0.005 95)",
+        "purpose": "Barras, cajetín, pestañas en reposo.",
+        "tonalRamp": [
+          "oklch(15% 0.005 95)",
+          "oklch(26% 0.005 95)",
+          "oklch(37% 0.005 95)",
+          "oklch(48% 0.005 95)",
+          "oklch(59% 0.005 95)",
+          "oklch(70% 0.005 95)",
+          "oklch(82% 0.005 95)",
+          "oklch(95% 0.005 95)"
+        ]
+      },
+      "sheet-raised": {
+        "role": "neutral",
+        "displayName": "Papel trabajado",
+        "canonical": "oklch(92.6% 0.014 85)",
+        "purpose": "Hover de pestañas y pista de progreso.",
+        "tonalRamp": [
+          "oklch(15% 0.014 85)",
+          "oklch(26% 0.014 85)",
+          "oklch(37% 0.014 85)",
+          "oklch(48% 0.014 85)",
+          "oklch(59% 0.014 85)",
+          "oklch(70% 0.014 85)",
+          "oklch(82% 0.014 85)",
+          "oklch(95% 0.014 85)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "oklch(19.5% 0 0)",
+        "purpose": "Texto, filetes de 2px, bordes de viñeta, relleno de lo seleccionado (16:1).",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(48% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(82% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Tinta suave",
+        "canonical": "oklch(45% 0.008 95)",
+        "purpose": "Texto secundario y navegación en reposo (6,7:1).",
+        "tonalRamp": [
+          "oklch(15% 0.008 95)",
+          "oklch(26% 0.008 95)",
+          "oklch(37% 0.008 95)",
+          "oklch(48% 0.008 95)",
+          "oklch(59% 0.008 95)",
+          "oklch(70% 0.008 95)",
+          "oklch(82% 0.008 95)",
+          "oklch(95% 0.008 95)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Filete fino",
+        "canonical": "rgb(20 20 20 / 0.14)",
+        "purpose": "Separadores neutros."
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Filete marcado",
+        "canonical": "rgb(20 20 20 / 0.32)",
+        "purpose": "Separadores marcados y barra de scroll."
+      },
+      "danger": {
+        "role": "neutral",
+        "displayName": "Error",
+        "canonical": "oklch(50% 0.18 29)",
+        "purpose": "Solo mensajes de error (6:1).",
+        "tonalRamp": [
+          "oklch(15% 0.16 29)",
+          "oklch(26% 0.16 29)",
+          "oklch(37% 0.16 29)",
+          "oklch(48% 0.16 29)",
+          "oklch(59% 0.16 29)",
+          "oklch(70% 0.16 29)",
+          "oklch(82% 0.16 29)",
+          "oklch(95% 0.16 29)"
+        ]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Título de página en md+ (Mi colección)." },
-      "headline": { "displayName": "Headline", "purpose": "Título de página en el móvil; título de la 404." },
-      "brand": { "displayName": "Marca", "purpose": "La palabra ComicVerse junto a la estrella." },
-      "counter": { "displayName": "Contador", "purpose": "Cifra principal de progreso, tabular." },
-      "title": { "displayName": "Title", "purpose": "Nombre del personaje bajo la lámina." },
-      "body": { "displayName": "Body", "purpose": "Interfaz, navegación, filtros, párrafos." },
-      "label": { "displayName": "Label", "purpose": "Número de catálogo, metadatos, pie de atribución." },
-      "nav-label": { "displayName": "Etiqueta de pestaña", "purpose": "Texto bajo el icono en la barra inferior." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Título de pantalla en el cajetín y en la 404; 1.875rem en móvil, 2.25rem desde md."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Nombre del personaje bajo la viñeta."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto corriente, pestañas y navegación; cifras tabulares."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Metadatos y pie de atribución; 11px en la barra inferior."
+      },
+      "hand-number": {
+        "displayName": "Número a mano",
+        "purpose": "Contador del cajetín (2.25rem) y número de viñeta 001/032 (1.5rem). Caveat."
+      },
+      "hand-note": {
+        "displayName": "Nota del editor",
+        "purpose": "\"¡nuevo!\" (1.25rem) y \"coleccionado\" (1.125rem) en editor-ink bajo el nombre. Caveat."
+      }
     },
     "shadows": [],
-    "focus": { "value": "outline: 2px solid var(--gold); outline-offset: 2px", "purpose": "Foco de teclado global." },
+    "outlines": [
+      {
+        "name": "editor-rodeo",
+        "value": "outline: 2px solid var(--editor); outline-offset: 4px",
+        "purpose": "Recuadro del editor alrededor de una viñeta nueva."
+      },
+      {
+        "name": "focus",
+        "value": "outline: 2px solid var(--editor); outline-offset: 2px",
+        "purpose": "Foco visible en toda la app."
+      }
+    ],
     "motion": [
-      { "name": "pop-in", "value": "pop-in 400ms cubic-bezier(0.16, 1, 0.3, 1) both", "purpose": "Desbloqueo: de opacidad 0, translateY(8px) scale(0.95) a reposo. Siempre tras motion-safe." },
-      { "name": "color-transition", "value": "150ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Hover de navegación, filtros y ordenación." },
-      { "name": "plate-zoom", "value": "transform 300ms ease-out, scale 1.03", "purpose": "Hover de la imagen de una lámina." },
-      { "name": "star-focus", "value": "transform 200ms, scale 1.25", "purpose": "Hover y foco de una estrella del cielo." }
+      {
+        "name": "pop-in",
+        "value": "400ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Desbloqueo: aparece y crece desde translateY(8px) scale(0.95); solo con motion-safe."
+      },
+      {
+        "name": "panel-hover",
+        "value": "transform 300ms ease-out",
+        "purpose": "La imagen crece a scale(1.03) dentro de la viñeta al pasar."
+      }
     ],
     "breakpoints": [
-      { "name": "sm", "value": "640px" },
-      { "name": "md", "value": "768px" },
-      { "name": "lg", "value": "1024px" }
+      {
+        "name": "sm",
+        "value": "640px",
+        "purpose": "Rejilla de 4 columnas."
+      },
+      {
+        "name": "md",
+        "value": "768px",
+        "purpose": "Carril de iconos de 80px; desaparecen las barras móviles; 5 columnas."
+      },
+      {
+        "name": "lg",
+        "value": "1024px",
+        "purpose": "Barra lateral de 240px con texto; 6 columnas."
+      }
+    ],
+    "publisherSwitch": {
+      "selector": "[data-publisher=\"dc\"]",
+      "overrides": {
+        "--editor": "#0476f2",
+        "--editor-ink": "#0258b8"
+      }
+    },
+    "pendingMigration": [
+      "src/app/(app)/dashboard",
+      "src/app/(app)/catalog",
+      "src/app/(app)/comics/[id]",
+      "src/app/(app)/library",
+      "src/app/(app)/characters/[id]",
+      "src/app/(app)/graph",
+      "src/app/(auth)",
+      "src/app/page.tsx",
+      "src/components/characters/discovery-item.tsx",
+      "src/components/characters/favorite-button.tsx",
+      "src/components/comics/comic-card.tsx",
+      "src/components/graph/universe-graph.tsx",
+      "src/components/library/"
     ]
   },
   "components": [
     {
-      "name": "Elemento de barra lateral",
+      "name": "Filter Tab",
+      "kind": "chip",
+      "refersTo": "tab-filter",
+      "description": "Pestañas de filtro entintadas; la activa en tinta llena.",
+      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab ds-tab--active\" href=\"#\">Todos <span>32</span></a><a class=\"ds-tab\" href=\"#\">Favoritos <span>3</span></a><a class=\"ds-tab\" href=\"#\">Coleccionados <span>9</span></a></nav>",
+      "css": ".ds-tabs{display:flex;gap:8px;font-family:var(--font-geist-sans),system-ui,sans-serif}.ds-tab{display:flex;align-items:center;min-height:44px;padding:0 12px;border:2px solid #141414;background:#fbfaf6;color:#141414;font-size:14px;font-weight:600;text-decoration:none;transition:background-color .15s}.ds-tab span{margin-left:6px;font-weight:400}.ds-tab:hover{background:#ece7dc}.ds-tab--active,.ds-tab--active:hover{background:#141414;color:#f4f1ea}.ds-tab:focus-visible{outline:2px solid var(--editor,#e62429);outline-offset:2px}"
+    },
+    {
+      "name": "Sort Link",
+      "kind": "custom",
+      "refersTo": "sort-link",
+      "description": "Ordenación secundaria; el activo subrayado en color del editor.",
+      "html": "<nav class=\"ds-sort\"><span>Ordenar</span><a class=\"ds-sort-link ds-sort-link--active\" href=\"#\">Número</a><a class=\"ds-sort-link\" href=\"#\">Nombre</a><a class=\"ds-sort-link\" href=\"#\">Más leídos</a></nav>",
+      "css": ".ds-sort{display:flex;align-items:center;gap:4px;font-family:var(--font-geist-sans),system-ui,sans-serif;font-size:14px;color:#55534d}.ds-sort-link{display:flex;align-items:center;min-height:44px;padding:0 8px;color:#55534d;text-decoration:none;text-underline-offset:6px;transition:color .15s}.ds-sort-link:hover{color:#141414}.ds-sort-link--active{color:#141414;font-weight:600;text-decoration:underline;text-decoration-color:var(--editor,#e62429);text-decoration-thickness:2px}.ds-sort-link:focus-visible{outline:2px solid var(--editor,#e62429);outline-offset:2px}"
+    },
+    {
+      "name": "Sidebar Navigation",
       "kind": "nav",
       "refersTo": "nav-item",
-      "description": "Navegación lateral: inactivo, hover y activo (plancha alzada, sin color).",
-      "html": "<nav class=\"ds-side\"><a class=\"ds-side-item\" href=\"#\" aria-current=\"page\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 20h16\"/><path d=\"M6 20v-7a6 6 0 0 1 12 0v7\"/><path d=\"M12 7v4\"/><path d=\"M10 20v-4h4v4\"/></svg><span>Inicio</span></a><a class=\"ds-side-item\" href=\"#\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M12 2.5c.6 5 4.5 8.9 9.5 9.5-5 .6-8.9 4.5-9.5 9.5-.6-5-4.5-8.9-9.5-9.5 5-.6 8.9-4.5 9.5-9.5Z\"/></svg><span>Colección</span></a></nav>",
-      "css": ".ds-side { display: flex; flex-direction: column; gap: 4px; width: 240px; padding: 16px 12px; background: var(--plate, #15233f); border-right: 1px solid var(--line, rgb(127 147 184 / 0.28)); } .ds-side-item { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 6px; font: 400 14px/1.43 Geist, system-ui, sans-serif; color: var(--dim, #a9b6ce); text-decoration: none; transition: color 150ms, background-color 150ms; } .ds-side-item:hover { color: var(--star, #eef1f7); background: rgb(28 45 80 / 0.6); } .ds-side-item[aria-current=page] { color: var(--star, #eef1f7); background: var(--plate-raised, #1c2d50); } .ds-side-item:focus-visible { outline: 2px solid var(--gold, #e2b04a); outline-offset: 2px; }"
+      "description": "Barra lateral de papel con filete de tinta; activo = caja de tinta llena.",
+      "html": "<nav class=\"ds-side\"><div class=\"ds-brand\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><rect x=\"3\" y=\"3\" width=\"10\" height=\"18\"/><path d=\"M16 3h5v8h-5zM16 14h5v7h-5z\"/></svg><span>ComicVerse</span></div><a class=\"ds-side-link\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M15 3v4h4\"/></svg><span>Inicio</span></a><a class=\"ds-side-link ds-side-link--active\" href=\"#\" aria-current=\"page\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"7\" y=\"3.5\" width=\"12\" height=\"16\" rx=\"1.5\"/><path d=\"M5 6.5v12a2 2 0 0 0 2 2h9\"/><path d=\"m13 8.5.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z\"/></svg><span>Colección</span></a></nav>",
+      "css": ".ds-side{display:flex;flex-direction:column;gap:4px;width:240px;padding:16px 12px;background:#fbfaf6;border-right:2px solid #141414;font-family:var(--font-geist-sans),system-ui,sans-serif}.ds-brand{display:flex;align-items:center;gap:8px;min-height:44px;margin-bottom:16px;color:#141414;font-size:18px;font-weight:800;letter-spacing:-0.025em}.ds-side-link{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border:2px solid transparent;color:#55534d;font-size:14px;text-decoration:none;transition:color .15s,border-color .15s}.ds-side-link:hover{border-color:#141414;color:#141414}.ds-side-link--active,.ds-side-link--active:hover{background:#141414;border-color:#141414;color:#f4f1ea;font-weight:600}.ds-side-link:focus-visible{outline:2px solid var(--editor,#e62429);outline-offset:2px}"
     },
     {
-      "name": "Barra inferior (móvil)",
+      "name": "Bottom Navigation",
       "kind": "nav",
-      "refersTo": "bottom-tab",
-      "description": "Cinco pestañas con icono y etiqueta; la activa se enciende en blanco con un punto.",
-      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 20h16\"/><path d=\"M6 20v-7a6 6 0 0 1 12 0v7\"/><path d=\"M12 7v4\"/><path d=\"M10 20v-4h4v4\"/></svg>Inicio</a><a class=\"ds-tab\" href=\"#\" aria-current=\"page\"><span class=\"ds-tab-dot\"></span><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M12 2.5c.6 5 4.5 8.9 9.5 9.5-5 .6-8.9 4.5-9.5 9.5-.6-5-4.5-8.9-9.5-9.5 5-.6 8.9-4.5 9.5-9.5Z\"/></svg>Colección</a></nav>",
-      "css": ".ds-tabs { display: grid; grid-template-columns: repeat(2, 1fr); width: 200px; background: var(--plate, #15233f); border-top: 1px solid var(--line, rgb(127 147 184 / 0.28)); } .ds-tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 64px; font: 500 11px/1.33 Geist, system-ui, sans-serif; color: var(--dim, #a9b6ce); text-decoration: none; } .ds-tab[aria-current=page] { color: var(--star, #eef1f7); } .ds-tab-dot { position: absolute; top: 6px; width: 4px; height: 4px; border-radius: 9999px; background: var(--star, #eef1f7); } .ds-tab:focus-visible { outline: 2px solid var(--gold, #e2b04a); outline-offset: 2px; }"
+      "refersTo": "bottom-nav-item-active",
+      "description": "Barra inferior móvil; la activa en editor-ink con barra de 2px del editor arriba.",
+      "html": "<nav class=\"ds-bottom\"><a class=\"ds-bottom-link\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M15 3v4h4\"/></svg>Inicio</a><a class=\"ds-bottom-link ds-bottom-link--active\" href=\"#\" aria-current=\"page\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"7\" y=\"3.5\" width=\"12\" height=\"16\" rx=\"1.5\"/><path d=\"M5 6.5v12a2 2 0 0 0 2 2h9\"/><path d=\"m13 8.5.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z\"/></svg>Colección</a></nav>",
+      "css": ".ds-bottom{display:grid;grid-template-columns:repeat(2,1fr);width:240px;background:#fbfaf6;border-top:2px solid #141414;font-family:var(--font-geist-sans),system-ui,sans-serif}.ds-bottom-link{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:64px;font-size:11px;font-weight:500;color:#55534d;text-decoration:none}.ds-bottom-link--active{color:var(--editor-ink,#b81a1f);font-weight:600}.ds-bottom-link--active::before{content:\"\";position:absolute;top:0;width:32px;height:2px;background:var(--editor,#e62429)}.ds-bottom-link:focus-visible{outline:2px solid var(--editor,#e62429);outline-offset:-2px}"
     },
     {
-      "name": "Pill de filtro",
-      "kind": "chip",
-      "refersTo": "filter-pill",
-      "description": "Filtro con recuento; la activa sube de plancha y de filete.",
-      "html": "<div class=\"ds-pills\"><a class=\"ds-pill\" href=\"#\" aria-current=\"page\">Todos<span class=\"ds-pill-n\">32</span></a><a class=\"ds-pill\" href=\"#\">Coleccionados<span class=\"ds-pill-n\">2</span></a></div>",
-      "css": ".ds-pills { display: flex; gap: 8px; } .ds-pill { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border: 1px solid var(--line, rgb(127 147 184 / 0.28)); border-radius: 6px; font: 400 14px/1.43 Geist, system-ui, sans-serif; color: var(--dim, #a9b6ce); text-decoration: none; transition: color 150ms, border-color 150ms; } .ds-pill:hover { border-color: var(--line-strong, rgb(127 147 184 / 0.55)); color: var(--star, #eef1f7); } .ds-pill[aria-current=page] { border-color: var(--line-strong, rgb(127 147 184 / 0.55)); background: var(--plate-raised, #1c2d50); color: var(--star, #eef1f7); } .ds-pill-n { margin-left: 6px; color: var(--dim, #a9b6ce); font-variant-numeric: tabular-nums; } .ds-pill:focus-visible { outline: 2px solid var(--gold, #e2b04a); outline-offset: 2px; }"
-    },
-    {
-      "name": "Lámina de personaje",
-      "kind": "card",
-      "refersTo": "character-card",
-      "description": "Imagen sin tintar 3:4, número de catálogo y, si está coleccionada, filete dorado.",
-      "html": "<a class=\"ds-card\" href=\"#\"><div class=\"ds-card-plate ds-card-collected\"><div class=\"ds-card-img\"></div></div><div class=\"ds-card-meta\"><span class=\"ds-catno\"><span class=\"ds-catno-n\">Nº</span> 006<span class=\"ds-catno-t\"> / 032</span></span><span class=\"ds-card-new\">Nuevo</span></div><h2 class=\"ds-card-name\">Spider-Man</h2><p class=\"ds-card-sub\">Peter Parker</p><p class=\"ds-card-sub\">3 cómics leídos</p></a>",
-      "css": ".ds-card { display: flex; flex-direction: column; width: 140px; text-decoration: none; } .ds-card-plate { position: relative; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 4px; border: 1px solid var(--line, rgb(127 147 184 / 0.28)); background: var(--plate, #15233f); } .ds-card-collected { border-color: var(--gold, #e2b04a); } .ds-card-img { position: absolute; inset: 0; background: var(--plate-raised, #1c2d50); transition: transform 300ms ease-out; } .ds-card:hover .ds-card-img { transform: scale(1.03); } .ds-card-meta { margin-top: 8px; display: flex; justify-content: space-between; align-items: center; font: 400 12px/1.33 Geist, system-ui, sans-serif; } .ds-catno { font-size: 14px; color: var(--star, #eef1f7); font-variant-numeric: tabular-nums; } .ds-catno-n { font-family: Marcellus, Georgia, serif; } .ds-catno-t { color: var(--dim, #a9b6ce); } .ds-card-new { font-weight: 500; color: var(--gold, #e2b04a); } .ds-card-name { margin: 2px 0 0; font: 500 14px/1.25 Geist, system-ui, sans-serif; color: var(--star, #eef1f7); } .ds-card-sub { margin: 2px 0 0; font: 400 12px/1.33 Geist, system-ui, sans-serif; color: var(--dim, #a9b6ce); } .ds-card:focus-visible { outline: 2px solid var(--gold, #e2b04a); outline-offset: 2px; }"
-    },
-    {
-      "name": "Hueco bloqueado",
-      "kind": "card",
-      "refersTo": "locked-slot",
-      "description": "Solo el número de catálogo: ni nombre, ni imagen, ni id. No es enlace.",
-      "html": "<div class=\"ds-locked\" role=\"img\" aria-label=\"Nº 014: personaje por descubrir\"><div class=\"ds-locked-plate\">?</div><div class=\"ds-locked-meta\"><span class=\"ds-catno\"><span class=\"ds-catno-n\">Nº</span> 014<span class=\"ds-catno-t\"> / 032</span></span></div></div>",
-      "css": ".ds-locked { display: flex; flex-direction: column; width: 140px; } .ds-locked-plate { display: flex; align-items: center; justify-content: center; aspect-ratio: 3 / 4; border-radius: 4px; border: 1px solid var(--line, rgb(127 147 184 / 0.28)); background: rgb(21 35 63 / 0.3); font: 400 30px/1 Marcellus, Georgia, serif; color: var(--line-strong, rgb(127 147 184 / 0.55)); } .ds-locked-meta { margin-top: 8px; opacity: 0.7; } .ds-catno { font: 400 14px/1.33 Geist, system-ui, sans-serif; color: var(--star, #eef1f7); font-variant-numeric: tabular-nums; } .ds-catno-n { font-family: Marcellus, Georgia, serif; } .ds-catno-t { color: var(--dim, #a9b6ce); }"
-    },
-    {
-      "name": "Tu cielo",
+      "name": "Title Block (cajetín)",
       "kind": "custom",
-      "refersTo": "sky-chart",
-      "description": "Carta celeste grabada: graduación, constelaciones curadas, estrellas blancas o doradas, aro dorado en lo nuevo, puntos apagados para lo bloqueado.",
-      "html": "<figure class=\"ds-sky\"><svg viewBox=\"0 0 1000 360\" role=\"group\" aria-label=\"Tu cielo: 3 de 32 personajes descubiertos\"><g fill=\"none\" stroke=\"rgb(127 147 184 / 0.28)\" stroke-width=\"1\" vector-effect=\"non-scaling-stroke\"><ellipse cx=\"500\" cy=\"180\" rx=\"490\" ry=\"169\" stroke=\"rgb(127 147 184 / 0.55)\"/><ellipse cx=\"500\" cy=\"180\" rx=\"245\" ry=\"85\" stroke-dasharray=\"2 6\"/><path d=\"M 20 223 Q 500 65 980 144\" stroke-dasharray=\"2 6\"/></g><g><line x1=\"430\" y1=\"150\" x2=\"580\" y2=\"210\" stroke=\"rgb(127 147 184 / 0.55)\"/><circle cx=\"300\" cy=\"120\" r=\"4\" fill=\"rgb(127 147 184 / 0.55)\"/><circle cx=\"700\" cy=\"260\" r=\"4\" fill=\"rgb(127 147 184 / 0.55)\"/></g><circle cx=\"430\" cy=\"150\" r=\"15\" fill=\"#e2b04a\"/><circle cx=\"580\" cy=\"210\" r=\"10\" fill=\"#eef1f7\"/><circle cx=\"580\" cy=\"210\" r=\"24\" fill=\"none\" stroke=\"#e2b04a\" stroke-width=\"2.5\"/><text x=\"453\" y=\"156\" font-family=\"Marcellus, Georgia, serif\" font-size=\"17\" fill=\"#a9b6ce\" stroke=\"#0b1220\" stroke-width=\"6\" stroke-linejoin=\"round\" paint-order=\"stroke\">Spider-Man</text></svg></figure>",
-      "css": ".ds-sky { margin: 0; width: 560px; overflow: hidden; border-radius: 6px; border: 1px solid var(--line, rgb(127 147 184 / 0.28)); background: rgb(21 35 63 / 0.4); } .ds-sky svg { display: block; width: 100%; height: auto; }"
+      "refersTo": "title-block",
+      "description": "Cajetín entintado: título, contador a mano y línea de relaciones.",
+      "html": "<header class=\"ds-cajetin\"><h1>Mi colección</h1><div class=\"ds-count\"><p class=\"ds-hand\">15<small>/32</small></p><p>personajes</p></div><p class=\"ds-foot\">4 de 12 relaciones descubiertas · <a href=\"#\">ver el universo</a></p></header>",
+      "css": ".ds-cajetin{display:grid;grid-template-columns:1fr auto;border:2px solid #141414;background:#fbfaf6;color:#141414;font-family:var(--font-geist-sans),system-ui,sans-serif}.ds-cajetin h1{margin:0;padding:12px 16px;font-size:30px;font-weight:800;letter-spacing:-0.025em;align-self:center}.ds-count{border-left:2px solid #141414;padding:8px 16px;text-align:right;font-size:12px;color:#55534d}.ds-count p{margin:0}.ds-hand{font-family:var(--font-caveat),Caveat,cursive;font-size:36px;font-weight:700;line-height:1;color:#141414}.ds-hand small{font-size:24px;color:#55534d}.ds-foot{grid-column:span 2;margin:0;border-top:2px solid #141414;padding:8px 16px;font-size:12px;color:#55534d}.ds-foot a{color:#141414;text-underline-offset:.2em}.ds-foot a:focus-visible{outline:2px solid var(--editor,#e62429);outline-offset:2px}"
+    },
+    {
+      "name": "Character Panel",
+      "kind": "card",
+      "refersTo": "character-panel",
+      "description": "Carta = viñeta entintada con número a mano; lo nuevo con recuadro y nota del editor. El bloque de color simula la imagen a todo color.",
+      "html": "<a class=\"ds-card\" href=\"#\"><span class=\"ds-num\">014<small>/032</small></span><div class=\"ds-panel ds-panel--new\"><div class=\"ds-img\"></div></div><h2>Spider-Man <svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><path d=\"M12 20s-7.5-4.6-7.5-10.1A4.4 4.4 0 0 1 12 7.2a4.4 4.4 0 0 1 7.5 2.7C19.5 15.4 12 20 12 20Z\"/></svg></h2><p class=\"ds-note\">¡nuevo!</p><p class=\"ds-meta\">3 cómics leídos</p></a>",
+      "css": ".ds-card{display:flex;flex-direction:column;width:140px;color:#141414;text-decoration:none;font-family:var(--font-geist-sans),system-ui,sans-serif}.ds-num{font-family:var(--font-caveat),Caveat,cursive;font-size:24px;font-weight:700;line-height:1}.ds-num small{font-size:16px;font-weight:500}.ds-panel{position:relative;margin-top:6px;aspect-ratio:3/4;overflow:hidden;border:2px solid #141414;background:#fbfaf6}.ds-panel--new{outline:2px solid var(--editor,#e62429);outline-offset:4px}.ds-img{position:absolute;inset:0;background:#c43b2f;transition:transform .3s ease-out}.ds-card:hover .ds-img{transform:scale(1.03)}.ds-card h2{display:flex;gap:4px;align-items:flex-start;margin:8px 0 0;font-size:14px;font-weight:700;line-height:1.25}.ds-card h2 svg{margin-top:2px;flex-shrink:0}.ds-note{margin:0;font-family:var(--font-caveat),Caveat,cursive;font-size:20px;font-weight:700;line-height:1.25;color:var(--editor-ink,#b81a1f)}.ds-meta{margin:2px 0 0;font-size:12px;color:#55534d}.ds-card:focus-visible{outline:2px solid var(--editor,#e62429);outline-offset:2px}"
+    },
+    {
+      "name": "Locked Panel",
+      "kind": "card",
+      "refersTo": "locked-panel",
+      "description": "Viñeta por dibujar: lápiz azul con aspa y solo el número.",
+      "html": "<div class=\"ds-locked\" role=\"img\" aria-label=\"Nº 015: personaje por descubrir\"><span class=\"ds-lnum\">015<small>/032</small></span><div class=\"ds-lpanel\"><svg viewBox=\"0 0 30 40\" preserveAspectRatio=\"none\" aria-hidden=\"true\"><path d=\"M0 0 L30 40 M30 0 L0 40\" stroke=\"#8ec5e8\" stroke-width=\"1\" vector-effect=\"non-scaling-stroke\"/></svg></div></div>",
+      "css": ".ds-locked{display:flex;flex-direction:column;width:140px}.ds-lnum{font-family:var(--font-caveat),Caveat,cursive;font-size:24px;font-weight:700;line-height:1;color:#2f72a3}.ds-lnum small{font-size:16px;font-weight:500}.ds-lpanel{position:relative;margin-top:6px;aspect-ratio:3/4;border:1.5px solid #8ec5e8}.ds-lpanel svg{position:absolute;inset:0;width:100%;height:100%}"
     }
   ],
   "narrative": {
-    "northStar": "Atlas estelar",
-    "overview": "La colección es un cielo nocturno grabado: leer enciende estrellas. El sistema es una carta celeste de noche, pensada para el móvil en el sofá justo después de leer. Suelo azul de Prusia casi negro, planchas un tono más claras, filetes de grabado de 1 px y texto en blanco estelar. Hay pocos valores y casi ningún adorno: la profundidad y el orden vienen del filete y del cambio de tono, nunca del brillo.\n\nEl único color con voz es el dorado, y está racionado: marca lo coleccionado, lo recién descubierto (hasta que se ha visto) y el foco del teclado. Los rótulos usan una romana grabada de mayúsculas (Marcellus) solo para la marca, los títulos de página y el \"Nº\" de catálogo; todo lo demás es Geist con cifras tabulares. Las portadas e imágenes de personaje se muestran como láminas sin tintar.\n\nRechazos confirmados: el \"streaming oscuro con un acento neón\" y el pop-art de tramas. Solo hay tema oscuro (color-scheme: dark), elegido por la escena de uso; no existe tema claro.",
+    "northStar": "Página de arte original",
+    "overview": "Cada pantalla es una página de cómic original a lápiz y tinta, sobre la mesa del dibujante: cartulina lisa, filetes de plumilla, viñetas entintadas y viñetas aún por dibujar en lápiz azul no fotográfico. Encima, el editor ha pasado con su lápiz graso en el color de la editorial para marcar lo que importa: dónde estás, qué es nuevo, qué ya tienes. La colección se entinta al leer.\n\nLa interfaz es plana, de papel y tinta. Los límites son filetes de 2 px en tinta, no sombras ni tonos. El color pleno solo existe dentro de las viñetas (portadas e imágenes de personajes); todo lo demás es cartulina, tinta, lápiz azul y el lápiz del editor. Solo hay tema claro (decisión del usuario).\n\nRechazos confirmados: la app oscura de streaming con un acento, el pop-art de tramas y tipos condensados, y el mundo anterior \"Atlas estelar\" (marino, oro, Marcellus), rechazado por genérico. La paleta por editorial (rojo inspirado en Marvel, azul inspirado en DC) es solo color: nunca logos ni tipografías de las editoriales.",
     "keyCharacteristics": [
-      "Solo tema oscuro; suelo night, planchas plate / plate-raised.",
-      "Filetes de 1 px en azul pálido translúcido como única estructura.",
-      "Dorado reservado a coleccionado, nuevo y foco.",
-      "Romana grabada para marca, títulos y \"Nº\"; Geist tabular para la interfaz y las cifras.",
-      "Iconos SVG propios de trazo 1,5 px sobre rejilla de 24.",
-      "Nada bloqueado se revela: un hueco solo muestra su número de catálogo."
+      "Cartulina lisa como suelo, sin cuadrícula ni textura de fondo.",
+      "Filetes y bordes de viñeta en tinta de 2 px; esquinas rectas.",
+      "Tinta llena = seleccionado, en toda la app.",
+      "Lápiz del editor (color de la editorial) solo para identidad, sección activa, lo nuevo y lo coleccionado.",
+      "Caveat a mano para números de catálogo y notas del editor; Geist para todo lo demás.",
+      "Iconos propios en SVG de trazo, nunca emojis ni Unicode."
     ],
     "rules": [
-      { "name": "The Gold Ration Rule", "body": "El dorado solo significa \"coleccionado\", \"nuevo hasta que se ve\" o \"foco\". Nunca decora, nunca marca un estado activo de navegación (eso es plate-raised + star) y nunca es un botón.", "section": "colors" },
-      { "name": "The No Glow Rule", "body": "Sin brillos, sin sombras de color y sin degradados en el texto. Una estrella destaca por tamaño y relleno, no por halo luminoso.", "section": "colors" },
-      { "name": "The Tabular Rule", "body": "Todas las cifras son tabulares (font-variant-numeric: tabular-nums en body): los contadores no bailan al cambiar.", "section": "typography" },
-      { "name": "The Catalog Number Rule", "body": "El número de catálogo se escribe \"Nº 014 / 032\": \"Nº\" en Marcellus, cifras en Geist tabular a tres dígitos, el total en dim. Las cifras nunca van en Marcellus por debajo de tamaño de título: a 12-14 px su 0 y su 1 se leen como O e I.", "section": "typography" },
-      { "name": "The Engraved Title Rule", "body": "Marcellus solo para marca, títulos de página, \"Nº\" y rótulos del cielo. Nunca para párrafos, botones ni etiquetas.", "section": "typography" },
-      { "name": "The Fixed Slot Rule", "body": "En orden de catálogo y sin filtro, cada hueco ocupa siempre su sitio: al desbloquear un personaje la casilla cambia de estado en su lugar y la rejilla no se recoloca.", "section": "layout" },
-      { "name": "The Plate Not Shadow Rule", "body": "Para separar o elevar algo, sube un tono de plancha o añade un filete. Nunca una sombra.", "section": "elevation" }
+      {
+        "name": "The Editor's Pencil Rule",
+        "body": "El color de la editorial marca solo cuatro cosas: identidad (selección, foco, cursor), sección activa, lo nuevo y lo coleccionado. No marca favoritos (el corazón va en tinta) ni decora. Si no responde a \"dónde estoy\" o \"qué ha cambiado en mi colección\", no lleva color del editor.",
+        "section": "colors"
+      },
+      {
+        "name": "The Colour-Inside-Panels Rule",
+        "body": "El color pleno vive solo dentro de las viñetas: portadas e imágenes. Fuera de ellas, la página es cartulina, tinta y lápiz.",
+        "section": "colors"
+      },
+      {
+        "name": "The Publisher Switch Rule",
+        "body": "La editorial cambia el color por atributo, no por componente: `[data-publisher=\"dc\"]` redefine `--editor` y `--editor-ink`. Los componentes solo usan los tokens del editor, nunca un rojo o azul literal.",
+        "section": "colors"
+      },
+      {
+        "name": "The Plain Paper Rule",
+        "body": "El suelo es cartulina lisa. Nada de cuadrículas, puntos, tramas ni degradados de fondo: la retícula de fondo es una seña de UI generada. El lápiz azul aparece solo donde dice algo (una viñeta por dibujar).",
+        "section": "colors"
+      },
+      {
+        "name": "The Handwritten Digits Rule",
+        "body": "Los números de catálogo y el recuento de la colección se escriben a mano en Caveat, siempre con tres cifras (001) y su total. Caveat no se usa para títulos, botones ni texto corrido.",
+        "section": "typography"
+      },
+      {
+        "name": "The Weight-Not-Opacity Rule",
+        "body": "Lo secundario dentro de un número a mano se aligera por tamaño y peso, no por transparencia (en azul la opacidad bajaba el contraste).",
+        "section": "typography"
+      },
+      {
+        "name": "The Ink-Not-Shadow Rule",
+        "body": "Ni sombras, ni glow, ni degradados. Si algo necesita separarse, lleva un filete de tinta o cambia de papel.",
+        "section": "elevation"
+      }
     ],
     "dos": [
-      "Do usar los tokens con nombre (night, plate, plate-raised, line, line-strong, star, dim, gold, danger) en toda pantalla nueva o rediseñada.",
-      "Do reservar gold a coleccionado, nuevo-hasta-visto y foco (Gold Ration Rule).",
-      "Do escribir los números de catálogo como \"Nº 014 / 032\" con \"Nº\" en Marcellus y cifras en Geist tabular.",
-      "Do separar con filetes de 1 px y con tonos de plancha, no con sombras.",
-      "Do dar 44 px de zona táctil a todo control, aunque se dibuje más pequeño.",
-      "Do dibujar iconos nuevos con trazo de 1,5 px en rejilla de 24, extremos redondeados y currentColor.",
-      "Do mostrar un personaje bloqueado solo por su número de catálogo.",
-      "Do mantener visible en todas las pantallas el pie de atribución a Comic Vine."
+      "Do separar zonas con filetes de tinta de 2px y cambios de papel (paper, sheet, sheet-raised).",
+      "Do marcar lo seleccionado con tinta llena y texto en cartulina, en navegación lateral y pestañas por igual.",
+      "Do usar el color del editor solo para identidad, sección activa, lo nuevo y lo coleccionado, siempre por los tokens `--editor` / `--editor-ink`.",
+      "Do cambiar de editorial con `data-publisher=\"dc\"` en un contenedor, sin tocar componentes.",
+      "Do escribir números de catálogo y recuentos a mano en Caveat, con tres cifras y su total.",
+      "Do dibujar los personajes bloqueados solo en lápiz azul y con su número, nada más.",
+      "Do usar los iconos SVG propios de `icons.tsx` (trazo 1,5px, currentColor).",
+      "Do mantener zonas táctiles de 44px y contraste AA en todo texto (editor-ink y blue-ink existen para eso)."
     ],
     "donts": [
-      "Don't usar brillos, sombras de color, neones ni degradados en el texto.",
-      "Don't introducir tramas ni recursos de pop-art.",
-      "Don't añadir un tema claro: el sistema es solo oscuro.",
-      "Don't usar emojis ni símbolos Unicode (★, ♥, →) como iconos; los iconos son los SVG propios. El \"?\" grabado del hueco bloqueado es un rótulo tipográfico, no un icono.",
-      "Don't poner cifras en Marcellus a tamaño de texto o etiqueta.",
-      "Don't exponer nombre, imagen o id de un personaje bloqueado, ni en el HTML.",
-      "Don't tintar las portadas ni las imágenes de personaje.",
-      "Don't dibujar en el cielo las relaciones de \"aparecen juntos\" ni más de 3 líneas por estrella; esas van en Universo."
+      "Don't usar el color del editor en favoritos, decoración, fondos ni iconos en reposo.",
+      "Don't poner color pleno fuera de las viñetas (portadas e imágenes).",
+      "Don't poner cuadrícula, puntos, tramas ni texturas en el fondo.",
+      "Don't usar píldoras ni esquinas redondeadas (salvo el círculo del avatar), sombras, glow ni degradados.",
+      "Don't usar emojis ni caracteres Unicode como iconos.",
+      "Don't usar logos ni tipografías de Marvel o DC: la editorial se expresa solo con color.",
+      "Don't usar lápiz azul (blue) como texto ni como relleno.",
+      "Don't añadir tema oscuro: el sistema es solo claro.",
+      "Don't tomar como referencia las pantallas pendientes de migrar (inicio, catálogo, ficha de cómic, biblioteca, ficha de personaje, universo, acceso y portada): todavía usan las clases genéricas `bg-foreground` / `text-background` / `border-foreground/20` y `rounded-md`, que no forman parte del sistema."
     ]
   }
 }
