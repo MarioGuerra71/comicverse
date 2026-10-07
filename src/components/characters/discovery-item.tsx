@@ -3,25 +3,27 @@ import Link from "next/link";
 import { formatDate } from "@/lib/format";
 import type { DiscoveryDto } from "@/server/services/dashboard";
 
-/** Una línea del registro: "Venom · Con ASM #300 · 6 de octubre de 2026". */
+/** Un descubrimiento como viñeta de una tira: el personaje, el cómic que lo trajo y la fecha. */
 export function DiscoveryItem({ discovery }: { discovery: DiscoveryDto }) {
   const { character, viaComic, discoveredAt } = discovery;
   return (
-    <Link
-      href={`/characters/${character.id}`}
-      className="flex items-center gap-3 rounded-md border border-foreground/20 p-2 hover:bg-foreground/5"
-    >
-      <span className="relative h-14 w-11 shrink-0 overflow-hidden rounded bg-foreground/10">
+    <Link href={`/characters/${character.id}`} className="group flex flex-col">
+      <span className="relative block aspect-3/4 overflow-hidden border-2 border-ink bg-sheet">
         {character.imageThumbUrl && (
-          <Image src={character.imageThumbUrl} alt="" fill unoptimized className="object-cover" />
+          <Image
+            src={character.imageThumbUrl}
+            alt=""
+            fill
+            unoptimized
+            className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+          />
         )}
       </span>
-      <span className="text-sm">
-        <span className="block font-medium">{character.name}</span>
-        <span className="block opacity-60">
-          {viaComic ? `Con ${viaComic.title}` : "Descubierto"} · {formatDate(discoveredAt.slice(0, 10))}
-        </span>
+      <span className="mt-2 text-sm leading-tight font-bold text-ink">{character.name}</span>
+      <span className="mt-0.5 text-xs leading-snug text-ink-soft">
+        {viaComic ? `Con ${viaComic.title}` : "Descubierto"}
       </span>
+      <span className="text-xs text-ink-soft">{formatDate(discoveredAt.slice(0, 10))}</span>
     </Link>
   );
 }

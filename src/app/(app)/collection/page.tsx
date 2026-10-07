@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { normalizeParams, type SearchParams } from "@/lib/search-params";
 import { CharacterCard, LockedCard } from "@/components/characters/character-card";
 import { MarkCollectionSeen } from "@/components/collection/mark-seen";
+import { inkTab as tab, PageHeader, quietLink as sortLink } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { filterCards, type CollectionCardDto } from "@/server/dto/character";
 import { getCollection } from "@/server/services/discovery";
@@ -34,18 +35,6 @@ function collectionHref({ filter, sort }: CollectionSearchInput) {
   const queryString = query.toString();
   return queryString ? `/collection?${queryString}` : "/collection";
 }
-
-// Filtros: pestañas entintadas; la activa, en tinta llena (como una viñeta negra).
-const tab = (active: boolean) =>
-  `flex min-h-11 items-center border-2 border-ink px-3 text-sm font-semibold transition-colors ${
-    active ? "bg-ink text-paper" : "bg-sheet text-ink hover:bg-sheet-raised"
-  }`;
-
-// La ordenación es secundaria: enlaces discretos con 44 px de zona táctil por relleno.
-const sortLink = (active: boolean) =>
-  `flex min-h-11 items-center px-2 text-sm underline-offset-[6px] transition-colors ${
-    active ? "font-semibold text-ink underline decoration-editor decoration-2" : "text-ink-soft hover:text-ink"
-  }`;
 
 type Slot = { kind: "card"; card: CollectionCardDto } | { kind: "locked"; number: number };
 
@@ -79,25 +68,23 @@ export default async function CollectionPage({
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
-      {/* Cajetín de la página, como el que traen impreso las páginas de arte original. */}
-      <header className="grid grid-cols-[1fr_auto] border-2 border-ink bg-sheet">
-        <div className="flex items-center px-4 py-3">
-          <h1 className="text-3xl font-extrabold tracking-tight text-ink md:text-4xl">Mi colección</h1>
-        </div>
-        <div className="border-l-2 border-ink px-4 py-2 text-right">
-          <p className="font-hand text-4xl leading-none font-bold text-ink">
+      <PageHeader
+        title="Mi colección"
+        figure={
+          <>
             {progress.unlocked}
             <span className="text-2xl text-ink-soft">/{progress.total}</span>
-          </p>
-          <p className="text-xs text-ink-soft">personajes</p>
-        </div>
-        <p className="col-span-2 border-t-2 border-ink px-4 py-2 text-xs text-ink-soft">
+          </>
+        }
+        figureLabel="personajes"
+      >
+        <p className="px-4 py-2 text-xs text-ink-soft">
           {relationships.discovered} de {relationships.total} relaciones descubiertas ·{" "}
           <Link href="/graph" className="text-ink underline">
             ver el universo
           </Link>
         </p>
-      </header>
+      </PageHeader>
 
       {progress.unlocked === 0 && (
         <p className="mt-4 max-w-prose text-sm text-ink-soft">
@@ -113,7 +100,7 @@ export default async function CollectionPage({
       <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <nav
           aria-label="Filtrar la colección"
-          className="-mx-4 flex gap-2 overflow-x-auto px-4 whitespace-nowrap [scrollbar-width:none] md:mx-0 md:px-0"
+          className="-mx-4 flex gap-2 overflow-x-auto px-4 whitespace-nowrap scrollbar-none md:mx-0 md:px-0"
         >
           {FILTERS.map((f) => (
             <Link
@@ -129,7 +116,7 @@ export default async function CollectionPage({
         </nav>
         <nav
           aria-label="Ordenar"
-          className="-mx-4 flex items-center gap-1 overflow-x-auto px-4 text-sm whitespace-nowrap [scrollbar-width:none] md:mx-0 md:px-0"
+          className="-mx-4 flex items-center gap-1 overflow-x-auto px-4 text-sm whitespace-nowrap scrollbar-none md:mx-0 md:px-0"
         >
           <span className="text-ink-soft">Ordenar</span>
           {SORTS.map((s) => (

@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ComicListItemDto } from "@/server/dto/comic";
 import { pluralize } from "@/lib/format";
 
+/** Cómic = viñeta entintada con su portada (el único color pleno) y su ficha debajo. */
 export function ComicCard({
   comic,
   eager = false,
@@ -17,8 +18,8 @@ export function ComicCard({
       : "Sin personajes";
 
   return (
-    <Link href={`/comics/${comic.id}`} className="group flex flex-col gap-2">
-      <div className="relative aspect-2/3 overflow-hidden rounded-md bg-foreground/10">
+    <Link href={`/comics/${comic.id}`} className="group flex flex-col">
+      <div className="relative aspect-2/3 overflow-hidden border-2 border-ink bg-sheet">
         {comic.coverThumbUrl ? (
           <Image
             src={comic.coverThumbUrl}
@@ -26,20 +27,16 @@ export function ComicCard({
             fill
             unoptimized
             loading={eager ? "eager" : "lazy"}
-            className="object-cover transition-transform duration-200 group-hover:scale-105"
+            className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="flex h-full items-center justify-center p-2 text-center text-xs opacity-60">
+          <div className="flex h-full items-center justify-center p-2 text-center text-xs text-ink-soft">
             Sin portada
           </div>
         )}
       </div>
-      <div className="text-sm">
-        <p className="font-medium leading-tight">{comic.title}</p>
-        <p className="opacity-60">
-          {[year, characters].filter(Boolean).join(" · ")}
-        </p>
-      </div>
+      <p className="mt-2 text-sm leading-tight font-bold text-ink">{comic.title}</p>
+      <p className="mt-0.5 text-xs text-ink-soft">{[year, characters].filter(Boolean).join(" · ")}</p>
     </Link>
   );
 }
