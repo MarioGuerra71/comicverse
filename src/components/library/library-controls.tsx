@@ -9,6 +9,7 @@ import {
 } from "@/lib/reading-status";
 import { UnlockPanel, type UnlockView } from "@/components/library/unlock-panel";
 import { HeartIcon, RatingStarIcon } from "@/components/ui/icons";
+import { inkButton, inkField, inkTab } from "@/components/ui/page-parts";
 
 export interface LibraryControlsEntry {
   status: Status;
@@ -61,13 +62,12 @@ export function LibraryControls({
     }
   }
 
-  const buttonClass =
-    "min-h-11 rounded-md border border-foreground/20 px-3 py-2 text-sm disabled:opacity-50";
-  const activeClass = "bg-foreground text-background";
+  const quietButton =
+    "min-h-11 px-2 text-sm text-ink underline underline-offset-4 disabled:opacity-50";
 
   return (
     <section aria-labelledby="library-heading" className="flex flex-col gap-3">
-      <h2 id="library-heading" className="font-semibold">
+      <h2 id="library-heading" className="text-lg font-extrabold text-ink">
         Tu biblioteca
       </h2>
 
@@ -79,7 +79,7 @@ export function LibraryControls({
             aria-pressed={entry?.status === value}
             disabled={busy}
             onClick={() => send("PUT", { status: value })}
-            className={`${buttonClass} ${entry?.status === value ? activeClass : ""}`}
+            className={`${inkTab(entry?.status === value)} disabled:opacity-50`}
           >
             {READING_STATUS_LABELS[value]}
           </button>
@@ -89,7 +89,7 @@ export function LibraryControls({
             type="button"
             disabled={busy}
             onClick={() => send("DELETE")}
-            className={`${buttonClass} underline-offset-4 hover:underline`}
+            className={quietButton}
           >
             Quitar de la biblioteca
           </button>
@@ -103,7 +103,7 @@ export function LibraryControls({
             aria-pressed={entry.isFavorite}
             disabled={busy}
             onClick={() => send("PATCH", { isFavorite: !entry.isFavorite })}
-            className={`${buttonClass} inline-flex items-center gap-2 ${entry.isFavorite ? activeClass : ""}`}
+            className={`${inkTab(entry.isFavorite)} gap-2 disabled:opacity-50`}
           >
             <HeartIcon filled={entry.isFavorite} size={18} />
             {entry.isFavorite ? "Favorito" : "Añadir a favoritos"}
@@ -112,8 +112,8 @@ export function LibraryControls({
       )}
 
       {entry?.status === "READ" ? (
-        <div role="group" aria-label="Tu puntuación" className="flex flex-wrap items-center gap-2">
-          <span className="text-sm opacity-70">Tu puntuación:</span>
+        <div role="group" aria-label="Tu puntuación" className="flex flex-wrap items-center gap-1">
+          <span className="mr-1 text-sm text-ink-soft">Tu puntuación</span>
           {RATINGS.map((value) => (
             <button
               key={value}
@@ -122,7 +122,7 @@ export function LibraryControls({
               aria-label={`${value} de 5`}
               disabled={busy}
               onClick={() => send("PATCH", { rating: value })}
-              className={`${buttonClass} inline-flex min-w-11 items-center justify-center`}
+              className="inline-flex min-h-11 min-w-11 items-center justify-center disabled:opacity-50"
             >
               <RatingStarIcon
                 size={20}
@@ -136,14 +136,14 @@ export function LibraryControls({
               type="button"
               disabled={busy}
               onClick={() => send("PATCH", { rating: null })}
-              className="min-h-11 px-2 text-sm underline-offset-4 hover:underline disabled:opacity-50"
+              className={quietButton}
             >
               Quitar puntuación
             </button>
           )}
         </div>
       ) : (
-        entry && <p className="text-sm opacity-70">Podrás puntuarlo cuando lo marques como leído.</p>
+        entry && <p className="text-sm text-ink-soft">Podrás puntuarlo cuando lo marques como leído.</p>
       )}
 
       {entry?.status === "READ" && (
@@ -157,7 +157,7 @@ export function LibraryControls({
           }}
           className="flex flex-col gap-2"
         >
-          <label htmlFor="review-body" className="text-sm opacity-70">
+          <label htmlFor="review-body" className="text-sm text-ink-soft">
             Tu reseña (privada)
           </label>
           <textarea
@@ -167,10 +167,10 @@ export function LibraryControls({
             maxLength={5000}
             rows={4}
             defaultValue={review?.body ?? ""}
-            className="rounded-md border border-foreground/20 bg-transparent p-2 text-sm"
+            className={`${inkField} py-2`}
           />
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={busy} className={buttonClass}>
+            <button type="submit" disabled={busy} className={inkButton}>
               {review ? "Guardar cambios" : "Guardar reseña"}
             </button>
             {review && (
@@ -178,7 +178,7 @@ export function LibraryControls({
                 type="button"
                 disabled={busy}
                 onClick={() => send("DELETE", undefined, "/review")}
-                className="min-h-11 px-2 text-sm underline-offset-4 hover:underline disabled:opacity-50"
+                className={quietButton}
               >
                 Borrar reseña
               </button>

@@ -33,13 +33,13 @@ export default async function ComicPage({
   const releaseDate = formatDate(comic.releaseDate);
 
   return (
-    <main className="mx-auto max-w-4xl p-6">
-      <Link href="/catalog" className="text-sm underline">
+    <main className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-8">
+      <Link href="/catalog" className="text-sm text-ink underline">
         ← Volver al catálogo
       </Link>
 
       <div className="mt-4 grid gap-6 sm:grid-cols-[minmax(0,16rem)_1fr]">
-        <div className="relative aspect-2/3 w-full max-w-64 overflow-hidden rounded-md bg-foreground/10">
+        <div className="relative aspect-2/3 w-full max-w-64 overflow-hidden border-2 border-ink bg-sheet">
           {comic.coverUrl ? (
             <Image
               src={comic.coverUrl}
@@ -50,7 +50,7 @@ export default async function ComicPage({
               className="object-cover"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm opacity-60">
+            <div className="flex h-full items-center justify-center text-sm text-ink-soft">
               Sin portada
             </div>
           )}
@@ -58,16 +58,16 @@ export default async function ComicPage({
 
         <div className="flex flex-col gap-4">
           <div>
-            <h1 className="text-2xl font-bold">{comic.title}</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-ink">{comic.title}</h1>
             {comic.storyTitle && (
-              <p className="mt-1 text-sm opacity-70">{comic.storyTitle}</p>
+              <p className="mt-1 text-sm text-ink-soft">{comic.storyTitle}</p>
             )}
           </div>
 
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-            <dt className="opacity-60">Editorial</dt>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-y-2 border-ink py-2 text-sm text-ink">
+            <dt className="text-ink-soft">Editorial</dt>
             <dd>{comic.publisher}</dd>
-            <dt className="opacity-60">Serie</dt>
+            <dt className="text-ink-soft">Serie</dt>
             <dd>
               <Link
                 href={buildCatalogHref({ seriesId: comic.series.id })}
@@ -78,7 +78,7 @@ export default async function ComicPage({
             </dd>
             {releaseDate && (
               <>
-                <dt className="opacity-60">Fecha</dt>
+                <dt className="text-ink-soft">Fecha</dt>
                 <dd>{releaseDate}</dd>
               </>
             )}
@@ -87,17 +87,25 @@ export default async function ComicPage({
           <LibraryControls comicId={comic.id} entry={entry} review={review} />
 
           <section aria-labelledby="characters-heading">
-            <h2 id="characters-heading" className="font-semibold">
-              Personajes que descubrirás
+            <h2 id="characters-heading" className="text-lg font-extrabold text-ink">
+              {entry?.status === "READ" ? "Personajes" : "Personajes que descubrirás"}
             </h2>
-            {comic.characterCount > 0 ? (
-              <p className="mt-1 text-sm opacity-80">
+            {comic.characterCount > 0 && entry?.status === "READ" ? (
+              <p className="mt-1 text-sm text-ink-soft">
+                Ya leído: {comic.characterCount === 1 ? "su personaje está entintado" : "sus personajes están entintados"} en{" "}
+                <Link href="/collection" className="text-ink underline">
+                  tu colección
+                </Link>
+                .
+              </p>
+            ) : comic.characterCount > 0 ? (
+              <p className="mt-1 text-sm text-ink-soft">
                 Este cómic contiene{" "}
                 {pluralize(comic.characterCount, "personaje", "personajes")} por
                 descubrir. Se desbloquearán al marcarlo como leído.
               </p>
             ) : (
-              <p className="mt-1 text-sm opacity-80">
+              <p className="mt-1 text-sm text-ink-soft">
                 Este cómic no incluye ningún personaje coleccionable, así que
                 leerlo no desbloqueará nada.
               </p>
@@ -108,10 +116,10 @@ export default async function ComicPage({
 
       {comic.description && (
         <section aria-labelledby="description-heading" className="mt-8">
-          <h2 id="description-heading" className="font-semibold">
+          <h2 id="description-heading" className="text-lg font-extrabold text-ink">
             Descripción
           </h2>
-          <p className="mt-2 max-w-prose whitespace-pre-line text-sm leading-relaxed opacity-90">
+          <p className="mt-2 max-w-prose whitespace-pre-line text-sm leading-relaxed text-ink">
             {comic.description}
           </p>
         </section>
