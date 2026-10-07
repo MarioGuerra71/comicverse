@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-07T00:00:00Z",
+  "title": "Design System: ComicVerse",
+  "extensions": {
+    "colorMeta": {
+      "gold": { "role": "primary", "displayName": "Dorado de constelación", "canonical": "#e2b04a", "tonalRamp": ["#3a2a08", "#5c4410", "#80601a", "#a67d26", "#c99836", "#e2b04a", "#eecb85", "#f8e7c4"] },
+      "night": { "role": "neutral", "displayName": "Noche de Prusia", "canonical": "#0b1220", "tonalRamp": ["#05080f", "#0b1220", "#15233f", "#1c2d50", "#33476e", "#5a6f96", "#a9b6ce", "#eef1f7"] },
+      "plate": { "role": "neutral", "displayName": "Plancha", "canonical": "#15233f", "tonalRamp": ["#05080f", "#0b1220", "#15233f", "#1c2d50", "#33476e", "#5a6f96", "#a9b6ce", "#eef1f7"] },
+      "plate-raised": { "role": "neutral", "displayName": "Plancha alzada", "canonical": "#1c2d50", "tonalRamp": ["#05080f", "#0b1220", "#15233f", "#1c2d50", "#33476e", "#5a6f96", "#a9b6ce", "#eef1f7"] },
+      "line": { "role": "neutral", "displayName": "Filete", "canonical": "rgb(127 147 184 / 0.28)" },
+      "line-strong": { "role": "neutral", "displayName": "Filete marcado", "canonical": "rgb(127 147 184 / 0.55)" },
+      "star": { "role": "neutral", "displayName": "Blanco estelar", "canonical": "#eef1f7" },
+      "dim": { "role": "neutral", "displayName": "Tinta tenue", "canonical": "#a9b6ce" },
+      "danger": { "role": "error", "displayName": "Rojo de error", "canonical": "#f08a7e", "tonalRamp": ["#3d100b", "#621c14", "#8a2c21", "#b54232", "#dc6656", "#f08a7e", "#f6b6ad", "#fbe1dd"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Título de página en md+ (Mi colección)." },
+      "headline": { "displayName": "Headline", "purpose": "Título de página en el móvil; título de la 404." },
+      "brand": { "displayName": "Marca", "purpose": "La palabra ComicVerse junto a la estrella." },
+      "counter": { "displayName": "Contador", "purpose": "Cifra principal de progreso, tabular." },
+      "title": { "displayName": "Title", "purpose": "Nombre del personaje bajo la lámina." },
+      "body": { "displayName": "Body", "purpose": "Interfaz, navegación, filtros, párrafos." },
+      "label": { "displayName": "Label", "purpose": "Número de catálogo, metadatos, pie de atribución." },
+      "nav-label": { "displayName": "Etiqueta de pestaña", "purpose": "Texto bajo el icono en la barra inferior." }
+    },
+    "shadows": [],
+    "focus": { "value": "outline: 2px solid var(--gold); outline-offset: 2px", "purpose": "Foco de teclado global." },
+    "motion": [
+      { "name": "pop-in", "value": "pop-in 400ms cubic-bezier(0.16, 1, 0.3, 1) both", "purpose": "Desbloqueo: de opacidad 0, translateY(8px) scale(0.95) a reposo. Siempre tras motion-safe." },
+      { "name": "color-transition", "value": "150ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Hover de navegación, filtros y ordenación." },
+      { "name": "plate-zoom", "value": "transform 300ms ease-out, scale 1.03", "purpose": "Hover de la imagen de una lámina." },
+      { "name": "star-focus", "value": "transform 200ms, scale 1.25", "purpose": "Hover y foco de una estrella del cielo." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Elemento de barra lateral",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Navegación lateral: inactivo, hover y activo (plancha alzada, sin color).",
+      "html": "<nav class=\"ds-side\"><a class=\"ds-side-item\" href=\"#\" aria-current=\"page\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 20h16\"/><path d=\"M6 20v-7a6 6 0 0 1 12 0v7\"/><path d=\"M12 7v4\"/><path d=\"M10 20v-4h4v4\"/></svg><span>Inicio</span></a><a class=\"ds-side-item\" href=\"#\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M12 2.5c.6 5 4.5 8.9 9.5 9.5-5 .6-8.9 4.5-9.5 9.5-.6-5-4.5-8.9-9.5-9.5 5-.6 8.9-4.5 9.5-9.5Z\"/></svg><span>Colección</span></a></nav>",
+      "css": ".ds-side { display: flex; flex-direction: column; gap: 4px; width: 240px; padding: 16px 12px; background: var(--plate, #15233f); border-right: 1px solid var(--line, rgb(127 147 184 / 0.28)); } .ds-side-item { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 6px; font: 400 14px/1.43 Geist, system-ui, sans-serif; color: var(--dim, #a9b6ce); text-decoration: none; transition: color 150ms, background-color 150ms; } .ds-side-item:hover { color: var(--star, #eef1f7); background: rgb(28 45 80 / 0.6); } .ds-side-item[aria-current=page] { color: var(--star, #eef1f7); background: var(--plate-raised, #1c2d50); } .ds-side-item:focus-visible { outline: 2px solid var(--gold, #e2b04a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Barra inferior (móvil)",
+      "kind": "nav",
+      "refersTo": "bottom-tab",
+      "description": "Cinco pestañas con icono y etiqueta; la activa se enciende en blanco con un punto.",
+      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 20h16\"/><path d=\"M6 20v-7a6 6 0 0 1 12 0v7\"/><path d=\"M12 7v4\"/><path d=\"M10 20v-4h4v4\"/></svg>Inicio</a><a class=\"ds-tab\" href=\"#\" aria-current=\"page\"><span class=\"ds-tab-dot\"></span><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M12 2.5c.6 5 4.5 8.9 9.5 9.5-5 .6-8.9 4.5-9.5 9.5-.6-5-4.5-8.9-9.5-9.5 5-.6 8.9-4.5 9.5-9.5Z\"/></svg>Colección</a></nav>",
+      "css": ".ds-tabs { display: grid; grid-template-columns: repeat(2, 1fr); width: 200px; background: var(--plate, #15233f); border-top: 1px solid var(--line, rgb(127 147 184 / 0.28)); } .ds-tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 64px; font: 500 11px/1.33 Geist, system-ui, sans-serif; color: var(--dim, #a9b6ce); text-decoration: none; } .ds-tab[aria-current=page] { color: var(--star, #eef1f7); } .ds-tab-dot { position: absolute; top: 6px; width: 4px; height: 4px; border-radius: 9999px; background: var(--star, #eef1f7); } .ds-tab:focus-visible { outline: 2px solid var(--gold, #e2b04a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Pill de filtro",
+      "kind": "chip",
+      "refersTo": "filter-pill",
+      "description": "Filtro con recuento; la activa sube de plancha y de filete.",
+      "html": "<div class=\"ds-pills\"><a class=\"ds-pill\" href=\"#\" aria-current=\"page\">Todos<span class=\"ds-pill-n\">32</span></a><a class=\"ds-pill\" href=\"#\">Coleccionados<span class=\"ds-pill-n\">2</span></a></div>",
+      "css": ".ds-pills { display: flex; gap: 8px; } .ds-pill { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border: 1px solid var(--line, rgb(127 147 184 / 0.28)); border-radius: 6px; font: 400 14px/1.43 Geist, system-ui, sans-serif; color: var(--dim, #a9b6ce); text-decoration: none; transition: color 150ms, border-color 150ms; } .ds-pill:hover { border-color: var(--line-strong, rgb(127 147 184 / 0.55)); color: var(--star, #eef1f7); } .ds-pill[aria-current=page] { border-color: var(--line-strong, rgb(127 147 184 / 0.55)); background: var(--plate-raised, #1c2d50); color: var(--star, #eef1f7); } .ds-pill-n { margin-left: 6px; color: var(--dim, #a9b6ce); font-variant-numeric: tabular-nums; } .ds-pill:focus-visible { outline: 2px solid var(--gold, #e2b04a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Lámina de personaje",
+      "kind": "card",
+      "refersTo": "character-card",
+      "description": "Imagen sin tintar 3:4, número de catálogo y, si está coleccionada, filete dorado.",
+      "html": "<a class=\"ds-card\" href=\"#\"><div class=\"ds-card-plate ds-card-collected\"><div class=\"ds-card-img\"></div></div><div class=\"ds-card-meta\"><span class=\"ds-catno\"><span class=\"ds-catno-n\">Nº</span> 006<span class=\"ds-catno-t\"> / 032</span></span><span class=\"ds-card-new\">Nuevo</span></div><h2 class=\"ds-card-name\">Spider-Man</h2><p class=\"ds-card-sub\">Peter Parker</p><p class=\"ds-card-sub\">3 cómics leídos</p></a>",
+      "css": ".ds-card { display: flex; flex-direction: column; width: 140px; text-decoration: none; } .ds-card-plate { position: relative; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 4px; border: 1px solid var(--line, rgb(127 147 184 / 0.28)); background: var(--plate, #15233f); } .ds-card-collected { border-color: var(--gold, #e2b04a); } .ds-card-img { position: absolute; inset: 0; background: var(--plate-raised, #1c2d50); transition: transform 300ms ease-out; } .ds-card:hover .ds-card-img { transform: scale(1.03); } .ds-card-meta { margin-top: 8px; display: flex; justify-content: space-between; align-items: center; font: 400 12px/1.33 Geist, system-ui, sans-serif; } .ds-catno { font-size: 14px; color: var(--star, #eef1f7); font-variant-numeric: tabular-nums; } .ds-catno-n { font-family: Marcellus, Georgia, serif; } .ds-catno-t { color: var(--dim, #a9b6ce); } .ds-card-new { font-weight: 500; color: var(--gold, #e2b04a); } .ds-card-name { margin: 2px 0 0; font: 500 14px/1.25 Geist, system-ui, sans-serif; color: var(--star, #eef1f7); } .ds-card-sub { margin: 2px 0 0; font: 400 12px/1.33 Geist, system-ui, sans-serif; color: var(--dim, #a9b6ce); } .ds-card:focus-visible { outline: 2px solid var(--gold, #e2b04a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Hueco bloqueado",
+      "kind": "card",
+      "refersTo": "locked-slot",
+      "description": "Solo el número de catálogo: ni nombre, ni imagen, ni id. No es enlace.",
+      "html": "<div class=\"ds-locked\" role=\"img\" aria-label=\"Nº 014: personaje por descubrir\"><div class=\"ds-locked-plate\">?</div><div class=\"ds-locked-meta\"><span class=\"ds-catno\"><span class=\"ds-catno-n\">Nº</span> 014<span class=\"ds-catno-t\"> / 032</span></span></div></div>",
+      "css": ".ds-locked { display: flex; flex-direction: column; width: 140px; } .ds-locked-plate { display: flex; align-items: center; justify-content: center; aspect-ratio: 3 / 4; border-radius: 4px; border: 1px solid var(--line, rgb(127 147 184 / 0.28)); background: rgb(21 35 63 / 0.3); font: 400 30px/1 Marcellus, Georgia, serif; color: var(--line-strong, rgb(127 147 184 / 0.55)); } .ds-locked-meta { margin-top: 8px; opacity: 0.7; } .ds-catno { font: 400 14px/1.33 Geist, system-ui, sans-serif; color: var(--star, #eef1f7); font-variant-numeric: tabular-nums; } .ds-catno-n { font-family: Marcellus, Georgia, serif; } .ds-catno-t { color: var(--dim, #a9b6ce); }"
+    },
+    {
+      "name": "Tu cielo",
+      "kind": "custom",
+      "refersTo": "sky-chart",
+      "description": "Carta celeste grabada: graduación, constelaciones curadas, estrellas blancas o doradas, aro dorado en lo nuevo, puntos apagados para lo bloqueado.",
+      "html": "<figure class=\"ds-sky\"><svg viewBox=\"0 0 1000 360\" role=\"group\" aria-label=\"Tu cielo: 3 de 32 personajes descubiertos\"><g fill=\"none\" stroke=\"rgb(127 147 184 / 0.28)\" stroke-width=\"1\" vector-effect=\"non-scaling-stroke\"><ellipse cx=\"500\" cy=\"180\" rx=\"490\" ry=\"169\" stroke=\"rgb(127 147 184 / 0.55)\"/><ellipse cx=\"500\" cy=\"180\" rx=\"245\" ry=\"85\" stroke-dasharray=\"2 6\"/><path d=\"M 20 223 Q 500 65 980 144\" stroke-dasharray=\"2 6\"/></g><g><line x1=\"430\" y1=\"150\" x2=\"580\" y2=\"210\" stroke=\"rgb(127 147 184 / 0.55)\"/><circle cx=\"300\" cy=\"120\" r=\"4\" fill=\"rgb(127 147 184 / 0.55)\"/><circle cx=\"700\" cy=\"260\" r=\"4\" fill=\"rgb(127 147 184 / 0.55)\"/></g><circle cx=\"430\" cy=\"150\" r=\"15\" fill=\"#e2b04a\"/><circle cx=\"580\" cy=\"210\" r=\"10\" fill=\"#eef1f7\"/><circle cx=\"580\" cy=\"210\" r=\"24\" fill=\"none\" stroke=\"#e2b04a\" stroke-width=\"2.5\"/><text x=\"453\" y=\"156\" font-family=\"Marcellus, Georgia, serif\" font-size=\"17\" fill=\"#a9b6ce\" stroke=\"#0b1220\" stroke-width=\"6\" stroke-linejoin=\"round\" paint-order=\"stroke\">Spider-Man</text></svg></figure>",
+      "css": ".ds-sky { margin: 0; width: 560px; overflow: hidden; border-radius: 6px; border: 1px solid var(--line, rgb(127 147 184 / 0.28)); background: rgb(21 35 63 / 0.4); } .ds-sky svg { display: block; width: 100%; height: auto; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Atlas estelar",
+    "overview": "La colección es un cielo nocturno grabado: leer enciende estrellas. El sistema es una carta celeste de noche, pensada para el móvil en el sofá justo después de leer. Suelo azul de Prusia casi negro, planchas un tono más claras, filetes de grabado de 1 px y texto en blanco estelar. Hay pocos valores y casi ningún adorno: la profundidad y el orden vienen del filete y del cambio de tono, nunca del brillo.\n\nEl único color con voz es el dorado, y está racionado: marca lo coleccionado, lo recién descubierto (hasta que se ha visto) y el foco del teclado. Los rótulos usan una romana grabada de mayúsculas (Marcellus) solo para la marca, los títulos de página y el \"Nº\" de catálogo; todo lo demás es Geist con cifras tabulares. Las portadas e imágenes de personaje se muestran como láminas sin tintar.\n\nRechazos confirmados: el \"streaming oscuro con un acento neón\" y el pop-art de tramas. Solo hay tema oscuro (color-scheme: dark), elegido por la escena de uso; no existe tema claro.",
+    "keyCharacteristics": [
+      "Solo tema oscuro; suelo night, planchas plate / plate-raised.",
+      "Filetes de 1 px en azul pálido translúcido como única estructura.",
+      "Dorado reservado a coleccionado, nuevo y foco.",
+      "Romana grabada para marca, títulos y \"Nº\"; Geist tabular para la interfaz y las cifras.",
+      "Iconos SVG propios de trazo 1,5 px sobre rejilla de 24.",
+      "Nada bloqueado se revela: un hueco solo muestra su número de catálogo."
+    ],
+    "rules": [
+      { "name": "The Gold Ration Rule", "body": "El dorado solo significa \"coleccionado\", \"nuevo hasta que se ve\" o \"foco\". Nunca decora, nunca marca un estado activo de navegación (eso es plate-raised + star) y nunca es un botón.", "section": "colors" },
+      { "name": "The No Glow Rule", "body": "Sin brillos, sin sombras de color y sin degradados en el texto. Una estrella destaca por tamaño y relleno, no por halo luminoso.", "section": "colors" },
+      { "name": "The Tabular Rule", "body": "Todas las cifras son tabulares (font-variant-numeric: tabular-nums en body): los contadores no bailan al cambiar.", "section": "typography" },
+      { "name": "The Catalog Number Rule", "body": "El número de catálogo se escribe \"Nº 014 / 032\": \"Nº\" en Marcellus, cifras en Geist tabular a tres dígitos, el total en dim. Las cifras nunca van en Marcellus por debajo de tamaño de título: a 12-14 px su 0 y su 1 se leen como O e I.", "section": "typography" },
+      { "name": "The Engraved Title Rule", "body": "Marcellus solo para marca, títulos de página, \"Nº\" y rótulos del cielo. Nunca para párrafos, botones ni etiquetas.", "section": "typography" },
+      { "name": "The Fixed Slot Rule", "body": "En orden de catálogo y sin filtro, cada hueco ocupa siempre su sitio: al desbloquear un personaje la casilla cambia de estado en su lugar y la rejilla no se recoloca.", "section": "layout" },
+      { "name": "The Plate Not Shadow Rule", "body": "Para separar o elevar algo, sube un tono de plancha o añade un filete. Nunca una sombra.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar los tokens con nombre (night, plate, plate-raised, line, line-strong, star, dim, gold, danger) en toda pantalla nueva o rediseñada.",
+      "Do reservar gold a coleccionado, nuevo-hasta-visto y foco (Gold Ration Rule).",
+      "Do escribir los números de catálogo como \"Nº 014 / 032\" con \"Nº\" en Marcellus y cifras en Geist tabular.",
+      "Do separar con filetes de 1 px y con tonos de plancha, no con sombras.",
+      "Do dar 44 px de zona táctil a todo control, aunque se dibuje más pequeño.",
+      "Do dibujar iconos nuevos con trazo de 1,5 px en rejilla de 24, extremos redondeados y currentColor.",
+      "Do mostrar un personaje bloqueado solo por su número de catálogo.",
+      "Do mantener visible en todas las pantallas el pie de atribución a Comic Vine."
+    ],
+    "donts": [
+      "Don't usar brillos, sombras de color, neones ni degradados en el texto.",
+      "Don't introducir tramas ni recursos de pop-art.",
+      "Don't añadir un tema claro: el sistema es solo oscuro.",
+      "Don't usar emojis ni símbolos Unicode (★, ♥, →) como iconos; los iconos son los SVG propios. El \"?\" grabado del hueco bloqueado es un rótulo tipográfico, no un icono.",
+      "Don't poner cifras en Marcellus a tamaño de texto o etiqueta.",
+      "Don't exponer nombre, imagen o id de un personaje bloqueado, ni en el HTML.",
+      "Don't tintar las portadas ni las imágenes de personaje.",
+      "Don't dibujar en el cielo las relaciones de \"aparecen juntos\" ni más de 3 líneas por estrella; esas van en Universo."
+    ]
+  }
+}

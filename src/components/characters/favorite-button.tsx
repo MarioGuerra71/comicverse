@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { HeartIcon } from "@/components/ui/icons";
 
 export function FavoriteButton({
   characterId,
@@ -41,11 +42,12 @@ export function FavoriteButton({
         aria-pressed={isFavorite}
         disabled={busy}
         onClick={toggle}
-        className={`min-h-11 rounded-md border border-foreground/20 px-3 py-2 text-sm disabled:opacity-50 ${
+        className={`inline-flex min-h-11 items-center gap-2 rounded-md border border-foreground/20 px-3 py-2 text-sm disabled:opacity-50 ${
           isFavorite ? "bg-foreground text-background" : ""
         }`}
       >
-        {isFavorite ? "♥ Favorito" : "♡ Añadir a favoritos"}
+        <HeartIcon filled={isFavorite} size={18} />
+        {isFavorite ? "Favorito" : "Añadir a favoritos"}
       </button>
       {error && (
         <p role="alert" className="mt-2 text-sm text-danger">

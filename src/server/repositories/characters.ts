@@ -38,6 +38,7 @@ export function findCollection(db: Db, userId: string) {
     select: {
       ...characterSummarySelect,
       realName: true,
+      catalogNumber: true,
       favorites: { where: { userId }, select: { userId: true } },
       _count: {
         select: {
@@ -47,7 +48,7 @@ export function findCollection(db: Db, userId: string) {
         },
       },
     },
-    orderBy: { name: "asc" },
+    orderBy: [{ catalogNumber: { sort: "asc", nulls: "last" } }, { name: "asc" }],
   });
 }
 

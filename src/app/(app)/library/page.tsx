@@ -83,8 +83,8 @@ export default async function LibraryPage({
               <p className="text-xs font-medium opacity-80">
                 {[
                   !input.status && READING_STATUS_LABELS[item.status],
-                  item.rating !== null && `★ ${item.rating}/5`,
-                  item.isFavorite && "♥ Favorito",
+                  item.rating !== null && `Nota ${item.rating}/5`,
+                  item.isFavorite && "Favorito",
                 ]
                   .filter(Boolean)
                   .join(" · ")}

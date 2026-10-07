@@ -29,10 +29,11 @@ describe("toCharacterSummary", () => {
 });
 
 describe("toCollection", () => {
-  const row = (id: string, name: string, comicsRead: number) => ({
+  const row = (id: string, name: string, comicsRead: number, catalogNumber: number | null = null) => ({
     id,
     name,
     displayName: null,
+    catalogNumber,
     realName: `Real ${name}`,
     imageThumbUrl: `https://img.test/${id}.jpg`,
     favorites: [],
@@ -51,6 +52,30 @@ describe("toCollection", () => {
     expect(json).not.toContain("https://img.test/id-secret.jpg");
     expect(result.locked).toBe(1);
     expect(result.progress).toEqual({ unlocked: 1, total: 2 });
+  });
+
+  it("de los bloqueados solo envía el número de catálogo, para dejar su hueco", () => {
+    const result = toCollection([
+      row("id-spidey", "Spider-Man", 1, 1),
+      row("id-secret", "Personaje Secreto", 0, 17),
+    ]);
+
+    expect(result.lockedNumbers).toEqual([17]);
+    expect(JSON.stringify(result)).not.toContain("Personaje Secreto");
+    expect(JSON.stringify(result)).not.toContain("id-secret");
+  });
+
+  it("ordena las cartas por número de catálogo; sin número, al final", () => {
+    const { cards } = toCollection([
+      row("z", "Zeta", 1, null),
+      row("b", "Beta", 1, 2),
+      row("a", "Alfa", 1, 9),
+    ]);
+    expect(cards.map((c) => [c.name, c.number])).toEqual([
+      ["Beta", 2],
+      ["Alfa", 9],
+      ["Zeta", null],
+    ]);
   });
 
   it("calcula el estado de cada carta desbloqueada", () => {

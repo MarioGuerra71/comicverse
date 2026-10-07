@@ -1,5 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { findUnlockedCharacters } from "@/server/repositories/characters";
+import { markCollectionSeen } from "@/server/repositories/discoveries";
 import {
   CharacterNotFoundError,
   getCharacterDetail,
@@ -385,5 +386,23 @@ describe("getGraph con focus (ego-graph)", () => {
 
     expect(await getGraph(db, user.id, goblin.id)).toBeNull();
     expect(await getGraph(db, user.id, "00000000-0000-4000-8000-000000000000")).toBeNull();
+  });
+});
+
+describe("personajes nuevos en la colección", () => {
+  it("lo descubierto desde la última visita es nuevo; al verlo deja de serlo", async () => {
+    const { user, comicA, comicB } = await seed();
+    await setComicStatus(db, user.id, comicA.id, "READ");
+
+    const first = await getCollection(db, user.id);
+    expect(first.cards.filter((c) => c.isNew).map((c) => c.name).sort()).toEqual(["Spider-Man", "Venom"]);
+
+    await markCollectionSeen(db, user.id, new Date(Date.now() + 1));
+    expect((await getCollection(db, user.id)).cards.some((c) => c.isNew)).toBe(false);
+
+    await new Promise((r) => setTimeout(r, 5));
+    await setComicStatus(db, user.id, comicB.id, "READ");
+    const after = await getCollection(db, user.id);
+    expect(after.cards.filter((c) => c.isNew).map((c) => c.name)).toEqual(["Green Goblin"]);
   });
 });

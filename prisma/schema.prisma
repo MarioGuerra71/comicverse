@@ -38,6 +38,8 @@ model User {
   libraryEntries UserComic[]
   readingHistory ReadingHistory[]
   favoriteCharacters CharacterFavorite[]
+  // Última visita a "Mi colección": lo descubierto después se marca como nuevo (dorado).
+  collectionSeenAt   DateTime?
   discoveries        Discovery[]
 }
 
@@ -136,6 +138,9 @@ model Character {
   name                   String
   // Nombre para mostrar en las cartas (label curado de data/universe.json).
   displayName            String?
+  // Número de catálogo fijo de la colección (orden de data/universe.json, no alfabético:
+  // el número de un hueco bloqueado no debe dar pistas de quién es).
+  catalogNumber          Int?             @unique
   realName               String?
   summary                String?
   imageUrl               String?

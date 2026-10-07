@@ -8,6 +8,7 @@ import {
   type ReadingStatusKey as Status,
 } from "@/lib/reading-status";
 import { UnlockPanel, type UnlockView } from "@/components/library/unlock-panel";
+import { HeartIcon, RatingStarIcon } from "@/components/ui/icons";
 
 export interface LibraryControlsEntry {
   status: Status;
@@ -102,9 +103,10 @@ export function LibraryControls({
             aria-pressed={entry.isFavorite}
             disabled={busy}
             onClick={() => send("PATCH", { isFavorite: !entry.isFavorite })}
-            className={`${buttonClass} ${entry.isFavorite ? activeClass : ""}`}
+            className={`${buttonClass} inline-flex items-center gap-2 ${entry.isFavorite ? activeClass : ""}`}
           >
-            {entry.isFavorite ? "♥ Favorito" : "♡ Añadir a favoritos"}
+            <HeartIcon filled={entry.isFavorite} size={18} />
+            {entry.isFavorite ? "Favorito" : "Añadir a favoritos"}
           </button>
         </div>
       )}
@@ -120,9 +122,13 @@ export function LibraryControls({
               aria-label={`${value} de 5`}
               disabled={busy}
               onClick={() => send("PATCH", { rating: value })}
-              className={`${buttonClass} min-w-11 ${entry.rating !== null && value <= entry.rating ? activeClass : ""}`}
+              className={`${buttonClass} inline-flex min-w-11 items-center justify-center`}
             >
-              ★
+              <RatingStarIcon
+                size={20}
+                filled={entry.rating !== null && value <= entry.rating}
+                className={entry.rating !== null && value <= entry.rating ? "text-star" : "text-dim"}
+              />
             </button>
           ))}
           {entry.rating !== null && (

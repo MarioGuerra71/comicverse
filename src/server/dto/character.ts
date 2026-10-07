@@ -27,41 +27,63 @@ export function toCharacterSummary(row: CharacterSummaryRow): CharacterSummaryDt
 
 export interface CollectionRow extends CharacterSummaryRow {
   realName: string | null;
+  catalogNumber: number | null;
   favorites: { userId: string }[];
   _count: { comics: number };
 }
 
 export interface CollectionCardDto extends CharacterSummaryDto {
+  /** Número de catálogo fijo (Nº 014). */
+  number: number | null;
   realName: string | null;
   state: Exclude<CardState, "LOCKED">;
   comicsRead: number;
   isFavorite: boolean;
+  /** Descubierto desde la última visita a la colección (dorado hasta que se ve). */
+  isNew: boolean;
 }
 
 export interface CollectionDto {
   cards: CollectionCardDto[];
   /** De los bloqueados solo se envía cuántos son: ni id, ni nombre, ni imagen. */
   locked: number;
+  /**
+   * Y su número de catálogo, para dejar su hueco en el sitio. El orden de catálogo no es
+   * alfabético, así que el número no dice quién es.
+   */
+  lockedNumbers: number[];
   progress: { unlocked: number; total: number };
 }
 
 export function toCollection(rows: CollectionRow[]): CollectionDto {
   const cards: CollectionCardDto[] = [];
+  const lockedNumbers: number[] = [];
   for (const row of rows) {
     const state = getCardState(row._count.comics);
-    if (state === "LOCKED") continue;
+    if (state === "LOCKED") {
+      if (row.catalogNumber !== null) lockedNumbers.push(row.catalogNumber);
+      continue;
+    }
     cards.push({
       ...toCharacterSummary(row),
+      number: row.catalogNumber,
       realName: row.realName,
       state,
       comicsRead: row._count.comics,
       isFavorite: row.favorites.length > 0,
+      isNew: false,
     });
   }
-  cards.sort((a, b) => a.name.localeCompare(b.name));
+  // Orden de catálogo; los que aún no tienen número, al final por nombre.
+  cards.sort(
+    (a, b) =>
+      (a.number ?? Infinity) - (b.number ?? Infinity) || a.name.localeCompare(b.name),
+  );
+  lockedNumbers.sort((a, b) => a - b);
   return {
     cards,
     locked: rows.length - cards.length,
+    lockedNumbers,
     progress: { unlocked: cards.length, total: rows.length },
   };
 }
@@ -127,7 +149,9 @@ export function filterCards(cards: CollectionCardDto[], { filter, sort }: Collec
       (filter === "discovered" && card.state === "DISCOVERED") ||
       (filter === "collected" && card.state === "COLLECTED"),
   );
-  return sort === "comics"
-    ? [...filtered].sort((a, b) => b.comicsRead - a.comicsRead || a.name.localeCompare(b.name))
-    : filtered; // toCollection ya las deja por nombre
+  if (sort === "comics") {
+    return [...filtered].sort((a, b) => b.comicsRead - a.comicsRead || a.name.localeCompare(b.name));
+  }
+  if (sort === "name") return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+  return filtered; // "number": toCollection ya las deja en orden de catálogo
 }

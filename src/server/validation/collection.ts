@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const collectionSearchSchema = z.object({
   filter: z.enum(["all", "favorites", "discovered", "collected"]).default("all"),
-  sort: z.enum(["name", "comics"]).default("name"),
+  sort: z.enum(["number", "name", "comics"]).default("number"),
 });
 
 export type CollectionSearchInput = z.infer<typeof collectionSearchSchema>;

@@ -155,7 +155,7 @@ export async function importUniverse({
     issueExternalIds: Set<string>;
   }[] = [];
 
-  for (const entry of universe.characters) {
+  for (const [index, entry] of universe.characters.entries()) {
     const { results: c } = await client.get<CvCharacterDetail>(
       `character/4005-${entry.id}`,
       { field_list: CHARACTER_FIELDS },
@@ -170,6 +170,7 @@ export async function importUniverse({
       name,
       // Nombre de la carta: el label curado de universe.json, o el de Comic Vine.
       displayName: entry.label?.trim() || name,
+      catalogNumber: index + 1,
       realName: cleanRealName(c.real_name, name),
       summary: htmlToText(c.deck, 500),
       imageUrl: images.url,

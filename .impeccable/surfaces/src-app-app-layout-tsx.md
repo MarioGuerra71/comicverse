@@ -23,4 +23,6 @@ FIRST VIEWPORT: Móvil: barra inferior de 5 pestañas (Inicio, Catálogo, Biblio
 
 FORM: Atlas estelar, candidato 7 de 7 de la lista propia; seed 6e1bb28c. Raises: número de catálogo fijo (Saville), dorado de "nuevo" hasta que se ve (panel de puertas), cambio de estado en su sitio sin recolocar la rejilla (split-flap), pocos valores y filetes a 1 px (edición crítica), láminas sin tintar con crédito (anuario).
 
+ADAPTACIONES (revisión final, 2026-10-07): el crédito de fuente de las láminas no se repite en cada portada; lo cubre el pie global visible en todas las pantallas ("Datos e imágenes… Comic Vine"), porque el usuario pidió un diseño no sobrecargado y en una rejilla de 32 cartas el crédito por lámina sería ruido. Las cifras de los números de catálogo van en Geist tabular ("Nº" sigue en Marcellus): en Marcellus a 12-14 px el 0 y el 1 se leen como O e I. Las constelaciones del cielo son solo las relaciones curadas, como máximo 3 por estrella (las de más cómics juntos), para que el personaje central no convierta el cielo en un diagrama de red; las de "aparecen juntos" se ven en Universo.
+
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

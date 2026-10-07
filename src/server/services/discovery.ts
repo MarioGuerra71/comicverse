@@ -14,6 +14,7 @@ import {
   toCollection,
   type CharacterSummaryDto,
 } from "@/server/dto/character";
+import { findNewCharacterIds } from "@/server/repositories/discoveries";
 import {
   addFavorite,
   countCollectibleCharacters,
@@ -100,19 +101,21 @@ export class CharacterNotFoundError extends Error {
 export async function getCollection(
   db: PrismaClient,
   userId: string,
-  input: CollectionSearchInput = { filter: "all", sort: "name" },
+  input: CollectionSearchInput = { filter: "all", sort: "number" },
 ) {
-  const [rows, relationships] = await Promise.all([
+  const [rows, relationships, newIds] = await Promise.all([
     findCollection(db, userId),
     getRelationships(db),
+    findNewCharacterIds(db, userId),
   ]);
   const collection = toCollection(rows);
   const unlockedIds = idsOf(collection.cards);
-  const { cards } = collection;
+  const cards = collection.cards.map((c) => ({ ...c, isNew: newIds.has(c.id) }));
   return {
     cards: filterCards(cards, input),
     // Las siluetas solo tienen sentido en "todos".
     locked: input.filter === "all" ? collection.locked : 0,
+    lockedNumbers: input.filter === "all" ? collection.lockedNumbers : [],
     counts: {
       all: collection.progress.total,
       favorites: cards.filter((c) => c.isFavorite).length,
@@ -124,6 +127,10 @@ export async function getCollection(
       discovered: relationships.filter((r) => isDiscovered(r, unlockedIds)).length,
       total: relationships.length,
     },
+    // Constelaciones del cielo: solo relaciones con los dos extremos desbloqueados.
+    constellations: relationships
+      .filter((r) => isDiscovered(r, unlockedIds))
+      .map((r) => ({ a: r.a, b: r.b, curated: r.type !== null, shared: r.shared })),
   };
 }
 

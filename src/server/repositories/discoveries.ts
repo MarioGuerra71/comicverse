@@ -52,3 +52,22 @@ export async function findDiscoveriesPage(db: PrismaClient, userId: string, page
   ]);
   return { rows, total };
 }
+
+/**
+ * Personajes descubiertos desde la última visita a "Mi colección" (y aún desbloqueados).
+ * Sin visita previa, todo lo descubierto cuenta como nuevo.
+ */
+export async function findNewCharacterIds(db: Db, userId: string) {
+  const user = await db.user.findUnique({ where: { id: userId }, select: { collectionSeenAt: true } });
+  const since = user?.collectionSeenAt;
+  const rows = await db.discovery.findMany({
+    where: { ...visibleDiscoveries(userId), ...(since ? { createdAt: { gt: since } } : {}) },
+    distinct: ["characterId"],
+    select: { characterId: true },
+  });
+  return new Set(rows.map((r) => r.characterId));
+}
+
+export function markCollectionSeen(db: Db, userId: string, now = new Date()) {
+  return db.user.update({ where: { id: userId }, data: { collectionSeenAt: now } });
+}

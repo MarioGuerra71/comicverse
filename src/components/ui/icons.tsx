@@ -105,3 +105,27 @@ export function StarMark(props: IconProps) {
     </Svg>
   );
 }
+
+/** Favorito: corazón de trazo; `filled` lo rellena. */
+export function HeartIcon({ filled = false, ...props }: IconProps & { filled?: boolean }) {
+  return (
+    <Svg {...props}>
+      <path
+        d="M12 20s-7.5-4.6-7.5-10.1A4.4 4.4 0 0 1 12 7.2a4.4 4.4 0 0 1 7.5 2.7C19.5 15.4 12 20 12 20Z"
+        fill={filled ? "currentColor" : "none"}
+      />
+    </Svg>
+  );
+}
+
+/** Puntuación: estrella de cinco puntas; `filled` la rellena. */
+export function RatingStarIcon({ filled = false, ...props }: IconProps & { filled?: boolean }) {
+  return (
+    <Svg {...props}>
+      <path
+        d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z"
+        fill={filled ? "currentColor" : "none"}
+      />
+    </Svg>
+  );
+}
