@@ -106,6 +106,7 @@ Las variables se validan al arrancar. `.env` no se versiona.
 | `npm run universe:resolve` | Buscar y verificar ids de Comic Vine antes de ampliar el universo |
 | `npm run relationships:import` | Cargar las relaciones curadas de `data/relationships.json` |
 | `npm run releases:sync -- 3` | Traer las novedades de Marvel y DC de los últimos 3 días (en producción lo hace un cron diario de Vercel) |
+| `npm run characters:images` | Aplicar las imágenes de personajes elegidas a mano en `data/character-images.json` |
 
 ## API
 
