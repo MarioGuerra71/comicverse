@@ -1,3 +1,4 @@
+import type { Zone } from "@/lib/zones";
 import type { PrismaClient } from "../../../generated/prisma/client";
 import { toComicDetail, toComicListItem } from "@/server/dto/comic";
 import {
@@ -22,6 +23,6 @@ export async function getComicDetail(db: PrismaClient, id: string) {
   return row ? toComicDetail(row) : null;
 }
 
-export async function listSeries(db: PrismaClient) {
-  return findSeriesOptions(db);
+export async function listSeries(db: PrismaClient, zone?: Zone) {
+  return findSeriesOptions(db, zone);
 }

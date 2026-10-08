@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { BottomNav, SidebarNav } from "@/components/layout/app-nav";
+import { ZoneSwitch } from "@/components/layout/zone-switch";
 import { PanelMark } from "@/components/ui/icons";
+import type { Zone } from "@/lib/zones";
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -26,15 +28,26 @@ function Brand({ compact = false }: { compact?: boolean }) {
  * Móvil: barra superior + barra inferior de 5 pestañas. Tablet: carril de iconos.
  * Escritorio: barra lateral con texto.
  */
-export function AppShell({ userName, children }: { userName: string; children: React.ReactNode }) {
+export function AppShell({
+  userName,
+  zone,
+  children,
+}: {
+  userName: string;
+  zone: Zone;
+  children: React.ReactNode;
+}) {
   const initial = userName.trim().charAt(0).toUpperCase() || "?";
 
   return (
-    <div className="min-h-screen md:pl-20 lg:pl-60">
+    // data-publisher cambia el color de la editorial en toda la zona (ver globals.css).
+    <div data-publisher={zone} className="min-h-screen md:pl-20 lg:pl-60">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-20 flex-col border-r-2 border-ink bg-sheet bg-brand-fade-y py-4 md:flex lg:w-60">
         <div className="flex justify-center px-3 lg:justify-start lg:px-5">
           <Brand compact />
         </div>
+        {/* En el carril de la tablet no cabe: allí se cambia desde el catálogo. */}
+        <ZoneSwitch zone={zone} className="mx-3 mt-5 hidden lg:flex" />
         <div className="mt-6 flex-1">
           <SidebarNav />
         </div>
@@ -56,12 +69,18 @@ export function AppShell({ userName, children }: { userName: string; children: R
         </div>
       </aside>
 
-      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b-2 border-ink bg-sheet bg-brand-fade-x px-4 md:hidden">
+      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b-2 border-ink bg-brand px-4 md:hidden">
         <Brand />
+        <ZoneSwitch zone={zone} className="ml-auto mr-2" />
+        {/* Fundido a blanco solo detrás del avatar: el texto blanco queda sobre color pleno. */}
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-0 right-0 w-16 bg-linear-to-r from-brand to-sheet"
+        />
         <Link
           href="/profile"
           aria-label={`Perfil de ${userName}`}
-          className="flex h-11 w-11 items-center justify-center"
+          className="relative flex h-11 w-11 items-center justify-center"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-ink text-sm font-bold text-ink">
             {initial}

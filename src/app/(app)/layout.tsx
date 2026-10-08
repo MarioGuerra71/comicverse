@@ -1,4 +1,5 @@
 import { requireUser } from "@/server/auth/session";
+import { getZone } from "@/server/zone";
 import { AppShell } from "@/components/layout/app-shell";
 
 export default async function AppLayout({
@@ -6,7 +7,11 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await requireUser();
+  const [user, zone] = await Promise.all([requireUser(), getZone()]);
 
-  return <AppShell userName={user.name}>{children}</AppShell>;
+  return (
+    <AppShell userName={user.name} zone={zone}>
+      {children}
+    </AppShell>
+  );
 }

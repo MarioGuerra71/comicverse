@@ -8,6 +8,8 @@ import { requireUser } from "@/server/auth/session";
 import { listSeries, searchComics } from "@/server/services/catalog";
 import { comicSearchSchema } from "@/server/validation/catalog";
 import { normalizeParams, type SearchParams } from "@/lib/search-params";
+import { ZONES } from "@/lib/zones";
+import { getZone } from "@/server/zone";
 
 export const metadata: Metadata = { title: "Catálogo · ComicVerse" };
 
@@ -27,11 +29,13 @@ export default async function CatalogPage({
   const parsed = comicSearchSchema.safeParse(
     normalizeParams(await searchParams),
   );
-  const input = parsed.success ? parsed.data : comicSearchSchema.parse({});
+  const zone = await getZone();
+  // El catálogo siempre es el de la zona elegida (Marvel o DC).
+  const input = { ...(parsed.success ? parsed.data : comicSearchSchema.parse({})), publisher: zone };
 
   const [result, series] = await Promise.all([
     searchComics(db, input),
-    listSeries(db),
+    listSeries(db, zone),
   ]);
 
   const hrefFor = (page: number) =>
@@ -44,7 +48,7 @@ export default async function CatalogPage({
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
-      <PageHeader title="Catálogo" figure={result.total} figureLabel={result.total === 1 ? "cómic" : "cómics"} />
+      <PageHeader title={`Catálogo ${ZONES[zone].label}`} figure={result.total} figureLabel={result.total === 1 ? "cómic" : "cómics"} />
 
       <form method="get" className="mt-6 flex flex-wrap gap-3">
         <input
@@ -90,10 +94,16 @@ export default async function CatalogPage({
 
       {result.items.length === 0 ? (
         <div className="mt-10">
-          <p className="text-ink">No hay cómics que coincidan con la búsqueda.</p>
-          <Link href="/catalog" className="mt-2 inline-block text-sm text-ink underline">
-            Ver todo el catálogo
-          </Link>
+          <p className="text-ink">
+            {series.length === 0
+              ? `Aún no hay cómics de ${ZONES[zone].label} en el catálogo. Muy pronto podrás buscarlos aquí.`
+              : "No hay cómics que coincidan con la búsqueda."}
+          </p>
+          {series.length > 0 && (
+            <Link href="/catalog" className="mt-2 inline-block text-sm text-ink underline">
+              Ver todo el catálogo
+            </Link>
+          )}
         </div>
       ) : (
         <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">

@@ -1,3 +1,4 @@
+import { ZONES, type Zone } from "@/lib/zones";
 import type { Prisma, PrismaClient } from "../../../generated/prisma/client";
 import type { ComicSearchInput, ComicSort } from "@/server/validation/catalog";
 
@@ -33,6 +34,7 @@ function buildWhere(input: ComicSearchInput): Prisma.ComicWhereInput {
   const where: Prisma.ComicWhereInput = {};
 
   if (input.seriesId) where.seriesId = input.seriesId;
+  if (input.publisher) where.series = { publisher: { slug: ZONES[input.publisher].publisherSlug } };
 
   if (input.q) {
     where.OR = [
@@ -94,8 +96,9 @@ export function findComicById(db: PrismaClient, id: string) {
   });
 }
 
-export function findSeriesOptions(db: PrismaClient) {
+export function findSeriesOptions(db: PrismaClient, zone?: Zone) {
   return db.series.findMany({
+    where: zone ? { publisher: { slug: ZONES[zone].publisherSlug } } : undefined,
     orderBy: [{ name: "asc" }, { startYear: "asc" }],
     select: { id: true, name: true, startYear: true },
   });

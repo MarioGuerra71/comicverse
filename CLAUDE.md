@@ -262,7 +262,7 @@ Existentes:
 
 | Ruta | Descripción |
 |---|---|
-| `GET /comics?q=&seriesId=&sort=&page=&pageSize=` | Catálogo. `sort`: `release_desc` (por defecto), `release_asc`, `title`. `pageSize` ≤ 60. Solo devuelve `characterCount` |
+| `GET /comics?q=&seriesId=&publisher=&sort=&page=&pageSize=` | Catálogo. `publisher`: `marvel` o `dc` (zona). `sort`: `release_desc` (por defecto), `release_asc`, `title`. `pageSize` ≤ 60. Solo devuelve `characterCount` |
 | `GET /library?status=&page=&pageSize=` | Biblioteca propia + contadores por estado. `pageSize` ≤ 60 |
 | `GET/PUT/DELETE /library/comics/:comicId` | Estado de un cómic / añadir o cambiar estado (`{status}`; 404 `COMIC_NOT_FOUND`) / quitar |
 | `PATCH /library/comics/:comicId` | `{rating?: 1-5 \| null, isFavorite?: boolean}` (al menos uno). 404 `NOT_IN_LIBRARY`, 409 `RATING_REQUIRES_READ` |
@@ -298,7 +298,7 @@ Hecho: sección de seguridad en el README (incluido el aviso conocido de `npm au
 ## 13. Testing
 
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
-- Estado: **118 unitarios + 53 de integración** pasando (Fase 8, tras traducir los errores de acceso) (los de desbloqueo están en `tests/integration/unlock.test.ts`).
+- Estado: **118 unitarios + 54 de integración** pasando (Fase 8, tras traducir los errores de acceso) (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.mts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
@@ -343,6 +343,8 @@ Hecho: sección de seguridad en el README (incluido el aviso conocido de `npm au
 ## 16. Despliegue y documentación
 
 - Separar Development y Production con variables de entorno; sin secretos en Git; Vercel (gratis) + Neon/Supabase (gratis), verificando condiciones vigentes. La BD de producción se llena ejecutando el importador contra ella (no se llama a Comic Vine en tiempo de ejecución).
+- **Zonas Marvel / DC (2026-10-08, paso 1 del plan «cualquier cómic»):** `lib/zones.ts` (`ZONES`: slug de editorial `marvel` / `dc-comics`, cookie `cv-zone`, `parseZone`), `server/zone.ts` (`getZone()`), `ZoneSwitch` (cliente: escribe la cookie y `router.refresh()`) en el menú lateral (escritorio) y la barra del móvil. `(app)/layout` pone `data-publisher={zone}` en el `AppShell`: todo el color pasa a azul en DC. El catálogo y la lista de series filtran por la editorial de la zona (test `catalog-zones`). Aún sin filtrar por zona: inicio, colección y universo (llegará con los personajes de DC).
+- **Plan acordado con el usuario («buscar cualquier cómic de Marvel o DC y que salga»):** 1) zonas ✔; 2) búsqueda en Comic Vine cuando no está en la BD, guardando lo encontrado con sus personajes; 3) novedades diarias automáticas (Vercel Cron; necesitará `COMIC_VINE_API_KEY` y un secreto en Vercel); 4) cualquier personaje de lo leído pasa a ser coleccionable (la colección crece con el usuario).
 - **Portada y acceso (2026-10-08, petición del usuario: «más llamativo»):** `components/auth/brand-panel.tsx`: bloque rojo de la editorial con titular grande y mosaico de 6 portadas reales giradas que rota cada 4,5 s entre 4 épocas (`cover-shuffle.tsx`, cliente; quieto con «reducir movimiento»); en el acceso, a la izquierda del formulario (apilado en el móvil). Se quitó la tira de viñetas «001 002 003» (no se entendía).
 - **Desplegado (2026-10-08): https://comicverse-eight.vercel.app.** Verificado en producción: salud y conexión a Neon, cabeceras y CSP, registro, catálogo, desbloqueo (Spider-Man #568: 24 personajes), colección sin nombres de bloqueados (comprobados los 8 en HTML y API), CSRF 403 y límite de intentos 429 con la **IP real** del cliente (clave `RateLimit` = IP pública, no la de Vercel). El conector MCP de Vercel solo tiene acceso al listado de proyectos (403 en el ámbito `marioguerra71s-projects`): reautorizar con ese ámbito para ver despliegues y logs.
 - **Producción (2026-10-08):** BD en **Neon** (proyecto `comicverse`, Frankfurt, PostgreSQL 17). Tablas con `prisma migrate deploy` usando la URL **directa** (sin `-pooler`); catálogo copiado desde la BD local con `pg_dump --data-only` de las tablas de catálogo (sin usuarios) → `psql --single-transaction`; verificado: 833 cómics, 32 coleccionables, 4.403 enlaces, 59 curadas. La app usa la URL **pooled**. Credenciales en `.env.production.local` (ignorado por Git). Proyecto de Vercel `comicverse` (ámbito `marioguerra71s-projects`); variables: `DATABASE_URL` (pooled) y `BETTER_AUTH_SECRET`.
