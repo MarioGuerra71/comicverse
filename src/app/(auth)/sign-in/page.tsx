@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { inkButton, inkField } from "@/components/ui/page-parts";
+import { authErrorMessage } from "@/lib/auth-errors";
 import { signIn } from "@/lib/auth-client";
 
 export default function SignInPage() {
@@ -24,7 +25,7 @@ export default function SignInPage() {
 
     setLoading(false);
     if (res.error) {
-      setError(res.error.message ?? "No se pudo iniciar sesión.");
+      setError(authErrorMessage(res.error, "No se pudo iniciar sesión."));
       return;
     }
     router.push("/dashboard");

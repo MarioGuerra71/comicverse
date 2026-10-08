@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { inkButton, inkField } from "@/components/ui/page-parts";
+import { authErrorMessage } from "@/lib/auth-errors";
 import { signUp } from "@/lib/auth-client";
 
 export default function SignUpPage() {
@@ -25,7 +26,7 @@ export default function SignUpPage() {
 
     setLoading(false);
     if (res.error) {
-      setError(res.error.message ?? "No se pudo crear la cuenta.");
+      setError(authErrorMessage(res.error, "No se pudo crear la cuenta."));
       return;
     }
     router.push("/dashboard");
