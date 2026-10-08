@@ -119,6 +119,8 @@ model Comic {
   source        DataSource
   externalId    String
   syncedAt      DateTime         @default(now())
+  // Cuándo se trajo de Comic Vine la lista completa de personajes del cómic (null = nunca).
+  charactersSyncedAt DateTime?
   characters    ComicCharacter[]
   creators      ComicCreator[]
   events        ComicEvent[]

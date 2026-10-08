@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { badRequest, getApiUser, parseBody, unauthorized } from "@/server/auth/api";
+import { getComicVineClient } from "@/server/integrations/comic-sources/comicvine/server-client";
+import { ensureComicCharacters } from "@/server/jobs/sync-comic-characters";
 import {
   ComicNotFoundError,
   getLibraryEntry,
@@ -36,6 +38,9 @@ export async function PUT(request: Request, { params }: Context) {
 
   const body = await parseBody(request, setStatusSchema);
   if (body.error) return body.error;
+
+  // Antes de marcar como leído: que el cómic tenga sus personajes (si no, no desbloquearía nada).
+  if (body.data.status === "READ") await ensureComicCharacters(db, getComicVineClient(), comicId);
 
   try {
     return Response.json(await setComicStatus(db, user.id, comicId, body.data.status));

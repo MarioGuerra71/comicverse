@@ -9,13 +9,18 @@ import { formatDate, pluralize } from "@/lib/format";
 import { buildCatalogHref } from "@/lib/catalog-url";
 import { requireUser } from "@/server/auth/session";
 import { getComicDetail } from "@/server/services/catalog";
+import { getComicVineClient } from "@/server/integrations/comic-sources/comicvine/server-client";
+import { ensureComicCharacters } from "@/server/jobs/sync-comic-characters";
 import { getLibraryEntry, getReview } from "@/server/services/library";
 import { LibraryControls } from "@/components/library/library-controls";
 
 // cache: la página y su título comparten una sola consulta por petición.
-const loadComic = cache(async (id: string) =>
-  z.uuid().safeParse(id).success ? getComicDetail(db, id) : null,
-);
+// La primera vez que se abre un cómic se traen sus personajes de Comic Vine (una petición).
+const loadComic = cache(async (id: string) => {
+  if (!z.uuid().safeParse(id).success) return null;
+  await ensureComicCharacters(db, getComicVineClient(), id);
+  return getComicDetail(db, id);
+});
 
 export async function generateMetadata({
   params,
