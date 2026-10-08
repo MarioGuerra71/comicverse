@@ -89,7 +89,8 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 | `DATABASE_URL` | Conexión a PostgreSQL |
 | `BETTER_AUTH_SECRET` | Secreto de sesiones (≥ 32 caracteres, distinto en cada entorno) |
 | `BETTER_AUTH_URL` | URL pública de la app (`http://localhost:3000` en local). En Vercel no hace falta: se usa el dominio de producción del proyecto |
-| `COMIC_VINE_API_KEY` | Clave de Comic Vine. Solo la usan los scripts de importación, en el servidor |
+| `COMIC_VINE_API_KEY` | Clave de Comic Vine. Solo la usa el servidor: búsqueda e importación de series, personajes y novedades |
+| `CRON_SECRET` | Secreto con el que Vercel Cron llama a la tarea diaria de novedades |
 
 Las variables se validan al arrancar. `.env` no se versiona.
 
@@ -104,6 +105,7 @@ Las variables se validan al arrancar. `.env` no se versiona.
 | `npm run universe:import` | Importar el universo de `data/universe.json` desde Comic Vine |
 | `npm run universe:resolve` | Buscar y verificar ids de Comic Vine antes de ampliar el universo |
 | `npm run relationships:import` | Cargar las relaciones curadas de `data/relationships.json` |
+| `npm run releases:sync -- 3` | Traer las novedades de Marvel y DC de los últimos 3 días (en producción lo hace un cron diario de Vercel) |
 
 ## API
 

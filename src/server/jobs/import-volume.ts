@@ -16,8 +16,8 @@ import type {
 } from "@/server/integrations/comic-sources/comicvine/types";
 
 export const SOURCE = "COMICVINE" as const;
-const VOLUME_FIELDS = "id,name,start_year,publisher";
-const ISSUE_FIELDS = "id,name,issue_number,cover_date,store_date,image,description";
+export const VOLUME_FIELDS = "id,name,start_year,publisher";
+export const ISSUE_FIELDS = "id,name,issue_number,cover_date,store_date,image,description";
 
 function parseYear(value: string | number | null): number | null {
   const year =
@@ -43,6 +43,30 @@ export async function ensurePublisher(
   });
   cache.set(slug, publisher.id);
   return publisher.id;
+}
+
+/** Guarda (o actualiza) un cómic de una serie ya guardada. */
+export async function upsertComic(
+  db: PrismaClient,
+  series: { id: string; name: string },
+  issue: CvIssueSummary,
+) {
+  const images = pickImageUrls(issue.image);
+  const externalId = String(issue.id);
+  const data = {
+    issueNumber: issue.issue_number?.trim() || null,
+    title: buildComicTitle(series.name, issue.issue_number),
+    storyTitle: issue.name?.trim() || null,
+    description: htmlToText(issue.description),
+    releaseDate: pickReleaseDate(issue.store_date, issue.cover_date),
+    coverUrl: images.url,
+    coverThumbUrl: images.thumbUrl,
+  };
+  return db.comic.upsert({
+    where: { source_externalId: { source: SOURCE, externalId } },
+    create: { seriesId: series.id, source: SOURCE, externalId, ...data },
+    update: { seriesId: series.id, ...data, syncedAt: new Date() },
+  });
 }
 
 /** Lee una serie (volume) de Comic Vine. */
@@ -83,22 +107,7 @@ export async function importVolume(
     field_list: ISSUE_FIELDS,
   })) {
     for (const issue of page) {
-      const images = pickImageUrls(issue.image);
-      const issueId = String(issue.id);
-      const data = {
-        issueNumber: issue.issue_number?.trim() || null,
-        title: buildComicTitle(name, issue.issue_number),
-        storyTitle: issue.name?.trim() || null,
-        description: htmlToText(issue.description),
-        releaseDate: pickReleaseDate(issue.store_date, issue.cover_date),
-        coverUrl: images.url,
-        coverThumbUrl: images.thumbUrl,
-      };
-      await db.comic.upsert({
-        where: { source_externalId: { source: SOURCE, externalId: issueId } },
-        create: { seriesId: series.id, source: SOURCE, externalId: issueId, ...data },
-        update: { seriesId: series.id, ...data, syncedAt: new Date() },
-      });
+      await upsertComic(db, { id: series.id, name }, issue);
       comics++;
     }
   }
