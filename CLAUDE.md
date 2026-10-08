@@ -291,7 +291,7 @@ Variables de entorno validadas; clave de Comic Vine solo en servidor; Zod en tod
   - **CSP con nonce** en las páginas: `script-src 'self' 'nonce-…' 'strict-dynamic'` (+ `'unsafe-eval'` solo en desarrollo), `style-src 'self' 'unsafe-inline'` (React Flow y `next/image` usan `style=""`), `img-src` con `https://comicvine.gamespot.com`, `frame-ancestors 'none'`, `object-src 'none'`, `upgrade-insecure-requests` solo si la petición llega por HTTPS. El layout raíz llama a `await connection()` para que todas las páginas (también la 404) se rendericen por petición y lleven el nonce. Verificado: todos los `<script>` llevan el nonce, en desarrollo y en producción (`npm start`). **Si se añade un dominio externo (imágenes, fuentes, analítica), hay que añadirlo a la CSP.**
 - **Cabeceras** (`next.config.ts`, todas las respuestas): `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, `Permissions-Policy` (sin cámara, micrófono ni ubicación), `Strict-Transport-Security` (2 años) y sin `X-Powered-By`.
 
-Pendiente: sección de seguridad en el README (incluido el aviso conocido de `npm audit`: `deepmerge-ts` y `mysql2` cuelgan de la CLI de Prisma 7, no del código de la app; MySQL no se usa; revisar cuando Prisma publique corrección).
+Hecho: sección de seguridad en el README (incluido el aviso conocido de `npm audit`: `deepmerge-ts` y `mysql2` cuelgan de la CLI de Prisma 7, no del código de la app; MySQL no se usa; revisar cuando Prisma publique corrección).
 
 ---
 
@@ -343,7 +343,7 @@ Pendiente: sección de seguridad en el README (incluido el aviso conocido de `np
 ## 16. Despliegue y documentación
 
 - Separar Development y Production con variables de entorno; sin secretos en Git; Vercel (gratis) + Neon/Supabase (gratis), verificando condiciones vigentes. La BD de producción se llena ejecutando el importador contra ella (no se llama a Comic Vine en tiempo de ejecución).
-- **README profesional** (pendiente) pensado para entrevistas: qué es, características, stack, arquitectura, instalación, variables de entorno, base de datos (migraciones y seed), API, capturas, roadmap, futuras funciones de IA, licencia/atribución de Comic Vine y apartado de seguridad. Documentar también `docs/` (ER, ADR).
+- **README profesional** (hecho 2026-10-08, capturas en `docs/capturas/`; añadir la URL de la demo al desplegar) pensado para entrevistas: qué es, características, stack, arquitectura, instalación, variables de entorno, base de datos (migraciones y seed), API, capturas, roadmap, futuras funciones de IA, licencia/atribución de Comic Vine y apartado de seguridad. Documentar también `docs/` (ER, ADR).
 
 ---
 
@@ -362,6 +362,7 @@ Pendiente: sección de seguridad en el README (incluido el aviso conocido de `np
   - **Paso 32b:** relaciones curadas (59) con tipo, tabla `CharacterRelationship`, importador y tipo visible en la ficha de personaje. **Pendiente: que el usuario revise `data/relationships.json`** (curado con conocimiento general, no verificado una a una).
 - Fase 5, Paso 33: personajes favoritos (`CharacterFavorite`, solo desbloqueados; `setCharacterFavorite`, `FavoriteButton` en la ficha, ♥ en las cartas) y filtros/orden de "Mi colección" (`collectionSearchSchema`, `filterCards`, pestañas con contadores como enlaces).
 
+- **Decisiones del usuario (2026-10-08):** no se implementa el ajuste de ocultar descripciones; el grafo se deja como está y solo se replanteará cuando todo lo demás esté hecho.
 - **Opinión del usuario (2026-10-06): el aspecto del grafo "no me gusta nada"; hay que replantear todo lo relacionado con el grafo más adelante** (lo decidirá él). Mientras, no invertir en pulirlo: solo la funcionalidad prevista.
 - Fase 6 (**terminada**, salvo móvil: ver abajo): `GET /api/v1/graph` (Paso 34). Página `/graph` "Universo descubierto" (Paso 35): `UniverseGraph` (cliente, React Flow con zoom/arrastre, controles y minimapa, `colorMode="system"`); posiciones con `layoutGraph` (`lib/graph-layout.ts`, `d3-force`, 300 pasos de golpe, con tests); siluetas bloqueadas en un anillo exterior sin enlaces; relaciones curadas en línea continua con su tipo y derivadas en discontinua; enlace "Grafo" en la cabecera. Ego-graph (Paso 36): `/graph?focus=<id>` ("Universo de X", personaje resaltado con un anillo), tocar un nodo abre su ficha (`onNodeClick`), y la ficha enlaza "Ver en el grafo". Vista en lista (Paso 37): `/graph?view=list` (también con `focus`), `RelationshipList` (componente de servidor, sin JS: títulos y listas con enlaces, tipo y cómics juntos), conmutador Grafo/Lista que conserva el foco.
 - **Aplazado al rediseño del grafo (decisión del usuario):** grafo a pantalla completa en móvil y *bottom sheet* al tocar un nodo; no tiene sentido hacerlo antes de decidir el nuevo diseño.

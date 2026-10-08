@@ -1,36 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ComicVerse
 
-## Getting Started
+**Descubre el universo de los cómics mientras lo lees.** ComicVerse es una biblioteca personal de cómics en la que cada lectura desbloquea a los personajes que aparecen en ella y las relaciones entre ellos. Tu colección empieza «a lápiz» y se va entintando a medida que lees.
 
-First, run the development server:
+> Demo: pendiente de despliegue (Vercel + Neon).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+![Mi colección: personajes descubiertos entintados y huecos por descubrir a lápiz azul](docs/capturas/coleccion.png)
+
+## Qué hace
+
+- **Catálogo** de 833 cómics reales del universo de Spider-Man (datos de Comic Vine), con búsqueda, filtro por serie, orden y paginación.
+- **Biblioteca personal** por estados (Pendiente, Leyendo, Leído, Abandonado), con puntuación, favoritos, reseñas privadas e historial de cambios.
+- **Desbloqueo de personajes:** al marcar un cómic como leído se descubren sus personajes. Al leer 5 cómics de un mismo personaje, este pasa a estar *coleccionado*. Si desmarcas un cómic, los personajes que solo aparecían en él vuelven a estar por descubrir.
+- **Sin spoilers:** de un personaje que aún no has descubierto, al navegador solo le llega su número de catálogo. No le llegan ni su nombre, ni su imagen, ni su id. Su ficha devuelve el mismo 404 que un personaje inexistente.
+- **Relaciones:** las relaciones curadas (aliado, enemigo, familia, pareja…) se combinan con relaciones derivadas de las coapariciones. Una relación se descubre cuando conoces a los dos personajes.
+- **Universo:** un grafo interactivo de tus descubrimientos (React Flow), una vista centrada en un personaje y una vista en lista accesible.
+- **Inicio:** tu progreso (porcentaje del universo, personajes, relaciones y series), los últimos descubrimientos y tu actividad reciente.
+- **Diseño responsive real:** barra lateral en escritorio, iconos en tableta y barra inferior en el móvil.
+
+| Desbloqueo al marcar como leído | Inicio |
+|---|---|
+| ![Panel «¡entintado!» con 12 nuevos descubrimientos](docs/capturas/desbloqueo-movil.png) | ![Inicio con el progreso del universo](docs/capturas/inicio.png) |
+
+## Stack
+
+| Capa | Tecnología |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack), React 19, TypeScript estricto |
+| Estilos | Tailwind CSS v4, con un sistema de diseño propio («Página de arte original», ver [`DESIGN.md`](DESIGN.md)) |
+| Base de datos | PostgreSQL 17 (Docker en local) |
+| ORM | Prisma 7 con `@prisma/adapter-pg` |
+| Autenticación | Better Auth (email y contraseña, sesiones en BD) |
+| Validación | Zod 4, compartida entre cliente y servidor |
+| Grafo | React Flow y `d3-force` para la distribución de los nodos |
+| Tests | Vitest: 118 tests unitarios y 53 de integración contra PostgreSQL real |
+
+## Arquitectura
+
+Es un monolito modular en una sola app de Next.js. El código de servidor vive en `src/server/` y no importa nada de React.
+
+```
+Cliente (React)
+   │  HTTP JSON /api/v1/...    (las páginas de servidor llaman a los servicios directamente)
+Route handlers ── sesión · validación Zod · códigos HTTP
+   │
+Servicios ── reglas de negocio y transacciones
+   │                    │
+Dominio (puro,          Repositorios (Prisma) ──► PostgreSQL
+sin BD ni HTTP)
+   │
+Integraciones ── cliente de Comic Vine
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Decisiones de diseño destacadas:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Los desbloqueos se calculan, no se guardan.** «Desbloqueado» es una consulta indexada: personajes coleccionables que aparecen en cómics leídos por el usuario. La definición está en un único sitio, `unlockedBy(userId)`. Así no hay una segunda copia del estado que se pueda desincronizar, ni carreras entre peticiones simultáneas. Solo se guarda lo que no se puede calcular: favoritos y el registro histórico de descubrimientos.
+- **Los DTO deciden qué sale hacia el navegador.** Ahí se aplica la regla de spoilers, con tests que garantizan que un personaje bloqueado no expone más que su número.
+- **Los servicios reciben el cliente de base de datos como parámetro**, lo que permite ejecutar los tests de integración contra una base de datos de pruebas real.
+- **Relaciones derivadas con el coeficiente de Ochiai.** Una pareja se considera relacionada si comparte al menos 5 cómics y su coeficiente es ≥ 0,2. Con solo «≥ 5 cómics compartidos», los personajes omnipresentes quedaban conectados con todos.
+- **Importadores idempotentes.** El universo se describe en [`data/universe.json`](data/universe.json), solo con ids verificados. El importador hace `upsert` por `(fuente, id externo)`. La app nunca llama a Comic Vine en tiempo de ejecución.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Puesta en marcha
 
-## Learn More
+Requisitos: Node 24, npm, Docker Desktop y una [clave gratuita de Comic Vine](https://comicvine.gamespot.com/api/) (solo para importar los datos).
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+git clone https://github.com/MarioGuerra71/comicverse.git
+cd comicverse
+cp .env.example .env          # rellena BETTER_AUTH_SECRET y COMIC_VINE_API_KEY
+docker compose up -d          # PostgreSQL en el puerto 5432
+npm install
+npx prisma generate
+npx prisma migrate deploy
+npm run universe:import       # importa series, cómics y personajes (tarda unos minutos por el límite de la API)
+npm run relationships:import  # relaciones curadas (no usa Comic Vine)
+npm run dev                   # http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Para generar `BETTER_AUTH_SECRET`:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
 
-## Deploy on Vercel
+### Variables de entorno
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Variable | Uso |
+|---|---|
+| `DATABASE_URL` | Conexión a PostgreSQL |
+| `BETTER_AUTH_SECRET` | Secreto de sesiones (≥ 32 caracteres, distinto en cada entorno) |
+| `BETTER_AUTH_URL` | URL pública de la app (`http://localhost:3000` en local) |
+| `COMIC_VINE_API_KEY` | Clave de Comic Vine. Solo la usan los scripts de importación, en el servidor |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Las variables se validan al arrancar. `.env` no se versiona.
+
+### Scripts
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` / `build` / `start` | Desarrollo, compilación y producción |
+| `npm test` | Tests unitarios |
+| `npm run test:integration` | Tests contra la base de datos `comicverse_test` (necesita Docker) |
+| `npm run typecheck` / `lint` | TypeScript y ESLint |
+| `npm run universe:import` | Importar el universo de `data/universe.json` desde Comic Vine |
+| `npm run universe:resolve` | Buscar y verificar ids de Comic Vine antes de ampliar el universo |
+| `npm run relationships:import` | Cargar las relaciones curadas de `data/relationships.json` |
+
+## API
+
+Todas las rutas de `/api/v1` requieren sesión y filtran siempre por el usuario de la sesión. Los errores tienen la forma `{ error: "CODIGO" }` y la paginación `{ items, page, pageSize, total, totalPages }`.
+
+| Ruta | Descripción |
+|---|---|
+| `GET /comics` | Catálogo con búsqueda, filtro por serie, orden y paginación |
+| `GET /library` | Biblioteca propia con contadores por estado |
+| `GET/PUT/PATCH/DELETE /library/comics/:id` | Estado, puntuación y favorito de un cómic. Al cambiar el estado se devuelve el resultado del desbloqueo |
+| `GET/PUT/DELETE /library/comics/:id/review` | Reseña privada (solo en cómics leídos) |
+| `GET /collection` | Personajes desbloqueados y, de los bloqueados, solo su número de catálogo |
+| `PATCH /collection/characters/:id/favorite` | Personaje favorito |
+| `GET /characters/:id` | Ficha de un personaje desbloqueado (un bloqueado devuelve 404) |
+| `GET /graph` | Grafo del universo descubierto, con vista opcional centrada en un personaje |
+| `GET /dashboard` · `GET /discoveries` | Progreso, actividad y registro de descubrimientos |
+
+## Seguridad
+
+- **Entradas:** todas se validan con Zod, el `userId` sale siempre de la sesión y las salidas pasan por DTO explícitos.
+- **Contraseñas:** las cifra Better Auth. Hay límite de intentos persistido en la base de datos (3 cada 10 s al entrar o registrarse).
+- **CSRF:** cookies `SameSite=Lax` y comprobación de `Origin` y `Sec-Fetch-Site` en toda escritura a la API.
+- **CSP con nonce** en cada página (`strict-dynamic`, `frame-ancestors 'none'`, `object-src 'none'`), además de cabeceras HSTS, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options` y `Permissions-Policy`.
+- **Secretos:** solo en variables de entorno. La clave de Comic Vine nunca llega al navegador y los errores del cliente de Comic Vine no incluyen la URL (que la contiene).
+- **Errores:** la pantalla de error no muestra mensajes internos.
+- **`npm audit`:** los avisos conocidos (`deepmerge-ts`, `mysql2`, `braces`) vienen de herramientas de desarrollo (la CLI de Prisma 7 y ESLint), no del código que recibe datos de usuarios.
+
+## Calidad
+
+- **Tests unitarios** de dominio, DTO, validación, mappers y del cliente de Comic Vine (con `fetch` y tiempos inyectados, sin red).
+- **Tests de integración** contra PostgreSQL real: desbloqueos, relecturas, peticiones concurrentes, desmarcar con personajes compartidos y otros casos.
+- **Lighthouse** (build de producción, móvil): accesibilidad 100 en todas las pantallas. El LCP del catálogo es de 0,69 s con 4G y CPU ×4.
+
+## Hoja de ruta
+
+- Ampliar el universo a más series y personajes, incluido DC (el color del editor cambia por editorial).
+- Rediseñar a fondo la vista del grafo.
+- Logros y funciones sociales (seguir usuarios, listas públicas, comparar colecciones).
+- IA opcional (búsqueda en lenguaje natural y recomendaciones), siempre construida con los mismos DTO para no revelar spoilers.
+
+## Créditos y licencia de datos
+
+Datos e imágenes de cómics proporcionados por [Comic Vine](https://comicvine.gamespot.com/). Las imágenes se enlazan desde su CDN y no se redistribuyen. Es un proyecto personal sin ánimo de lucro, sin relación con Marvel, DC ni Comic Vine; no usa sus logotipos ni sus tipografías.
+
+![Ficha de personaje con sus relaciones descubiertas](docs/capturas/personaje.png)
