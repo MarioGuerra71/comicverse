@@ -1,5 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { buildCsp, isCrossSiteWrite } from "@/lib/security";
+import { BRAND_VISITS_COOKIE } from "@/lib/zones";
+
+const BRAND_PAGES = new Set(["/", "/sign-in", "/sign-up"]);
 
 // Se ejecuta antes de cada petición que coincide con `config.matcher`.
 export function proxy(request: NextRequest) {
@@ -25,6 +28,17 @@ export function proxy(request: NextRequest) {
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);
+
+  // Portada y acceso: cuenta las visitas (solo cargas completas, no la navegación interna) para
+  // alternar la editorial del bloque. La página ya ve el valor nuevo (incluye esta visita).
+  if (BRAND_PAGES.has(pathname) && request.headers.get("sec-fetch-dest") === "document") {
+    const visits = Number(request.cookies.get(BRAND_VISITS_COOKIE)?.value) || 0;
+    response.cookies.set(BRAND_VISITS_COOKIE, String(Math.min(visits + 1, 99)), {
+      path: "/",
+      maxAge: 31_536_000,
+      sameSite: "lax",
+    });
+  }
   return response;
 }
 

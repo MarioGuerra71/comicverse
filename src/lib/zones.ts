@@ -15,3 +15,17 @@ export const ZONE_COOKIE = "cv-zone";
 export function parseZone(value: string | undefined): Zone {
   return value === "dc" ? "dc" : "marvel";
 }
+
+/** Cookie con cuántas veces se ha abierto la portada o el acceso (para alternar la editorial). */
+export const BRAND_VISITS_COOKIE = "cv-brand-visits";
+
+/**
+ * Editorial del bloque de la portada y el acceso (idea del usuario): la primera visita Marvel,
+ * la segunda DC y después al azar. `visits` ya incluye la visita actual: el proxy pone la cookie
+ * y Next se la deja ver a la página en la misma petición.
+ */
+export function brandZoneForVisit(visits: number, random: () => number = Math.random): Zone {
+  if (visits <= 1) return "marvel";
+  if (visits === 2) return "dc";
+  return random() < 0.5 ? "marvel" : "dc";
+}

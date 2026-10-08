@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { BRAND_VISITS_COOKIE, brandZoneForVisit } from "@/lib/zones";
 import { db } from "@/lib/db";
 import { CoverShuffle } from "@/components/auth/cover-shuffle";
 import { PanelMark } from "@/components/ui/icons";
@@ -19,15 +21,20 @@ export async function BrandPanel({
   isPageTitle?: boolean;
 }) {
   const Heading = isPageTitle ? "h1" : "p";
-  // Cuatro grupos de seis portadas de épocas distintas (de los años 60 a hoy).
-  const pages = [
-    { sort: "release_asc", page: 2 },
-    { sort: "release_asc", page: 40 },
-    { sort: "release_asc", page: 80 },
-    { sort: "release_desc", page: 1 },
-  ];
+  const visits = Number((await cookies()).get(BRAND_VISITS_COOKIE)?.value) || 0;
+  const zone = brandZoneForVisit(visits);
+
+  // Cuatro grupos de seis portadas de la editorial, repartidos por su catálogo (de lo más
+  // antiguo a lo más reciente). Si una editorial tiene pocos cómics, salen menos grupos.
+  const first = await searchComics(db, comicSearchSchema.parse({ publisher: zone, sort: "release_asc", pageSize: 6 }));
+  const last = first.totalPages;
+  const pages = [...new Set([1, Math.ceil(last / 3), Math.ceil((2 * last) / 3), last])];
   const results = await Promise.all(
-    pages.map((p) => searchComics(db, comicSearchSchema.parse({ ...p, pageSize: 6 }))),
+    pages.map((page) =>
+      page === 1
+        ? first
+        : searchComics(db, comicSearchSchema.parse({ publisher: zone, sort: "release_asc", pageSize: 6, page })),
+    ),
   );
   const groups = results
     .map((r) => r.items.flatMap((c) => (c.coverThumbUrl ? [c.coverThumbUrl] : [])))
@@ -61,7 +68,7 @@ export async function BrandPanel({
   // formulario ya ocupa la otra mitad de la pantalla.
   if (isPageTitle) {
     return (
-      <section className="grid min-h-screen items-center gap-10 overflow-hidden bg-brand-fade-y px-6 py-10 md:grid-cols-[1fr_1.1fr] md:px-12 lg:gap-16 lg:px-20">
+      <section data-publisher={zone} className="grid min-h-screen items-center gap-10 overflow-hidden bg-brand-fade-y px-6 py-10 md:grid-cols-[1fr_1.1fr] md:px-12 lg:gap-16 lg:px-20">
         <div className="flex flex-col gap-6">{intro}</div>
         <CoverShuffle groups={groups} compactOnMobile={false} className="w-full md:max-w-2xl" />
       </section>
@@ -69,7 +76,7 @@ export async function BrandPanel({
   }
 
   return (
-    <section className="relative flex flex-col justify-center gap-6 overflow-hidden bg-brand-fade-y px-6 py-8 md:px-12 md:py-12">
+    <section data-publisher={zone} className="relative flex flex-col justify-center gap-6 overflow-hidden bg-brand-fade-y px-6 py-8 md:px-12 md:py-12">
       {intro}
       <CoverShuffle groups={groups} compactOnMobile />
     </section>
