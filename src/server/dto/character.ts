@@ -155,3 +155,61 @@ export function filterCards(cards: CollectionCardDto[], { filter, sort }: Collec
   if (sort === "name") return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
   return filtered; // "number": toCollection ya las deja en orden de catálogo
 }
+
+export interface AlbumRowInput {
+  seriesId: string;
+  seriesName: string;
+  startYear: number | null;
+  characterId: string | null;
+  firstAppearance: Date | null;
+}
+
+export type AlbumSlot =
+  | { kind: "card"; card: CollectionCardDto }
+  /** De un bloqueado solo sale su número dentro del álbum: ni id, ni nombre, ni imagen. */
+  | { kind: "locked"; number: number };
+
+export interface AlbumDto {
+  seriesId: string;
+  title: string;
+  discovered: number;
+  total: number;
+  slots: AlbumSlot[];
+}
+
+/**
+ * Agrupa por serie y numera los cromos por orden de primera aparición en la serie (desempate
+ * por id: no revela el nombre). Las cartas desbloqueadas llevan el número de su álbum.
+ */
+export function toAlbums(rows: AlbumRowInput[], unlocked: Map<string, CollectionCardDto>): AlbumDto[] {
+  const bySeries = new Map<string, { title: string; rows: AlbumRowInput[] }>();
+  for (const row of rows) {
+    const title = row.startYear ? `${row.seriesName} (${row.startYear})` : row.seriesName;
+    const entry = bySeries.get(row.seriesId) ?? { title, rows: [] };
+    if (row.characterId) entry.rows.push(row);
+    bySeries.set(row.seriesId, entry);
+  }
+
+  const time = (d: Date | null) => d?.getTime() ?? Infinity;
+  return [...bySeries]
+    .map(([seriesId, { title, rows: members }]) => {
+      members.sort(
+        (a, b) =>
+          time(a.firstAppearance) - time(b.firstAppearance) || a.characterId!.localeCompare(b.characterId!),
+      );
+      const slots: AlbumSlot[] = members.map((m, index) => {
+        const card = unlocked.get(m.characterId!);
+        return card
+          ? { kind: "card", card: { ...card, number: index + 1 } }
+          : { kind: "locked", number: index + 1 };
+      });
+      return {
+        seriesId,
+        title,
+        discovered: slots.filter((s) => s.kind === "card").length,
+        total: slots.length,
+        slots,
+      };
+    })
+    .sort((a, b) => a.title.localeCompare(b.title));
+}

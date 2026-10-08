@@ -1,5 +1,6 @@
 import type { Prisma, PrismaClient } from "../../../generated/prisma/client";
 import { diffById } from "@/server/domain/unlock";
+import { ZONES, type Zone } from "@/lib/zones";
 import type { RelationshipType } from "@/lib/relationship-types";
 import {
   isDiscovered,
@@ -9,6 +10,7 @@ import {
 import type { CollectionSearchInput } from "@/server/validation/collection";
 import {
   filterCards,
+  toAlbums,
   toCharacterDetail,
   toCharacterSummary,
   toCollection,
@@ -23,6 +25,7 @@ import {
   countComicsPerCharacter,
   findCharacterWithLibrary,
   findCoAppearancePairs,
+  findAlbumRows,
   findCollection,
   findCuratedRelationships,
   findComicByExternalId,
@@ -223,4 +226,34 @@ export async function setCharacterFavorite(
   if (isFavorite) await addFavorite(db, userId, characterId);
   else await removeFavorite(db, userId, characterId);
   return { isFavorite };
+}
+
+/**
+ * Colección de una zona: un álbum por cada serie de la editorial que el usuario tiene en su
+ * biblioteca, y (para los filtros) las cartas desbloqueadas de esos álbumes.
+ */
+export async function getZoneCollection(
+  db: PrismaClient,
+  userId: string,
+  zone: Zone,
+  input: CollectionSearchInput = { filter: "all", sort: "number" },
+) {
+  const [full, rows] = await Promise.all([
+    getCollection(db, userId),
+    findAlbumRows(db, userId, ZONES[zone].publisherSlug),
+  ]);
+  const zoneIds = new Set(rows.flatMap((r) => (r.characterId ? [r.characterId] : [])));
+  const cards = full.cards.filter((c) => zoneIds.has(c.id));
+  return {
+    albums: toAlbums(rows, new Map(cards.map((c) => [c.id, c]))),
+    cards: filterCards(cards, input),
+    counts: {
+      all: zoneIds.size,
+      favorites: cards.filter((c) => c.isFavorite).length,
+      discovered: cards.filter((c) => c.state === "DISCOVERED").length,
+      collected: cards.filter((c) => c.state === "COLLECTED").length,
+    },
+    progress: { unlocked: cards.length, total: zoneIds.size },
+    hasNew: cards.some((c) => c.isNew),
+  };
 }

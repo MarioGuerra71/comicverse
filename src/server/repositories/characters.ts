@@ -135,3 +135,34 @@ export function countComicsPerCharacter(db: Db) {
     JOIN "Character" c ON c.id = cc."characterId" AND c."isCollectible"
     GROUP BY 1`;
 }
+
+export interface AlbumRow {
+  seriesId: string;
+  seriesName: string;
+  startYear: number | null;
+  /** null si la serie aún no tiene personajes conocidos (sus cómics no se han abierto). */
+  characterId: string | null;
+  firstAppearance: Date | null;
+}
+
+/**
+ * Álbumes de la zona: cada serie de la editorial con algún cómic en la biblioteca del usuario,
+ * con sus personajes coleccionables y el primer cómic de la serie en que aparece cada uno.
+ */
+export function findAlbumRows(db: Db, userId: string, publisherSlug: string) {
+  return db.$queryRaw<AlbumRow[]>`
+    SELECT s.id AS "seriesId", s.name AS "seriesName", s."startYear" AS "startYear",
+           c.id AS "characterId", MIN(co."releaseDate") AS "firstAppearance"
+    FROM "Series" s
+    JOIN "Publisher" p ON p.id = s."publisherId" AND p.slug = ${publisherSlug}
+    LEFT JOIN "Comic" co ON co."seriesId" = s.id
+    LEFT JOIN "ComicCharacter" cc ON cc."comicId" = co.id
+    LEFT JOIN "Character" c ON c.id = cc."characterId" AND c."isCollectible"
+    WHERE s.id IN (
+      SELECT co2."seriesId" FROM "UserComic" uc
+      JOIN "Comic" co2 ON co2.id = uc."comicId"
+      WHERE uc."userId" = ${userId}
+    )
+    GROUP BY s.id, s.name, s."startYear", c.id
+  `;
+}
