@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PanelMark } from "@/components/ui/icons";
+import { BrandPanel } from "@/components/auth/brand-panel";
 import { getSession } from "@/server/auth/session";
 
 export default async function AuthLayout({
@@ -11,16 +10,13 @@ export default async function AuthLayout({
   const session = await getSession();
   if (session) redirect("/dashboard");
 
-  // El formulario va dentro de una viñeta entintada, bajo la marca.
+  // Escritorio: bloque de la editorial a la izquierda y formulario a la derecha. Móvil: apilados.
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10">
-      <div className="w-full max-w-sm">
-        <Link href="/" className="inline-flex items-center gap-2 text-xl font-extrabold text-ink">
-          <PanelMark size={24} />
-          ComicVerse
-        </Link>
-        <div className="mt-4 border-2 border-ink bg-sheet p-6">{children}</div>
-      </div>
-    </main>
+    <div className="grid min-h-screen md:grid-cols-[1.15fr_1fr]">
+      <BrandPanel />
+      <main className="flex items-center justify-center px-4 py-10 md:border-l-2 md:border-ink">
+        <div className="w-full max-w-sm border-2 border-ink bg-sheet p-6">{children}</div>
+      </main>
+    </div>
   );
 }
