@@ -2,7 +2,7 @@
 
 **Descubre el universo de los cómics mientras lo lees.** ComicVerse es una biblioteca personal de cómics en la que cada lectura desbloquea a los personajes que aparecen en ella y las relaciones entre ellos. Tu colección empieza «a lápiz» y se va entintando a medida que lees.
 
-> Demo: pendiente de despliegue (Vercel + Neon).
+> **Demo:** [comicverse-eight.vercel.app](https://comicverse-eight.vercel.app) (Vercel + Neon). Crea una cuenta y marca un cómic como leído.
 
 ![Mi colección: personajes descubiertos entintados y huecos por descubrir a lápiz azul](docs/capturas/coleccion.png)
 
