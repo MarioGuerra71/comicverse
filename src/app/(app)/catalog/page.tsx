@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { buildCatalogHref } from "@/lib/catalog-url";
 import { ComicCard } from "@/components/comics/comic-card";
+import { RemoteSeriesResults } from "@/components/catalog/remote-series-results";
 import { inkButton, inkField, PageHeader, Pagination } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { listSeries, searchComics } from "@/server/services/catalog";
@@ -96,7 +98,7 @@ export default async function CatalogPage({
         <div className="mt-10">
           <p className="text-ink">
             {series.length === 0
-              ? `Aún no hay cómics de ${ZONES[zone].label} en el catálogo. Muy pronto podrás buscarlos aquí.`
+              ? `Aún no hay cómics de ${ZONES[zone].label} en el catálogo. Busca una serie (por ejemplo «Batman») para añadirla.`
               : "No hay cómics que coincidan con la búsqueda."}
           </p>
           {series.length > 0 && (
@@ -116,6 +118,15 @@ export default async function CatalogPage({
       )}
 
       <Pagination page={result.page} totalPages={result.totalPages} hrefFor={hrefFor} />
+
+      {/* Al buscar, también en Comic Vine: lo que aún no está en el catálogo se puede añadir. */}
+      {input.q && input.page === 1 && (
+        <Suspense
+          fallback={<p className="mt-12 text-sm text-ink-soft">Buscando también en Comic Vine…</p>}
+        >
+          <RemoteSeriesResults zone={zone} query={input.q} />
+        </Suspense>
+      )}
     </main>
   );
 }

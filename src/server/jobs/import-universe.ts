@@ -1,26 +1,15 @@
 import type { PrismaClient } from "../../../generated/prisma/client";
 import type { ComicVineClient } from "@/server/integrations/comic-sources/comicvine/client";
 import {
-  buildComicTitle,
   cleanRealName,
   htmlToText,
   pickImageUrls,
-  pickReleaseDate,
-  slugify,
 } from "@/server/integrations/comic-sources/comicvine/mappers";
-import type {
-  CvCharacterDetail,
-  CvIssueSummary,
-  CvPublisherRef,
-  CvVolume,
-} from "@/server/integrations/comic-sources/comicvine/types";
+import type { CvCharacterDetail } from "@/server/integrations/comic-sources/comicvine/types";
+import { ensurePublisher, importVolume, SOURCE } from "@/server/jobs/import-volume";
 
-const SOURCE = "COMICVINE" as const;
-const VOLUME_FIELDS = "id,name,start_year,publisher";
 const CHARACTER_FIELDS =
   "id,name,real_name,deck,publisher,image,count_of_issue_appearances,first_appeared_in_issue,issue_credits";
-const ISSUE_FIELDS =
-  "id,name,issue_number,cover_date,store_date,image,description";
 
 export interface UniverseFile {
   series: { id: number; label?: string }[];
@@ -46,32 +35,6 @@ interface ImportOptions {
   log?: (message: string) => void;
 }
 
-function parseYear(value: string | number | null): number | null {
-  const year =
-    typeof value === "number" ? value : Number.parseInt(value ?? "", 10);
-  return Number.isFinite(year) ? year : null;
-}
-
-async function ensurePublisher(
-  db: PrismaClient,
-  cache: Map<string, string>,
-  ref: CvPublisherRef | null,
-): Promise<string> {
-  const name = ref?.name?.trim() || "Unknown";
-  const slug = slugify(name) || "unknown";
-
-  const cached = cache.get(slug);
-  if (cached) return cached;
-
-  const publisher = await db.publisher.upsert({
-    where: { slug },
-    create: { name, slug },
-    update: { name },
-  });
-  cache.set(slug, publisher.id);
-  return publisher.id;
-}
-
 export async function importUniverse({
   db,
   client,
@@ -80,70 +43,13 @@ export async function importUniverse({
 }: ImportOptions): Promise<ImportSummary> {
   const publisherCache = new Map<string, string>();
 
-  // ---------- 1. Series ----------
-  log("1/4 Series");
-  const seriesRows: {
-    internalId: string;
-    externalId: string;
-    name: string;
-    label: string;
-  }[] = [];
-
+  // ---------- 1 y 2. Series y sus cómics ----------
+  log("1/4 Series y 2/4 Cómics");
+  const seriesRows: { internalId: string; label: string }[] = [];
   for (const entry of universe.series) {
-    const { results: volume } = await client.get<CvVolume>(
-      `volume/4050-${entry.id}`,
-      { field_list: VOLUME_FIELDS },
-    );
-
-    const publisherId = await ensurePublisher(db, publisherCache, volume.publisher);
-    const startYear = parseYear(volume.start_year);
-    const externalId = String(volume.id);
-    const name = volume.name.trim();
-
-    const series = await db.series.upsert({
-      where: { source_externalId: { source: SOURCE, externalId } },
-      create: { publisherId, name, startYear, source: SOURCE, externalId },
-      update: { publisherId, name, startYear, syncedAt: new Date() },
-    });
-
-    const label = startYear ? `${name} (${startYear})` : name;
-    seriesRows.push({ internalId: series.id, externalId, name, label });
-    log(`  ${label}`);
-  }
-
-  // ---------- 2. Cómics de cada serie ----------
-  log("2/4 Cómics");
-
-  for (const s of seriesRows) {
-    let count = 0;
-
-    for await (const page of client.paginate<CvIssueSummary>("issues", {
-      filter: `volume:${s.externalId}`,
-      sort: "cover_date:asc",
-      field_list: ISSUE_FIELDS,
-    })) {
-      for (const issue of page) {
-        const images = pickImageUrls(issue.image);
-        const externalId = String(issue.id);
-        const data = {
-          issueNumber: issue.issue_number?.trim() || null,
-          title: buildComicTitle(s.name, issue.issue_number),
-          storyTitle: issue.name?.trim() || null,
-          description: htmlToText(issue.description),
-          releaseDate: pickReleaseDate(issue.store_date, issue.cover_date),
-          coverUrl: images.url,
-          coverThumbUrl: images.thumbUrl,
-        };
-
-        await db.comic.upsert({
-          where: { source_externalId: { source: SOURCE, externalId } },
-          create: { seriesId: s.internalId, source: SOURCE, externalId, ...data },
-          update: { seriesId: s.internalId, ...data, syncedAt: new Date() },
-        });
-        count++;
-      }
-      log(`  ${s.label}: ${count} cómics`);
-    }
+    const { seriesId, label, comics } = await importVolume(db, client, entry.id, publisherCache);
+    seriesRows.push({ internalId: seriesId, label });
+    log(`  ${label}: ${comics} cómics`);
   }
 
   // ---------- 3. Personajes ----------

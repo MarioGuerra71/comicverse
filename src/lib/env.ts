@@ -5,6 +5,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.url(),
+  // Opcional: sin ella la app funciona, pero no busca ni importa cómics nuevos de Comic Vine.
+  COMIC_VINE_API_KEY: z.string().min(1).optional(),
 });
 
 // En Vercel no hace falta BETTER_AUTH_URL: se usa el dominio de producción que pone la

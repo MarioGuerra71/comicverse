@@ -33,3 +33,7 @@ export interface CvIssueSummary {
   image?: ComicVineImage | null;
   description?: string | null;
 }
+export interface CvVolumeSearchResult extends CvVolume {
+  count_of_issues: number | null;
+  image?: ComicVineImage | null;
+}
