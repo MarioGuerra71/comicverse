@@ -45,10 +45,16 @@ export function PageHeader({
   return (
     <header className="border-2 border-ink bg-sheet">
       <div className="grid grid-cols-[1fr_auto]">
-        <div className="flex min-w-0 items-center px-4 py-3">
-          <h1 className="text-2xl font-extrabold tracking-tight break-words text-ink sm:text-3xl md:text-4xl">
+        {/* Rojo pleno bajo el título; el fundido a blanco va en una banda propia a la derecha
+            que el texto nunca pisa (si no, un título largo quedaría blanco sobre blanco). */}
+        <div className="relative flex min-w-0 items-center bg-brand py-3 pr-10 pl-4 md:pr-[40%]">
+          <h1 className="text-xl font-extrabold tracking-tight break-words hyphens-auto text-white sm:text-3xl md:text-4xl">
             {title}
           </h1>
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-0 right-0 w-8 bg-linear-to-r from-brand to-sheet md:w-[38%]"
+          />
         </div>
         {figure !== undefined && (
           <div className="border-l-2 border-ink px-4 py-2 text-right whitespace-nowrap">

@@ -185,6 +185,8 @@ Plano por completo. No hay sombras ni brillo: la profundidad la dan los filetes 
 ### Named Rules
 **The Ink-Not-Shadow Rule.** Ni sombras, ni glow, ni degradados. Si algo necesita separarse, lleva un filete de tinta o cambia de papel.
 
+**The Publisher Block Rule** (decisión del usuario, 2026-10-08). Única excepción a «sin degradados»: el **bloque de la editorial**. El menú lateral (vertical, `bg-brand-fade-y`), la barra superior del móvil (`bg-brand-fade-x`) y el título del cajetín de cada página van en `--brand` (rojo Marvel #E62429; azul DC #0367D6 bajo `[data-publisher="dc"]`) con texto blanco, y se funden a papel como el logotipo de la editorial. El texto blanco va **siempre sobre color pleno**: en el cajetín el fundido es una banda aparte a la derecha que el título no pisa. La sección activa del menú es un recuadro de papel con texto en `editor-ink`.
+
 ## Shapes
 
 Esquinas rectas en todo: barras, cajetín, pestañas, enlaces de navegación y viñetas tienen radio 0, como el corte de una plancha. Los bordes son de tinta a 2px; la viñeta por dibujar usa lápiz azul a 1,5px con un aspa de esquina a esquina. Única excepción: la inicial del perfil va en un círculo entintado de 2px (avatar). Nada de píldoras.
@@ -238,7 +240,7 @@ Selección de texto en color del editor con texto en papel; foco visible como co
 - **Don't** usar el color del editor en favoritos, decoración, fondos ni iconos en reposo.
 - **Don't** poner color pleno fuera de las viñetas (portadas e imágenes).
 - **Don't** poner cuadrícula, puntos, tramas ni texturas en el fondo.
-- **Don't** usar píldoras ni esquinas redondeadas (salvo el círculo del avatar), sombras, glow ni degradados.
+- **Don't** usar píldoras ni esquinas redondeadas (salvo el círculo del avatar), sombras, glow ni degradados (salvo el bloque de la editorial).
 - **Don't** usar emojis ni caracteres Unicode como iconos.
 - **Don't** usar logos ni tipografías de Marvel o DC: la editorial se expresa solo con color.
 - **Don't** usar lápiz azul (blue) como texto ni como relleno.

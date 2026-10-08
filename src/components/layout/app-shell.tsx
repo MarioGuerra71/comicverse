@@ -7,7 +7,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <Link
       href="/dashboard"
-      className="flex min-h-11 items-center gap-2 text-ink"
+      className="flex min-h-11 items-center gap-2 text-white"
       aria-label="ComicVerse, ir al inicio"
     >
       <PanelMark size={22} />
@@ -31,7 +31,7 @@ export function AppShell({ userName, children }: { userName: string; children: R
 
   return (
     <div className="min-h-screen md:pl-20 lg:pl-60">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-20 flex-col border-r-2 border-ink bg-sheet py-4 md:flex lg:w-60">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-20 flex-col border-r-2 border-ink bg-sheet bg-brand-fade-y py-4 md:flex lg:w-60">
         <div className="flex justify-center px-3 lg:justify-start lg:px-5">
           <Brand compact />
         </div>
@@ -56,7 +56,7 @@ export function AppShell({ userName, children }: { userName: string; children: R
         </div>
       </aside>
 
-      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b-2 border-ink bg-sheet px-4 md:hidden">
+      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b-2 border-ink bg-sheet bg-brand-fade-x px-4 md:hidden">
         <Brand />
         <Link
           href="/profile"

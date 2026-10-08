@@ -37,10 +37,10 @@ export function SidebarNav() {
             aria-current={active ? "page" : undefined}
             title={label}
             className={`flex min-h-11 items-center justify-center gap-3 border-2 px-3 text-sm transition-colors lg:justify-start ${
-              // Igual que las pestañas de filtro: relleno de tinta = seleccionado.
+              // Sobre el color de la editorial: la sección activa es un recuadro de papel.
               active
-                ? "border-ink bg-ink font-semibold text-paper"
-                : "border-transparent text-ink-soft hover:border-ink hover:text-ink"
+                ? "border-white bg-sheet font-semibold text-editor-ink"
+                : "border-transparent font-medium text-white hover:border-white"
             }`}
           >
             <Icon />
