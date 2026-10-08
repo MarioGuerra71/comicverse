@@ -1,3 +1,4 @@
+import { getZone } from "@/server/zone";
 import { db } from "@/lib/db";
 import { badRequest, getApiUser, unauthorized } from "@/server/auth/api";
 import { listDiscoveries } from "@/server/services/dashboard";
@@ -16,5 +17,5 @@ export async function GET(request: Request) {
     );
   }
 
-  return Response.json(await listDiscoveries(db, user.id, parsed.data));
+  return Response.json(await listDiscoveries(db, user.id, parsed.data, await getZone()));
 }

@@ -1,3 +1,5 @@
+import { ZONES } from "@/lib/zones";
+import { getZone } from "@/server/zone";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -23,7 +25,8 @@ export default async function GraphPage({
   if (!parsed.success) notFound();
 
   // Con focus bloqueado o inexistente: 404, igual que su ficha.
-  const graph = await getGraph(db, user.id, parsed.data.focus);
+  const zone = await getZone();
+  const graph = await getGraph(db, user.id, parsed.data.focus, zone);
   if (!graph) notFound();
 
   const focusName = graph.nodes.find((n) => n.id === graph.focus)?.name;
@@ -39,7 +42,7 @@ export default async function GraphPage({
   return (
     <main className="mx-auto flex max-w-6xl flex-col px-4 py-6 md:px-8 md:py-8">
       <PageHeader
-        title={focusName ? `Universo de ${focusName}` : "Universo"}
+        title={focusName ? `Universo de ${focusName}` : `Universo ${ZONES[zone].label}`}
         figure={focusName ? undefined : graph.edges.length}
         figureLabel="relaciones"
       >

@@ -1,3 +1,5 @@
+import type { Zone } from "@/lib/zones";
+import { comicInZone } from "@/server/repositories/comics";
 import type { Prisma, PrismaClient } from "../../../generated/prisma/client";
 import type {
   LibraryEntryState,
@@ -79,10 +81,12 @@ export async function findLibraryPage(
   db: PrismaClient,
   userId: string,
   input: LibrarySearchInput,
+  zone?: Zone,
 ) {
   const where: Prisma.UserComicWhereInput = {
     userId,
     ...(input.status ? { status: input.status } : {}),
+    ...(zone ? { comic: comicInZone(zone) } : {}),
   };
 
   const [rows, total] = await db.$transaction([
@@ -108,9 +112,9 @@ export async function findLibraryPage(
 }
 
 /** Últimos cambios del historial de lectura, con el cómic. */
-export function findRecentHistory(db: PrismaClient, userId: string, take: number) {
+export function findRecentHistory(db: PrismaClient, userId: string, take: number, zone?: Zone) {
   return db.readingHistory.findMany({
-    where: { userId },
+    where: { userId, ...(zone ? { comic: comicInZone(zone) } : {}) },
     orderBy: [{ createdAt: "desc" }, { id: "asc" }],
     take,
     select: {
@@ -122,10 +126,10 @@ export function findRecentHistory(db: PrismaClient, userId: string, take: number
   });
 }
 
-export function countByStatus(db: PrismaClient, userId: string) {
+export function countByStatus(db: PrismaClient, userId: string, zone?: Zone) {
   return db.userComic.groupBy({
     by: ["status"],
-    where: { userId },
+    where: { userId, ...(zone ? { comic: comicInZone(zone) } : {}) },
     _count: { _all: true },
   });
 }

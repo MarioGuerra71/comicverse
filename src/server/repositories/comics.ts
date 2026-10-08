@@ -20,12 +20,18 @@ export const comicListSelect = {
 } satisfies Prisma.ComicSelect;
 
 /** Series con al menos un cómic leído por el usuario, y el total de series. */
-export async function countSeriesProgress(db: PrismaClient, userId: string) {
+/** Condición «cómic de la editorial de esta zona» (sin zona: todos). */
+export function comicInZone(zone?: Zone): Prisma.ComicWhereInput {
+  return zone ? { series: { publisher: { slug: ZONES[zone].publisherSlug } } } : {};
+}
+
+export async function countSeriesProgress(db: PrismaClient, userId: string, zone?: Zone) {
+  const inZone = zone ? { publisher: { slug: ZONES[zone].publisherSlug } } : {};
   const [discovered, total] = await Promise.all([
     db.series.count({
-      where: { comics: { some: { userEntries: { some: { userId, status: "READ" } } } } },
+      where: { ...inZone, comics: { some: { userEntries: { some: { userId, status: "READ" } } } } },
     }),
-    db.series.count(),
+    db.series.count({ where: inZone }),
   ]);
   return { discovered, total };
 }

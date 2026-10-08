@@ -1,3 +1,5 @@
+import { ZONES } from "@/lib/zones";
+import { getZone } from "@/server/zone";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -31,7 +33,8 @@ export default async function LibraryPage({
   );
   const input = parsed.success ? parsed.data : librarySearchSchema.parse({});
 
-  const result = await listLibrary(db, user.id, input);
+  const zone = await getZone();
+  const result = await listLibrary(db, user.id, input, zone);
   const totalInLibrary = Object.values(result.counts).reduce((a, b) => a + b, 0);
 
   const tabs = [
@@ -45,7 +48,7 @@ export default async function LibraryPage({
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
-      <PageHeader title="Mi biblioteca" figure={totalInLibrary} figureLabel={totalInLibrary === 1 ? "cómic" : "cómics"} />
+      <PageHeader title={`Mi biblioteca ${ZONES[zone].label}`} figure={totalInLibrary} figureLabel={totalInLibrary === 1 ? "cómic" : "cómics"} />
 
       {/* En el móvil, las pestañas se desplazan en horizontal en vez de partirse. */}
       <nav

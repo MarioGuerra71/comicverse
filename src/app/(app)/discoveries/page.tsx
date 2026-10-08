@@ -1,3 +1,4 @@
+import { getZone } from "@/server/zone";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -20,7 +21,7 @@ export default async function DiscoveriesPage({
   const user = await requireUser();
   const parsed = discoveriesSearchSchema.safeParse(normalizeParams(await searchParams));
   const input = parsed.success ? parsed.data : discoveriesSearchSchema.parse({});
-  const result = await listDiscoveries(db, user.id, input);
+  const result = await listDiscoveries(db, user.id, input, await getZone());
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">

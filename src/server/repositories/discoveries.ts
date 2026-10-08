@@ -1,3 +1,5 @@
+import type { Zone } from "@/lib/zones";
+import { comicInZone } from "@/server/repositories/comics";
 import type { Prisma, PrismaClient } from "../../../generated/prisma/client";
 import { characterSummarySelect, unlockedBy } from "@/server/repositories/characters";
 
@@ -27,9 +29,9 @@ const visibleDiscoveries = (userId: string) =>
   ({ userId, character: unlockedBy(userId) }) satisfies Prisma.DiscoveryWhereInput;
 
 /** Los últimos personajes descubiertos, uno por personaje (su descubrimiento más reciente). */
-export function findRecentDiscoveries(db: Db, userId: string, take: number) {
+export function findRecentDiscoveries(db: Db, userId: string, take: number, zone?: Zone) {
   return db.discovery.findMany({
-    where: visibleDiscoveries(userId),
+    where: { ...visibleDiscoveries(userId), ...(zone ? { viaComic: comicInZone(zone) } : {}) },
     distinct: ["characterId"],
     orderBy: { createdAt: "desc" },
     take,
@@ -38,8 +40,14 @@ export function findRecentDiscoveries(db: Db, userId: string, take: number) {
 }
 
 /** Página del registro completo (con redescubrimientos), del más reciente al más antiguo. */
-export async function findDiscoveriesPage(db: PrismaClient, userId: string, page: number, pageSize: number) {
-  const where = visibleDiscoveries(userId);
+export async function findDiscoveriesPage(
+  db: PrismaClient,
+  userId: string,
+  page: number,
+  pageSize: number,
+  zone?: Zone,
+) {
+  const where = { ...visibleDiscoveries(userId), ...(zone ? { viaComic: comicInZone(zone) } : {}) };
   const [rows, total] = await db.$transaction([
     db.discovery.findMany({
       where,

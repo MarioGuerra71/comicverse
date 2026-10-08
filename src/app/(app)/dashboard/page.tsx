@@ -1,3 +1,5 @@
+import { ZONES } from "@/lib/zones";
+import { getZone } from "@/server/zone";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -21,7 +23,8 @@ const percent = (part: number, total: number) => (total ? Math.round((part / tot
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const { stats, recentComics, recentDiscoveries, activity } = await getDashboard(db, user.id);
+  const zone = await getZone();
+  const { stats, recentComics, recentDiscoveries, activity } = await getDashboard(db, user.id, zone);
   const isNew = stats.library.total === 0;
 
   return (
@@ -29,7 +32,7 @@ export default async function DashboardPage() {
       <PageHeader
         title={`Hola, ${user.name}`}
         figure={`${percent(stats.characters.unlocked, stats.characters.total)}%`}
-        figureLabel="del universo"
+        figureLabel={`del universo ${ZONES[zone].label}`}
       >
         {/* Casillas del cajetín: cada cifra lleva a su pantalla. */}
         {/* Fondo de tinta con huecos de 2 px: los huecos dibujan los filetes entre casillas. */}

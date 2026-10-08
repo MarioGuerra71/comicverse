@@ -1,3 +1,4 @@
+import { getZone } from "@/server/zone";
 import { db } from "@/lib/db";
 import { badRequest, getApiUser, unauthorized } from "@/server/auth/api";
 import { getGraph } from "@/server/services/discovery";
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
   const parsed = graphSearchSchema.safeParse(params);
   if (!parsed.success) return badRequest("INVALID_QUERY");
 
-  const graph = await getGraph(db, user.id, parsed.data.focus);
+  const graph = await getGraph(db, user.id, parsed.data.focus, await getZone());
   // Personaje bloqueado o inexistente: el mismo 404 que en su ficha.
   if (!graph) return Response.json({ error: "CHARACTER_NOT_FOUND" }, { status: 404 });
 

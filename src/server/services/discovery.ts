@@ -146,12 +146,31 @@ export interface GraphEdgeDto {
  * se dibujan como siluetas sueltas, sin enlaces, para no dar pistas.
  * Con `focus`: solo ese personaje y sus vecinos directos (un salto); null si está bloqueado.
  */
-export async function getGraph(db: PrismaClient, userId: string, focus?: string) {
-  const [rows, relationships] = await Promise.all([
+/**
+ * Personajes y relaciones de una zona: los de las series de la editorial que el usuario tiene
+ * en su biblioteca (el mismo criterio que los álbumes). Sin zona: todos los coleccionables.
+ */
+export async function getUniverse(db: PrismaClient, userId: string, zone?: Zone) {
+  const [rows, relationships, albumRows] = await Promise.all([
     findCollection(db, userId),
     getRelationships(db),
+    zone ? findAlbumRows(db, userId, ZONES[zone].publisherSlug) : null,
   ]);
-  const { cards, locked, progress } = toCollection(rows);
+  const all = toCollection(rows);
+  if (!albumRows) return { ...all, relationships };
+
+  const zoneIds = new Set(albumRows.flatMap((r) => (r.characterId ? [r.characterId] : [])));
+  const cards = all.cards.filter((c) => zoneIds.has(c.id));
+  return {
+    cards,
+    locked: zoneIds.size - cards.length,
+    progress: { unlocked: cards.length, total: zoneIds.size },
+    relationships: relationships.filter((r) => zoneIds.has(r.a) && zoneIds.has(r.b)),
+  };
+}
+
+export async function getGraph(db: PrismaClient, userId: string, focus?: string, zone?: Zone) {
+  const { cards, locked, progress, relationships } = await getUniverse(db, userId, zone);
   const unlockedIds = idsOf(cards);
   const edges: GraphEdgeDto[] = relationships
     .filter((r) => isDiscovered(r, unlockedIds))

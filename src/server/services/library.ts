@@ -1,3 +1,4 @@
+import type { Zone } from "@/lib/zones";
 import type { PrismaClient } from "../../../generated/prisma/client";
 import {
   applyStatusChange,
@@ -192,10 +193,11 @@ export async function listLibrary(
   db: PrismaClient,
   userId: string,
   input: LibrarySearchInput,
+  zone?: Zone,
 ) {
   const [{ rows, total }, grouped] = await Promise.all([
-    findLibraryPage(db, userId, input),
-    countByStatus(db, userId),
+    findLibraryPage(db, userId, input, zone),
+    countByStatus(db, userId, zone),
   ]);
 
   return {
