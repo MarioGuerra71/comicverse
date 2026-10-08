@@ -12,7 +12,7 @@ export default async function Home() {
   const session = await getSession();
 
   return (
-    <main className="grid min-h-screen">
+    <main>
       <BrandPanel isPageTitle>
         <div className="flex flex-wrap gap-3">
           {session ? (

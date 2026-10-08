@@ -7,6 +7,11 @@ import { env } from "@/lib/env";
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
+  // En Vercel, cada despliegue tiene además su propia dirección (y la de su rama); también son
+  // nuestras, así que se aceptan para entrar y registrarse desde ellas.
+  trustedOrigins: [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL]
+    .filter(Boolean)
+    .map((host) => `https://${host}`),
   database: prismaAdapter(db, { provider: "postgresql" }),
   emailAndPassword: {
     enabled: true,

@@ -11,7 +11,15 @@ const INTERVAL_MS = 4500;
  * Mosaico de portadas que cambia de grupo cada pocos segundos; cada portada aparece con un
  * pequeño retraso respecto a la anterior. Con «reducir movimiento» se queda en el primer grupo.
  */
-export function CoverShuffle({ groups, compactOnMobile }: { groups: string[][]; compactOnMobile: boolean }) {
+export function CoverShuffle({
+  groups,
+  compactOnMobile,
+  className = "md:max-w-lg",
+}: {
+  groups: string[][];
+  compactOnMobile: boolean;
+  className?: string;
+}) {
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
@@ -26,7 +34,7 @@ export function CoverShuffle({ groups, compactOnMobile }: { groups: string[][]; 
   }, [current, groups]);
 
   return (
-    <ul aria-hidden="true" className="grid grid-cols-3 gap-3 md:max-w-lg md:gap-5">
+    <ul aria-hidden="true" className={`grid grid-cols-3 gap-3 md:gap-5 ${className}`}>
       {(groups[current] ?? []).map((src, index) => (
         <li
           // La clave cambia con el grupo: React monta la portada nueva y su animación se repite.

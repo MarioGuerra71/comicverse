@@ -33,14 +33,18 @@ export async function BrandPanel({
     .map((r) => r.items.flatMap((c) => (c.coverThumbUrl ? [c.coverThumbUrl] : [])))
     .filter((g) => g.length === 6);
 
-  return (
-    <section className="relative flex flex-col gap-6 justify-center overflow-hidden bg-brand-fade-y px-6 py-8 md:px-12 md:py-12">
+  const intro = (
+    <>
       <Link href="/" className="inline-flex items-center gap-2 self-start text-xl font-extrabold text-white">
         <PanelMark size={26} />
         ComicVerse
       </Link>
       <div>
-        <Heading className="text-4xl leading-[1.05] font-extrabold tracking-tight text-white md:text-6xl">
+        <Heading
+          className={`text-4xl leading-[1.05] font-extrabold tracking-tight text-white md:text-6xl ${
+            isPageTitle ? "lg:text-7xl" : ""
+          }`}
+        >
           Lee cómics.
           <br />
           Descubre su universo.
@@ -50,7 +54,24 @@ export async function BrandPanel({
         </p>
       </div>
       {children}
-      <CoverShuffle groups={groups} compactOnMobile={!isPageTitle} />
+    </>
+  );
+
+  // Portada: dos columnas en escritorio (texto | mosaico grande). Acceso: apilado, porque el
+  // formulario ya ocupa la otra mitad de la pantalla.
+  if (isPageTitle) {
+    return (
+      <section className="grid min-h-screen items-center gap-10 overflow-hidden bg-brand-fade-y px-6 py-10 md:grid-cols-[1fr_1.1fr] md:px-12 lg:gap-16 lg:px-20">
+        <div className="flex flex-col gap-6">{intro}</div>
+        <CoverShuffle groups={groups} compactOnMobile={false} className="w-full md:max-w-2xl" />
+      </section>
+    );
+  }
+
+  return (
+    <section className="relative flex flex-col justify-center gap-6 overflow-hidden bg-brand-fade-y px-6 py-8 md:px-12 md:py-12">
+      {intro}
+      <CoverShuffle groups={groups} compactOnMobile />
     </section>
   );
 }
