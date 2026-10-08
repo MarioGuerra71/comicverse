@@ -1,16 +1,13 @@
-import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { CoverShuffle } from "@/components/auth/cover-shuffle";
 import { PanelMark } from "@/components/ui/icons";
 import { searchComics } from "@/server/services/catalog";
 import { comicSearchSchema } from "@/server/validation/catalog";
 
-// Giros de las portadas, como cómics esparcidos sobre la mesa.
-const TILTS = ["-rotate-3", "rotate-2", "-rotate-1", "rotate-3", "-rotate-2", "rotate-1"];
-
 /**
  * Bloque de la editorial para la portada y el acceso: marca, frase y un mosaico de portadas
- * reales del catálogo (tres clásicas y tres recientes). Las portadas no son spoilers: el
+ * reales del catálogo que va cambiando por épocas. Las portadas no son spoilers: el
  * catálogo es visible para cualquier usuario.
  */
 export async function BrandPanel({
@@ -22,11 +19,19 @@ export async function BrandPanel({
   isPageTitle?: boolean;
 }) {
   const Heading = isPageTitle ? "h1" : "p";
-  const [classic, recent] = await Promise.all([
-    searchComics(db, comicSearchSchema.parse({ sort: "release_asc", pageSize: 3, page: 2 })),
-    searchComics(db, comicSearchSchema.parse({ sort: "release_desc", pageSize: 3 })),
-  ]);
-  const covers = [...classic.items, ...recent.items].filter((c) => c.coverThumbUrl);
+  // Cuatro grupos de seis portadas de épocas distintas (de los años 60 a hoy).
+  const pages = [
+    { sort: "release_asc", page: 2 },
+    { sort: "release_asc", page: 40 },
+    { sort: "release_asc", page: 80 },
+    { sort: "release_desc", page: 1 },
+  ];
+  const results = await Promise.all(
+    pages.map((p) => searchComics(db, comicSearchSchema.parse({ ...p, pageSize: 6 }))),
+  );
+  const groups = results
+    .map((r) => r.items.flatMap((c) => (c.coverThumbUrl ? [c.coverThumbUrl] : [])))
+    .filter((g) => g.length === 6);
 
   return (
     <section className="relative flex flex-col gap-6 justify-center overflow-hidden bg-brand-fade-y px-6 py-8 md:px-12 md:py-12">
@@ -45,19 +50,7 @@ export async function BrandPanel({
         </p>
       </div>
       {children}
-      <ul aria-hidden="true" className="grid grid-cols-3 gap-3 md:max-w-lg md:gap-5">
-        {covers.map((comic, index) => (
-          <li
-            key={comic.id}
-            // En el móvil del acceso, una sola fila de tres portadas (deja sitio al formulario).
-            className={`${TILTS[index % TILTS.length]} ${index >= 3 && !isPageTitle ? "hidden md:block" : ""}`}
-          >
-            <div className="relative aspect-2/3 overflow-hidden border-2 border-ink bg-sheet">
-              <Image src={comic.coverThumbUrl!} alt="" fill unoptimized className="object-cover" />
-            </div>
-          </li>
-        ))}
-      </ul>
+      <CoverShuffle groups={groups} compactOnMobile={!isPageTitle} />
     </section>
   );
 }
