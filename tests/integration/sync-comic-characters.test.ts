@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { ComicVineClient } from "@/server/integrations/comic-sources/comicvine/client";
-import { ensureComicCharacters } from "@/server/jobs/sync-comic-characters";
+import { ensureCharacterDetails, ensureComicCharacters } from "@/server/jobs/sync-comic-characters";
 import { createComic, createTestDb, resetDb } from "./test-db";
 
 const db = createTestDb();
@@ -46,10 +46,10 @@ describe("ensureComicCharacters", () => {
       select: { character: { select: { name: true, isCollectible: true } } },
       orderBy: { character: { name: "asc" } },
     });
-    // Hal Jordan ya existía (se reutiliza tal cual); Sinestro es nuevo y aún no coleccionable.
+    // Hal Jordan ya existía (se reutiliza); Sinestro es nuevo. Los dos son coleccionables.
     expect(links.map((l) => l.character)).toEqual([
       { name: "Hal Jordan", isCollectible: true },
-      { name: "Sinestro", isCollectible: false },
+      { name: "Sinestro", isCollectible: true },
     ]);
     expect(await db.character.count()).toBe(2);
   });
@@ -69,5 +69,39 @@ describe("ensureComicCharacters", () => {
     const comic = await createComic(db);
     await ensureComicCharacters(db, null, comic.id);
     expect(await db.comicCharacter.count()).toBe(0);
+  });
+
+  it("al leer, completa la ficha de los personajes que aún no la tienen", async () => {
+    const comic = await createComic(db);
+    await ensureComicCharacters(db, fakeClient().client, comic.id);
+
+    const fetchFn = async (input: RequestInfo | URL) => {
+      const id = Number(String(input).match(/character\/4005-(\d+)/)?.[1]);
+      return new Response(
+        JSON.stringify({
+          error: "OK",
+          status_code: 1,
+          results: {
+            id,
+            name: id === 900 ? "Hal Jordan" : "Sinestro",
+            real_name: id === 900 ? "Harold Jordan" : null,
+            deck: "<b>Linterna</b>",
+            publisher: { id: 10, name: "DC Comics" },
+            image: { medium_url: `https://img/${id}.jpg`, thumb_url: `https://img/${id}-t.jpg` },
+          },
+        }),
+      );
+    };
+    const client = new ComicVineClient({ apiKey: "k", fetchFn: fetchFn as typeof fetch, sleep: async () => {} });
+    await ensureCharacterDetails(db, client, comic.id);
+
+    const hal = await db.character.findFirstOrThrow({
+      where: { externalId: "900" },
+      include: { publisher: true },
+    });
+    expect(hal).toMatchObject({ realName: "Harold Jordan", summary: "Linterna" });
+    expect(hal.publisher?.slug).toBe("dc-comics");
+    expect(hal.detailsSyncedAt).not.toBeNull();
+    expect(await db.character.count({ where: { detailsSyncedAt: null } })).toBe(0);
   });
 });

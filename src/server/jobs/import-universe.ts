@@ -1,12 +1,12 @@
 import type { PrismaClient } from "../../../generated/prisma/client";
 import type { ComicVineClient } from "@/server/integrations/comic-sources/comicvine/client";
-import {
-  cleanRealName,
-  htmlToText,
-  pickImageUrls,
-} from "@/server/integrations/comic-sources/comicvine/mappers";
 import type { CvCharacterDetail } from "@/server/integrations/comic-sources/comicvine/types";
-import { ensurePublisher, importVolume, SOURCE } from "@/server/jobs/import-volume";
+import {
+  characterDetailData,
+  ensurePublisher,
+  importVolume,
+  SOURCE,
+} from "@/server/jobs/import-volume";
 
 const CHARACTER_FIELDS =
   "id,name,real_name,deck,publisher,image,count_of_issue_appearances,first_appeared_in_issue,issue_credits";
@@ -68,25 +68,13 @@ export async function importUniverse({
     );
 
     const publisherId = await ensurePublisher(db, publisherCache, c.publisher);
-    const images = pickImageUrls(c.image);
     const externalId = String(c.id);
-    const name = c.name.trim();
     const data = {
-      publisherId,
-      name,
+      ...characterDetailData(c, publisherId),
       // Nombre de la carta: el label curado de universe.json, o el de Comic Vine.
-      displayName: entry.label?.trim() || name,
+      displayName: entry.label?.trim() || c.name.trim(),
       catalogNumber: index + 1,
-      realName: cleanRealName(c.real_name, name),
-      summary: htmlToText(c.deck, 500),
-      imageUrl: images.url,
-      imageThumbUrl: images.thumbUrl,
-      appearancesCount: c.count_of_issue_appearances ?? null,
-      firstAppearanceExternalId: c.first_appeared_in_issue
-        ? String(c.first_appeared_in_issue.id)
-        : null,
       isCollectible: true,
-      detailsSyncedAt: new Date(),
     };
 
     const character = await db.character.upsert({

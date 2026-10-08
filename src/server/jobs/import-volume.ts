@@ -2,12 +2,14 @@ import type { PrismaClient } from "../../../generated/prisma/client";
 import type { ComicVineClient } from "@/server/integrations/comic-sources/comicvine/client";
 import {
   buildComicTitle,
+  cleanRealName,
   htmlToText,
   pickImageUrls,
   pickReleaseDate,
   slugify,
 } from "@/server/integrations/comic-sources/comicvine/mappers";
 import type {
+  CvCharacterDetail,
   CvIssueSummary,
   CvPublisherRef,
   CvVolume,
@@ -102,4 +104,24 @@ export async function importVolume(
   }
 
   return { seriesId: series.id, label: startYear ? `${name} (${startYear})` : name, comics };
+}
+
+export const CHARACTER_DETAIL_FIELDS =
+  "id,name,real_name,deck,publisher,image,count_of_issue_appearances,first_appeared_in_issue";
+
+/** Datos de la ficha de un personaje de Comic Vine, tal como se guardan. */
+export function characterDetailData(c: CvCharacterDetail, publisherId: string) {
+  const images = pickImageUrls(c.image);
+  const name = c.name.trim();
+  return {
+    publisherId,
+    name,
+    realName: cleanRealName(c.real_name, name),
+    summary: htmlToText(c.deck, 500),
+    imageUrl: images.url,
+    imageThumbUrl: images.thumbUrl,
+    appearancesCount: c.count_of_issue_appearances ?? null,
+    firstAppearanceExternalId: c.first_appeared_in_issue ? String(c.first_appeared_in_issue.id) : null,
+    detailsSyncedAt: new Date(),
+  };
 }
