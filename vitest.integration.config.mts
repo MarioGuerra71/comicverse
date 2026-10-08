@@ -1,5 +1,5 @@
 import { defineConfig } from "vitest/config";
-import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 // Tests de integración: usan la BD de pruebas real (ver tests/integration/test-db.ts).
 export default defineConfig({
@@ -11,6 +11,6 @@ export default defineConfig({
     fileParallelism: false,
   },
   resolve: {
-    alias: { "@": path.resolve(__dirname, "src") },
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
 });

@@ -159,7 +159,7 @@ Convenciones de capas:
 
 ```
 comicverse/
-├─ CLAUDE.md · PRODUCT.md (verdad de producto para el diseño) · DESIGN.md (sistema de diseño «Atlas estelar», generado por impeccable) · README.md (pendiente) · docker-compose.yml · vitest.config.ts · vitest.integration.config.ts
+├─ CLAUDE.md · PRODUCT.md (verdad de producto para el diseño) · DESIGN.md (sistema de diseño «Atlas estelar», generado por impeccable) · README.md (pendiente) · docker-compose.yml · vitest.config.mts · vitest.integration.config.mts
 ├─ prisma/ ............ schema.prisma · migrations/        prisma7.config.ts
 ├─ data/ .............. universe-candidates.json · universe.json · relationships.json   (universe.resolved.json y relationships.suggested.json no se versionan)
 ├─ scripts/ ........... resolve-universe.ts · import-universe.ts · suggest-relationships.ts · import-relationships.ts
@@ -300,7 +300,7 @@ Pendiente: sección de seguridad en el README (incluido el aviso conocido de `np
 - Unitarios: Vitest, `tests/unit/*.test.ts` (`npm test`), alias `@` → `src`. Funciones puras, DTO, validación, mappers, cliente de Comic Vine (con `fetch`, `sleep` y `now` **inyectados**: sin red ni esperas reales).
 - Estado: **118 unitarios + 53 de integración** pasando tras «Mi colección» (Fase 8) (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
-- **Integración** (`npm run test:integration`, `vitest.integration.config.ts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
+- **Integración** (`npm run test:integration`, `vitest.integration.config.mts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - E2E con Playwright más adelante (opcional).
 - Antes de cada commit: `npm test`, `npm run typecheck`, `npm run lint` (y `npm run test:integration` si se toca BD, repositorios o servicios).
 
@@ -369,7 +369,7 @@ Pendiente: sección de seguridad en el README (incluido el aviso conocido de `np
 - Fase 7 (**terminada**): registro `Discovery` y `getDashboardStats` (servicio `dashboard`: biblioteca por estado + total, personajes X/N, relaciones X/N, series con algún cómic leído X/N; `toStatusCounts` compartido con `listLibrary`) (Paso 38). Dashboard (Paso 39): `getDashboard` + `getRecentDiscoveries` (lee las últimas 100 filas de `Discovery`, se queda con una por personaje y descarta los que han vuelto a bloquearse: el registro es historia, pero un bloqueado no sale al navegador), página `/dashboard` con tarjetas de progreso (enlazan a biblioteca, colección, grafo y catálogo), bienvenida para usuarios nuevos, últimos descubrimientos y últimos movimientos de la biblioteca; `GET /api/v1/dashboard`. Paso 40: `unlockedBy(userId)` en `repositories/characters` es **la única definición de "desbloqueado"** (la usan todas las consultas, también el registro: `findRecentDiscoveries` con `distinct` y `findDiscoveriesPage` filtran en la BD, así la paginación es correcta); actividad reciente en el dashboard (`getRecentActivity` sobre `ReadingHistory`, frases de `lib/activity.ts` con test); página `/discoveries` paginada y `GET /api/v1/discoveries`; componente `DiscoveryItem` compartido.
 
 **Después:**
-- **Fase 8 — Pulido** (seguridad hecha, ver sección 12): diseño visual definitivo con un sistema de diseño (usar las skills **ui-ux-pro-max** e **impeccable**) y `AppShell` responsive, rediseño del grafo, animaciones, estados de carga/error/vacío, accesibilidad, traducir errores de Better Auth, rendimiento, aviso de `vitest.config.ts` (config ESM), ajuste de ocultar descripciones.
+- **Fase 8 — Pulido** (seguridad hecha, ver sección 12): diseño visual definitivo con un sistema de diseño (usar las skills **ui-ux-pro-max** e **impeccable**) y `AppShell` responsive, rediseño del grafo, animaciones, estados de carga/error/vacío, accesibilidad, traducir errores de Better Auth, rendimiento, ajuste de ocultar descripciones.
 - **Fase 9 — IA** (solo si el usuario decide asumir costes).
 - Despliegue, README, ampliar el universo (más series y personajes, DC), logros, funciones sociales (seguir usuarios, listas públicas, comparar colecciones; la arquitectura debe permitirlas).
 - **No implementar todavía:** IA, sistema social completo, logros avanzados, DC, recomendaciones con IA.
@@ -379,7 +379,6 @@ Pendiente: sección de seguridad en el README (incluido el aviso conocido de `np
 ## 18. Limitaciones y deuda técnica conocidas
 
 - `npm audit` (9 altas a 2026-10-06): `deepmerge-ts` y `mysql2` (CLI de Prisma 7; aceptado, revisar al actualizar Prisma) y `braces` (vía `eslint-config-next` → `fast-glob`). Todos son herramientas de desarrollo/compilación, no código que reciba datos de usuarios. `source-map-js` se arregló con `npm audit fix` sin `--force` (1.2.1 → 1.2.2; verificado con tests y `npm run build`).
-- `vitest.config.ts` muestra un aviso por usar sintaxis ESM sin `"type": "module"`.
 - Búsqueda de cómics con `ILIKE` (`contains` + `insensitive`); con miles de cómics, añadir `pg_trgm`.
 - Orden por título alfabético (`#10` antes que `#2`); para leer en orden usar fecha.
 - El importador no borra enlaces que Comic Vine retire y vuelve a descargarlo todo en cada ejecución; hacerlo incremental y reconciliar cuando haya desbloqueos de usuarios.
