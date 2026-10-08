@@ -7,4 +7,12 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z.url(),
 });
 
-export const env = envSchema.parse(process.env);
+// En Vercel no hace falta BETTER_AUTH_URL: se usa el dominio de producción que pone la
+// plataforma (VERCEL_PROJECT_PRODUCTION_URL, sin protocolo). Los despliegues de vista previa
+// también apuntan ahí, así que el acceso solo funciona en producción.
+const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+
+export const env = envSchema.parse({
+  ...process.env,
+  BETTER_AUTH_URL: process.env.BETTER_AUTH_URL ?? (vercelUrl ? `https://${vercelUrl}` : undefined),
+});

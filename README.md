@@ -88,7 +88,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 |---|---|
 | `DATABASE_URL` | Conexión a PostgreSQL |
 | `BETTER_AUTH_SECRET` | Secreto de sesiones (≥ 32 caracteres, distinto en cada entorno) |
-| `BETTER_AUTH_URL` | URL pública de la app (`http://localhost:3000` en local) |
+| `BETTER_AUTH_URL` | URL pública de la app (`http://localhost:3000` en local). En Vercel no hace falta: se usa el dominio de producción del proyecto |
 | `COMIC_VINE_API_KEY` | Clave de Comic Vine. Solo la usan los scripts de importación, en el servidor |
 
 Las variables se validan al arrancar. `.env` no se versiona.
