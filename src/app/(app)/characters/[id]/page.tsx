@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { cache } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -13,18 +15,30 @@ import { SectionHeading } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { getCharacterDetail } from "@/server/services/discovery";
 
+// cache: la página y su título comparten una sola consulta por petición.
+// Bloqueado o inexistente: null (el título no revela el nombre).
+const loadCharacter = cache(async (id: string) => {
+  if (!z.uuid().safeParse(id).success) return null;
+  const user = await requireUser();
+  return getCharacterDetail(db, user.id, id);
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const character = await loadCharacter((await params).id);
+  return { title: character ? `${character.name} · ComicVerse` : "ComicVerse" };
+}
+
 export default async function CharacterPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await requireUser();
-
-  const { id } = await params;
-  if (!z.uuid().safeParse(id).success) notFound();
-
-  // Bloqueado o inexistente: la misma página 404.
-  const character = await getCharacterDetail(db, user.id, id);
+  // Bloqueado, inexistente o id no válido: la misma página 404.
+  const character = await loadCharacter((await params).id);
   if (!character) notFound();
 
   return (

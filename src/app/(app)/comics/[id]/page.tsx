@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { cache } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,6 +12,20 @@ import { getComicDetail } from "@/server/services/catalog";
 import { getLibraryEntry, getReview } from "@/server/services/library";
 import { LibraryControls } from "@/components/library/library-controls";
 
+// cache: la página y su título comparten una sola consulta por petición.
+const loadComic = cache(async (id: string) =>
+  z.uuid().safeParse(id).success ? getComicDetail(db, id) : null,
+);
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const comic = await loadComic((await params).id);
+  return { title: comic ? `${comic.title} · ComicVerse` : "ComicVerse" };
+}
+
 export default async function ComicPage({
   params,
 }: {
@@ -21,7 +37,7 @@ export default async function ComicPage({
   if (!z.uuid().safeParse(id).success) notFound();
 
   const [comic, entry, review] = await Promise.all([
-    getComicDetail(db, id),
+    loadComic(id),
     getLibraryEntry(db, user.id, id),
     getReview(db, user.id, id),
   ]);

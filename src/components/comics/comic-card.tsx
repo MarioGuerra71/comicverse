@@ -27,6 +27,7 @@ export function ComicCard({
             fill
             unoptimized
             loading={eager ? "eager" : "lazy"}
+            fetchPriority={eager ? "high" : undefined}
             className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
           />
         ) : (
