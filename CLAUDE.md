@@ -105,7 +105,7 @@ Variables de entorno (en `.env`; plantilla en `.env.example`):
 | `DATABASE_URL` | `postgresql://comicverse:comicverse_dev@localhost:5432/comicverse?schema=public` (credenciales **solo de desarrollo**) |
 | `BETTER_AUTH_SECRET` | ≥ 32 caracteres; generar con `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`; distinto en producción |
 | `BETTER_AUTH_URL` | `http://localhost:3000` |
-| `COMIC_VINE_API_KEY` | Clave gratuita de comicvine.gamespot.com/api; solo servidor |
+| `COMIC_VINE_API_KEY` | Clave gratuita de comicvine.gamespot.com/api; **solo la usan los scripts** (la app no la valida ni la necesita: no subirla a Vercel) |
 
 Particularidades que ya han dado problemas:
 
@@ -343,6 +343,7 @@ Hecho: sección de seguridad en el README (incluido el aviso conocido de `npm au
 ## 16. Despliegue y documentación
 
 - Separar Development y Production con variables de entorno; sin secretos en Git; Vercel (gratis) + Neon/Supabase (gratis), verificando condiciones vigentes. La BD de producción se llena ejecutando el importador contra ella (no se llama a Comic Vine en tiempo de ejecución).
+- **Preparado para desplegar (2026-10-08):** `postinstall: prisma generate` (el cliente generado no se versiona) y `COMIC_VINE_API_KEY` fuera del esquema de entorno de la app.
 - **README profesional** (hecho 2026-10-08, capturas en `docs/capturas/`; añadir la URL de la demo al desplegar) pensado para entrevistas: qué es, características, stack, arquitectura, instalación, variables de entorno, base de datos (migraciones y seed), API, capturas, roadmap, futuras funciones de IA, licencia/atribución de Comic Vine y apartado de seguridad. Documentar también `docs/` (ER, ADR).
 
 ---
