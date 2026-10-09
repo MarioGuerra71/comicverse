@@ -46,8 +46,9 @@ export function AppShell({
         <div className="flex justify-center px-3 lg:justify-start lg:px-5">
           <Brand compact />
         </div>
-        {/* En el carril de la tablet no cabe: allí se cambia desde el catálogo. */}
         <ZoneSwitch zone={zone} className="mx-3 mt-5 hidden lg:flex" />
+        {/* En el carril de iconos de la tablet, apilado y con la inicial. */}
+        <ZoneSwitch zone={zone} compact className="mx-auto mt-4 w-12 lg:hidden" />
         <div className="mt-6 flex-1">
           <SidebarNav />
         </div>

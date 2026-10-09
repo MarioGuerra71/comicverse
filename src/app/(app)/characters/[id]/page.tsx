@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { zoneOfPublisher } from "@/lib/zones";
 import { db } from "@/lib/db";
 import { pluralize } from "@/lib/format";
 import { READING_STATUS_LABELS } from "@/lib/reading-status";
@@ -11,7 +12,7 @@ import { RELATIONSHIP_TYPE_LABELS } from "@/lib/relationship-types";
 import { ComicCard } from "@/components/comics/comic-card";
 import { CARD_STATE_LABELS } from "@/components/characters/character-card";
 import { FavoriteButton } from "@/components/characters/favorite-button";
-import { SectionHeading } from "@/components/ui/page-parts";
+import { SectionHeading, PublisherStrip } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { getCharacterDetail } from "@/server/services/discovery";
 
@@ -42,7 +43,8 @@ export default async function CharacterPage({
   if (!character) notFound();
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-8">
+    // Con el color de su editorial (rojo Marvel, azul DC) aunque estés en la otra zona.
+    <main data-publisher={zoneOfPublisher(character.publisher) ?? undefined} className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-8">
       <div className="flex flex-wrap justify-between gap-2 text-sm">
         <Link href="/collection" className="text-ink underline">
           ← Volver a mi colección
@@ -51,6 +53,7 @@ export default async function CharacterPage({
           Ver su reparto en el universo →
         </Link>
       </div>
+      <PublisherStrip name={character.publisher} />
 
       <div className="mt-4 grid gap-6 sm:grid-cols-[minmax(0,16rem)_1fr]">
         <div className="relative aspect-3/4 w-full max-w-64 overflow-hidden border-2 border-ink bg-sheet">

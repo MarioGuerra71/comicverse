@@ -19,9 +19,16 @@ export const catalogLabel = (number: number | null) =>
 function HandNumber({ number, total, className }: { number: number | null; total: number; className: string }) {
   return (
     <span className={`font-hand text-2xl leading-none font-bold ${className}`}>
-      {number === null ? "—" : pad(number)}
-      {/* Menos peso por tamaño, no por transparencia: en azul la opacidad bajaba el contraste. */}
-      <span className="text-base font-medium">/{pad(total)}</span>
+      {number === null ? (
+        // Sin número de catálogo (personajes de series añadidas): hueco vacío, la rejilla no se mueve.
+        <span className="invisible">000</span>
+      ) : (
+        <>
+          {pad(number)}
+          {/* Menos peso por tamaño, no por transparencia: en azul la opacidad bajaba el contraste. */}
+          <span className="text-base font-medium">/{pad(total)}</span>
+        </>
+      )}
     </span>
   );
 }

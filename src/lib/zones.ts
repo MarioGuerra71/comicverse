@@ -2,8 +2,8 @@
 // (atributo data-publisher, ver globals.css). Compartido entre cliente y servidor.
 export const ZONES = {
   // comicVineId: id de la editorial en Comic Vine (filtra ediciones extranjeras de la misma serie).
-  marvel: { label: "Marvel", publisherSlug: "marvel", comicVineId: 31 },
-  dc: { label: "DC", publisherSlug: "dc-comics", comicVineId: 10 },
+  marvel: { label: "Marvel", publisherSlug: "marvel", publisherName: "Marvel", comicVineId: 31 },
+  dc: { label: "DC", publisherSlug: "dc-comics", publisherName: "DC Comics", comicVineId: 10 },
 } as const;
 
 export type Zone = keyof typeof ZONES;
@@ -28,4 +28,9 @@ export function brandZoneForVisit(visits: number, random: () => number = Math.ra
   if (visits <= 1) return "marvel";
   if (visits === 2) return "dc";
   return random() < 0.5 ? "marvel" : "dc";
+}
+
+/** Zona de una editorial por su nombre («Marvel», «DC Comics»); null si es otra. */
+export function zoneOfPublisher(name: string | null | undefined): Zone | null {
+  return ZONE_KEYS.find((z) => ZONES[z].publisherName === name) ?? null;
 }

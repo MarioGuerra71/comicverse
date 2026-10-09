@@ -153,3 +153,13 @@ export function Pagination({
     </nav>
   );
 }
+
+/** Franja de la editorial en las fichas (rojo Marvel, azul DC): dice «de qué universo es esto». */
+export function PublisherStrip({ name }: { name: string | null }) {
+  if (!name) return null;
+  return (
+    <div className="mt-3 flex h-8 items-center border-2 border-ink bg-brand-fade-x px-3" aria-label={`Editorial: ${name}`}>
+      <span className="text-xs font-extrabold tracking-wide text-white uppercase">{name}</span>
+    </div>
+  );
+}

@@ -18,3 +18,13 @@ describe("parseZone", () => {
     expect(parseZone("<script>")).toBe("marvel");
   });
 });
+
+describe("zoneOfPublisher", () => {
+  it("traduce el nombre de la editorial a su zona", async () => {
+    const { zoneOfPublisher } = await import("@/lib/zones");
+    expect(zoneOfPublisher("DC Comics")).toBe("dc");
+    expect(zoneOfPublisher("Marvel")).toBe("marvel");
+    expect(zoneOfPublisher("Panini España")).toBeNull();
+    expect(zoneOfPublisher(null)).toBeNull();
+  });
+});

@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { zoneOfPublisher } from "@/lib/zones";
+import { PublisherStrip } from "@/components/ui/page-parts";
 import { db } from "@/lib/db";
 import { formatDate, pluralize } from "@/lib/format";
 import { buildCatalogHref } from "@/lib/catalog-url";
@@ -54,10 +56,12 @@ export default async function ComicPage({
   const releaseDate = formatDate(comic.releaseDate);
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-8">
+    // Con el color de su editorial (rojo Marvel, azul DC) aunque estés en la otra zona.
+    <main data-publisher={zoneOfPublisher(comic.publisher) ?? undefined} className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-8">
       <Link href="/catalog" className="text-sm text-ink underline">
         ← Volver al catálogo
       </Link>
+      <PublisherStrip name={comic.publisher} />
 
       <div className="mt-4 grid gap-6 sm:grid-cols-[minmax(0,16rem)_1fr]">
         <div className="relative aspect-2/3 w-full max-w-64 overflow-hidden border-2 border-ink bg-sheet">
