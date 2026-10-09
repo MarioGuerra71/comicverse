@@ -16,7 +16,7 @@
 - **Colección en álbumes:** en cada zona, un álbum por cada serie de tu biblioteca, con sus cromos numerados por orden de aparición y huecos a lápiz para los que faltan.
 - **Sin spoilers:** de un personaje que aún no has descubierto, al navegador solo le llega su número en el álbum. No le llegan ni su nombre, ni su imagen, ni su id. Su ficha devuelve el mismo 404 que un personaje inexistente.
 - **Relaciones:** las relaciones curadas (aliado, enemigo, familia, pareja…) se combinan con relaciones derivadas de las coapariciones. Una relación se descubre cuando conoces a los dos personajes.
-- **Universo:** un grafo interactivo de tus descubrimientos (React Flow), una vista centrada en un personaje y una vista en lista accesible.
+- **Universo:** una «página de reparto» de cómic. El protagonista va en una viñeta grande y sus relaciones descubiertas, agrupadas por tipo (aliados, enemigos, familia…) y rotuladas a mano, alrededor. Toca a cualquiera y pasa a ser el protagonista. De las relaciones por descubrir solo se ve cuántas son.
 - **Inicio:** tu progreso (porcentaje del universo, personajes, relaciones y series), los últimos descubrimientos y tu actividad reciente.
 - **Diseño responsive real:** barra lateral en escritorio, iconos en tableta y barra inferior en el móvil.
 
@@ -34,8 +34,7 @@
 | ORM | Prisma 7 con `@prisma/adapter-pg` |
 | Autenticación | Better Auth (email y contraseña, sesiones en BD) |
 | Validación | Zod 4, compartida entre cliente y servidor |
-| Grafo | React Flow y `d3-force` para la distribución de los nodos |
-| Tests | Vitest: 124 tests unitarios y 65 de integración contra PostgreSQL real |
+| Tests | Vitest: 125 tests unitarios y 65 de integración contra PostgreSQL real |
 | Tareas programadas | Vercel Cron (novedades diarias) |
 
 ## Arquitectura
@@ -149,7 +148,6 @@ Las rutas de biblioteca, inicio, universo y descubrimientos responden por la zon
 
 ## Hoja de ruta
 
-- Rediseñar a fondo la vista del grafo.
 - Logros y funciones sociales (seguir usuarios, listas públicas, comparar colecciones).
 - IA opcional (búsqueda en lenguaje natural y recomendaciones), siempre construida con los mismos DTO para no revelar spoilers.
 

@@ -1,8 +1,6 @@
 import { z } from "zod";
 
-// focus: personaje en el centro (ego-graph a un salto). Sin focus: el grafo completo.
-// view: dibujo interactivo o lista accesible con los mismos datos.
+// focus: el protagonista de la página de reparto. Sin focus: el personaje más conectado.
 export const graphSearchSchema = z.object({
   focus: z.uuid().optional(),
-  view: z.enum(["graph", "list"]).default("graph"),
 });

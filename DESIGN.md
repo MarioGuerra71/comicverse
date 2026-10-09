@@ -49,6 +49,11 @@ typography:
     fontSize: "1.25rem"
     fontWeight: 700
     lineHeight: 1.25
+  hand-label:
+    fontFamily: "Caveat, cursive"
+    fontSize: "1.5rem"
+    fontWeight: 700
+    lineHeight: 1
 rounded:
   none: "0px"
   avatar: "9999px"
@@ -114,7 +119,7 @@ Rechazos confirmados: la app oscura de streaming con un acento, el pop-art de tr
 - Filetes y bordes de viñeta en tinta de 2 px; esquinas rectas.
 - Tinta llena = seleccionado, en toda la app.
 - Lápiz del editor (color de la editorial) solo para identidad, sección activa, lo nuevo y lo coleccionado.
-- Caveat a mano para números de catálogo y notas del editor; Geist para todo lo demás.
+- Caveat a mano para números de catálogo, notas del editor y rótulos de relación del reparto; Geist para todo lo demás.
 - Iconos propios en SVG de trazo, nunca emojis ni Unicode.
 
 ## Colors
@@ -164,9 +169,10 @@ Cartulina, tinta y dos lápices: uno azul para lo que aún no existe y uno del e
 - **Label** (400, 0.75rem): metadatos (nombre real, cómics leídos), pie de atribución, unidad del contador; en la barra inferior, 11px a 500 (600 activa).
 - **Hand number** (Caveat 700): contador del cajetín a 2.25rem con el total a 1.5rem en tinta suave; número de viñeta "001/032" a 1.5rem con "/032" a 1rem y 500.
 - **Hand note** (Caveat 700, 1.25rem "¡nuevo!", 1.125rem "coleccionado"): notas del editor bajo el nombre.
+- **Hand label** (Caveat 700, 1.5rem, interlineado 1, tinta, en minúscula): rótulo del tipo de relación en la página de reparto ("aliados", "enemigos"…); el de "por descubrir" va a 1.875rem en blue-ink.
 
 ### Named Rules
-**The Handwritten Digits Rule.** Los números de catálogo y el recuento de la colección se escriben a mano en Caveat, siempre con tres cifras (001) y su total. Caveat no se usa para títulos, botones ni texto corrido.
+**The Handwritten Digits Rule.** Los números de catálogo y el recuento de la colección se escriben a mano en Caveat, siempre con tres cifras (001) y su total. Caveat no se usa para títulos, botones ni texto corrido. Excepción acotada (contrato de dirección del Universo): los rótulos de tipo de relación de la página de reparto van en Caveat, porque son la mano del editor clasificando el reparto. No se extiende a títulos de pantalla, de sección ni de personaje, que siguen en Geist.
 
 **The Weight-Not-Opacity Rule.** Lo secundario dentro de un número a mano se aligera por tamaño y peso, no por transparencia (en azul la opacidad bajaba el contraste).
 
@@ -175,6 +181,8 @@ Cartulina, tinta y dos lápices: uno azul para lo que aún no existe y uno del e
 Columna central de hasta 72rem (max-w-6xl) con márgenes de 16px en móvil y 32px desde md; respiro vertical de 24px y 32px. El shell cambia por tamaño: en móvil, barra superior de 56px y barra inferior fija de 5 pestañas (64px de alto, con safe-area); en tablet (md, 768px), carril lateral de iconos de 80px; en escritorio (lg, 1024px), barra lateral de 240px con iconos y texto. El pie de atribución a Comic Vine cierra todas las páginas privadas y deja 96px de relleno inferior en móvil para no quedar bajo la barra.
 
 La rejilla de colección es un álbum: 3 columnas en móvil, 4 en sm, 5 en md y 6 en lg, con calles de 16px en horizontal y 28px en vertical. En orden de catálogo y sin filtro, los huecos bloqueados ocupan su sitio, de modo que al desbloquear la viñeta se entinta sin recolocar la página. En móvil, las filas de filtros y de ordenación se desplazan en horizontal en lugar de partirse.
+
+La página de reparto (Universo) reparte el ancho en dos columnas desde lg: protagonista a 1/3, fijo arriba al desplazar (sticky, 24px), y reparto a 2/3, con 40px de calle; en móvil y tablet el protagonista va en horizontal (viñeta de 112px, 144px desde sm) sobre el reparto. Los grupos de relación se encajan como viñetas de distinto ancho: cada grupo ocupa tantas columnas como miembros tiene, en una rejilla de 4 columnas desde sm y de 5 desde xl (1280px), con calles de 24px en horizontal y 32px en vertical. El servidor los empaqueta en filas sin huecos y el orden del DOM es el visual: sin relleno denso que desordene el tabulador. En móvil, la tira de protagonistas y cada grupo son filas que se desplazan en horizontal con snap.
 
 Toda zona táctil mide al menos 44px (min-h-11).
 
@@ -220,6 +228,15 @@ El cajetín impreso de una página de arte original: caja de tinta de 2px sobre 
 
 ### Locked panel (viñeta por dibujar)
 Solo lápiz azul: viñeta 3:4 con borde de 1,5px y aspa de 1px, y el número a mano en blue-ink. Ni nombre, ni imagen, ni id: del bloqueado solo viaja su número de catálogo.
+
+### Cast page (página de reparto)
+La página de presentación de personajes: un protagonista en grande y su reparto agrupado por tipo, rotulado a mano. Sin grafo, sin líneas cruzadas: la relación se lee en el rótulo.
+- **Cajetín:** `PageHeader` con el título "Universo de X" y el recuento a mano de relaciones descubiertas sobre el total, con tres cifras ("066/179").
+- **Tira de protagonistas:** miniaturas 3:4 de 48px con borde de tinta de 2px, del más conectado al menos. En móvil, una fila deslizable con snap; desde lg, una fila de 12 y el resto en un `<details>` nativo "Ver todo el reparto (N)", abierto si el protagonista está fuera de la primera fila. El activo lleva un contorno de tinta de 3px separado 2px (aria-current="page"); el foco del teclado conserva el contorno de 2px del editor.
+- **Protagonista:** viñeta 3:4 grande, nombre en display (800, 1.5rem y 1.875rem desde md), estado como nota a mano en editor-ink, nombre real y cómics leídos en body, y enlace subrayado "Ver su ficha" con zona táctil de 44px.
+- **Grupos:** orden fijo aliados, enemigos, familia, pareja, compañeros, rivales, aparecen juntos (los tipos desconocidos caen en "aparecen juntos"). Cabecera con el rótulo a mano (hand label) y el número de miembros a mano en tinta suave, sobre un filete de tinta de 2px. Cada miembro es una viñeta 3:4 con el nombre (title), la nota del editor "¡nuevo!" con su recuadro o "coleccionado", y "N cómics juntos" en label tinta suave. Tocar un miembro lo hace protagonista.
+- **Por descubrir:** el mismo bloque en lápiz azul: rótulo y número a mano en blue-ink sobre un filete azul de 1,5px, hasta 6 viñetas por dibujar con aspa (aria-hidden) y una línea que da solo el número. Sin nombres, ni imágenes, ni números de catálogo: del bloqueado solo viaja cuántos son.
+- **Movimiento:** al cambiar de protagonista, las viñetas de cada grupo se entintan en cascada con pop-in, 45ms entre una y otra y como mucho 8 pasos (360ms); solo con motion-safe.
 
 ### Browser chrome
 Selección de texto en color del editor con texto en papel; foco visible como contorno de 2px en color del editor separado 2px; cursor y controles nativos (accent-color) en color del editor; barras de progreso en tinta sobre papel trabajado.

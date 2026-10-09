@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-07T15:26:56.788Z",
+  "generatedAt": "2026-10-09T00:00:00.000Z",
   "title": "Design System: ComicVerse",
   "extensions": {
     "colorMeta": {
@@ -233,6 +233,10 @@
       "hand-note": {
         "displayName": "Nota del editor",
         "purpose": "\"¡nuevo!\" (1.25rem) y \"coleccionado\" (1.125rem) en editor-ink bajo el nombre. Caveat."
+      },
+      "hand-label": {
+        "displayName": "Rótulo a mano",
+        "purpose": "Tipo de relación en la página de reparto (1.5rem, tinta); \"por descubrir\" a 1.875rem en blue-ink. Única excepción a Caveat en rótulos. Caveat."
       }
     },
     "shadows": [],
@@ -246,6 +250,11 @@
         "name": "focus",
         "value": "outline: 2px solid var(--editor); outline-offset: 2px",
         "purpose": "Foco visible en toda la app."
+      },
+      {
+        "name": "selected-thumb",
+        "value": "outline: 3px solid var(--ink); outline-offset: 2px",
+        "purpose": "Protagonista activo en la tira de miniaturas del reparto; el foco conserva el contorno del editor."
       }
     ],
     "motion": [
@@ -258,6 +267,11 @@
         "name": "panel-hover",
         "value": "transform 300ms ease-out",
         "purpose": "La imagen crece a scale(1.03) dentro de la viñeta al pasar."
+      },
+      {
+        "name": "cast-stagger",
+        "value": "pop-in + animation-delay: min(index, 8) * 45ms",
+        "purpose": "Al cambiar de protagonista, las viñetas del reparto se entintan en cascada; solo con motion-safe."
       }
     ],
     "breakpoints": [
@@ -275,6 +289,11 @@
         "name": "lg",
         "value": "1024px",
         "purpose": "Barra lateral de 240px con texto; 6 columnas."
+      },
+      {
+        "name": "xl",
+        "value": "1280px",
+        "purpose": "Reparto en 5 columnas."
       }
     ],
     "publisherSwitch": {
@@ -341,6 +360,14 @@
       "description": "Viñeta por dibujar: lápiz azul con aspa y solo el número.",
       "html": "<div class=\"ds-locked\" role=\"img\" aria-label=\"Nº 015: personaje por descubrir\"><span class=\"ds-lnum\">015<small>/032</small></span><div class=\"ds-lpanel\"><svg viewBox=\"0 0 30 40\" preserveAspectRatio=\"none\" aria-hidden=\"true\"><path d=\"M0 0 L30 40 M30 0 L0 40\" stroke=\"#8ec5e8\" stroke-width=\"1\" vector-effect=\"non-scaling-stroke\"/></svg></div></div>",
       "css": ".ds-locked{display:flex;flex-direction:column;width:140px}.ds-lnum{font-family:var(--font-caveat),Caveat,cursive;font-size:24px;font-weight:700;line-height:1;color:#2f72a3}.ds-lnum small{font-size:16px;font-weight:500}.ds-lpanel{position:relative;margin-top:6px;aspect-ratio:3/4;border:1.5px solid #8ec5e8}.ds-lpanel svg{position:absolute;inset:0;width:100%;height:100%}"
+    },
+    {
+      "name": "Cast Group",
+      "kind": "custom",
+      "refersTo": "cast-group",
+      "description": "Grupo de la página de reparto: rótulo a mano y número sobre filete de tinta, miembros como viñetas con \"N cómics juntos\".",
+      "html": "<section class=\"ds-cast\"><div class=\"ds-cast-head\"><h3>aliados</h3><span>2</span></div><ul><li><a href=\"#\"><span class=\"ds-cast-panel ds-cast-panel--new\"></span><b>Iron Man</b><i>¡nuevo!</i><small>12 cómics juntos</small></a></li><li><a href=\"#\"><span class=\"ds-cast-panel\"></span><b>Thor</b><i>coleccionado</i><small>8 cómics juntos</small></a></li></ul></section>",
+      "css": ".ds-cast{width:320px;font-family:var(--font-geist-sans),system-ui,sans-serif;color:#141414}.ds-cast-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;border-bottom:2px solid #141414;padding-bottom:4px}.ds-cast-head h3,.ds-cast-head span{margin:0;font-family:var(--font-caveat),Caveat,cursive;font-weight:700;line-height:1}.ds-cast-head h3{font-size:24px}.ds-cast-head span{font-size:20px;color:#55534d}.ds-cast ul{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:12px 0 0;padding:0;list-style:none}.ds-cast a{display:flex;flex-direction:column;color:#141414;text-decoration:none}.ds-cast-panel{display:block;aspect-ratio:3/4;border:2px solid #141414;background:#c43b2f}.ds-cast-panel--new{outline:2px solid var(--editor,#e62429);outline-offset:4px}.ds-cast b{margin-top:6px;font-size:14px;line-height:1.25}.ds-cast i{font-style:normal;font-family:var(--font-caveat),Caveat,cursive;font-size:18px;font-weight:700;line-height:1.25;color:var(--editor-ink,#b81a1f)}.ds-cast small{font-size:12px;color:#55534d}.ds-cast a:focus-visible{outline:2px solid var(--editor,#e62429);outline-offset:2px}"
     }
   ],
   "narrative": {
@@ -351,7 +378,7 @@
       "Filetes y bordes de viñeta en tinta de 2 px; esquinas rectas.",
       "Tinta llena = seleccionado, en toda la app.",
       "Lápiz del editor (color de la editorial) solo para identidad, sección activa, lo nuevo y lo coleccionado.",
-      "Caveat a mano para números de catálogo y notas del editor; Geist para todo lo demás.",
+      "Caveat a mano para números de catálogo, notas del editor y rótulos de relación del reparto; Geist para todo lo demás.",
       "Iconos propios en SVG de trazo, nunca emojis ni Unicode."
     ],
     "rules": [
@@ -377,7 +404,7 @@
       },
       {
         "name": "The Handwritten Digits Rule",
-        "body": "Los números de catálogo y el recuento de la colección se escriben a mano en Caveat, siempre con tres cifras (001) y su total. Caveat no se usa para títulos, botones ni texto corrido.",
+        "body": "Los números de catálogo y el recuento de la colección se escriben a mano en Caveat, siempre con tres cifras (001) y su total. Caveat no se usa para títulos, botones ni texto corrido. Excepción acotada (contrato de dirección del Universo): los rótulos de tipo de relación de la página de reparto van en Caveat, porque son la mano del editor clasificando el reparto. No se extiende a títulos de pantalla, de sección ni de personaje, que siguen en Geist.",
         "section": "typography"
       },
       {
@@ -410,7 +437,7 @@
       "Don't usar logos ni tipografías de Marvel o DC: la editorial se expresa solo con color.",
       "Don't usar lápiz azul (blue) como texto ni como relleno.",
       "Don't añadir tema oscuro: el sistema es solo claro.",
-      "Don't tomar como referencia las pantallas pendientes de migrar (inicio, catálogo, ficha de cómic, biblioteca, ficha de personaje, universo, acceso y portada): todavía usan las clases genéricas `bg-foreground` / `text-background` / `border-foreground/20` y `rounded-md`, que no forman parte del sistema."
+      "Don't tomar como referencia las pantallas pendientes de migrar (inicio, catálogo, ficha de cómic, biblioteca, ficha de personaje, acceso y portada): todavía usan las clases genéricas `bg-foreground` / `text-background` / `border-foreground/20` y `rounded-md`, que no forman parte del sistema."
     ]
   }
 }

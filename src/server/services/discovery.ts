@@ -11,6 +11,7 @@ import type { CollectionSearchInput } from "@/server/validation/collection";
 import {
   filterCards,
   toAlbums,
+  toCastPage,
   toCharacterDetail,
   toCharacterSummary,
   toCollection,
@@ -151,12 +152,15 @@ export interface GraphEdgeDto {
  * en su biblioteca (el mismo criterio que los álbumes). Sin zona: todos los coleccionables.
  */
 export async function getUniverse(db: PrismaClient, userId: string, zone?: Zone) {
-  const [rows, relationships, albumRows] = await Promise.all([
+  const [rows, relationships, albumRows, newIds] = await Promise.all([
     findCollection(db, userId),
     getRelationships(db),
     zone ? findAlbumRows(db, userId, ZONES[zone].publisherSlug) : null,
+    findNewCharacterIds(db, userId),
   ]);
-  const all = toCollection(rows);
+  const collection = toCollection(rows);
+  // «Nuevo» = descubierto desde la última visita a la colección (como en los álbumes).
+  const all = { ...collection, cards: collection.cards.map((c) => ({ ...c, isNew: newIds.has(c.id) })) };
   if (!albumRows) return { ...all, relationships };
 
   const zoneIds = new Set(albumRows.flatMap((r) => (r.characterId ? [r.characterId] : [])));
@@ -275,4 +279,10 @@ export async function getZoneCollection(
     progress: { unlocked: cards.length, total: zoneIds.size },
     hasNew: cards.some((c) => c.isNew),
   };
+}
+
+/** Página de reparto del Universo de una zona (ver toCastPage). */
+export async function getCastPage(db: PrismaClient, userId: string, zone: Zone, focusId?: string) {
+  const { cards, relationships } = await getUniverse(db, userId, zone);
+  return toCastPage(cards, relationships, focusId);
 }

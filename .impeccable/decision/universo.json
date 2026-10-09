@@ -1,0 +1,79 @@
+{
+  "title": "Rediseño del Universo",
+  "question": "Tres formas de explorar quién se relaciona con quién, todas en el estilo «Página de arte original». Elige una, pide otra tanda o dame una indicación.",
+  "options": [
+    {
+      "id": "orbitas",
+      "label": "Órbitas por tipo",
+      "kicker": "THE ROLL",
+      "lineage": "diagramas de reparto de las guías de personajes",
+      "thesis": "El personaje elegido en el centro y sus relaciones en anillos: dentro las curadas (aliado, enemigo, familia), fuera los que solo comparten cómics.",
+      "palette": ["#f4f1ea", "#141414", "#e62429", "#8ec5e8"],
+      "materials": ["viñetas entintadas", "anillos a lápiz", "tipos escritos a mano"],
+      "viewport": "Cajetín arriba; a la izquierda, los anillos con el protagonista en grande; a la derecha, su ficha y la lista por tipo. Tocar una viñeta la lleva al centro con una animación.",
+      "risk": "Con muchos personajes el anillo exterior se llena; hay que agrupar o paginar.",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "cajetín «Universo de Spider-Man»", "x": 0, "y": 0, "w": 12, "h": 1 },
+          { "label": "anillo exterior: aparecen juntos", "x": 0, "y": 1, "w": 8, "h": 9 },
+          { "label": "anillo interior: aliados · enemigos · familia", "x": 1, "y": 2, "w": 6, "h": 7 },
+          { "label": "protagonista", "x": 3, "y": 4, "w": 2, "h": 3, "accent": true },
+          { "label": "ficha y relaciones por tipo", "x": 8, "y": 1, "w": 4, "h": 9 }
+        ]
+      }
+    },
+    {
+      "id": "reparto",
+      "label": "Página de reparto",
+      "lineage": "splash pages y páginas de presentación de personajes",
+      "thesis": "Una página de cómic: el protagonista es la viñeta grande y sus relaciones, viñetas agrupadas por tipo con el tipo rotulado a mano. Sin líneas cruzadas.",
+      "palette": ["#f4f1ea", "#141414", "#e62429", "#8ec5e8"],
+      "materials": ["viñetas entintadas", "calles de página", "rótulos a mano del editor"],
+      "viewport": "Viñeta grande del protagonista a la izquierda; a la derecha, filas de viñetas «aliados», «enemigos», «familia», «aparecen juntos». Las relaciones por descubrir son viñetas a lápiz azul con su número.",
+      "risk": "Se parece más a una ficha que a un mapa: se ve menos «el universo entero» de un vistazo.",
+      "raised": [
+        { "from": "muro de streaming", "raise": "En el móvil cada tipo es una fila que se desliza en horizontal, y la viñeta enfocada crece y muestra cuántos cómics comparten." }
+      ],
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "cajetín", "x": 0, "y": 0, "w": 12, "h": 1 },
+          { "label": "protagonista (viñeta grande)", "x": 0, "y": 1, "w": 4, "h": 6, "accent": true },
+          { "label": "aliados", "x": 4, "y": 1, "w": 8, "h": 2 },
+          { "label": "enemigos", "x": 4, "y": 3, "w": 8, "h": 2 },
+          { "label": "familia · pareja", "x": 4, "y": 5, "w": 8, "h": 2 },
+          { "label": "aparecen juntos", "x": 0, "y": 7, "w": 12, "h": 2 },
+          { "label": "por descubrir: 6 (a lápiz)", "x": 0, "y": 9, "w": 12, "h": 1 }
+        ]
+      }
+    },
+    {
+      "id": "tira",
+      "label": "Tira de saltos",
+      "lineage": "tiras de prensa y «previously on»",
+      "thesis": "Tu exploración se dibuja como una tira de cómic: cada salto añade una viñeta con la relación rotulada entre ellas («enemigo de», «padre de»).",
+      "palette": ["#f4f1ea", "#141414", "#e62429", "#8ec5e8"],
+      "materials": ["tira horizontal", "cartelas de texto", "viñetas entintadas"],
+      "viewport": "Arriba, la tira con tu recorrido (Spider-Man → enemigo de → Green Goblin → padre de → Harry); debajo, las relaciones de la última viñeta para elegir el siguiente salto.",
+      "risk": "Es la más original, pero no enseña el conjunto: se ve el camino, no el mapa.",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "cajetín", "x": 0, "y": 0, "w": 12, "h": 1 },
+          { "label": "viñeta 1", "x": 0, "y": 1, "w": 3, "h": 3 },
+          { "label": "viñeta 2", "x": 3, "y": 1, "w": 3, "h": 3 },
+          { "label": "viñeta 3 (actual)", "x": 6, "y": 1, "w": 3, "h": 3, "accent": true },
+          { "label": "siguiente salto…", "x": 9, "y": 1, "w": 3, "h": 3 },
+          { "label": "relaciones de la viñeta actual, por tipo", "x": 0, "y": 5, "w": 12, "h": 5 }
+        ]
+      }
+    }
+  ],
+  "reroll": true,
+  "steer": true,
+  "buildPath": { "value": "code", "toggle": false }
+}

@@ -48,7 +48,7 @@ export default async function CharacterPage({
           ← Volver a mi colección
         </Link>
         <Link href={`/graph?focus=${character.id}`} className="text-ink underline">
-          Ver en el grafo →
+          Ver su reparto en el universo →
         </Link>
       </div>
 
