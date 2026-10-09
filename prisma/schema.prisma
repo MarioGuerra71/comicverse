@@ -41,6 +41,7 @@ model User {
   // Última visita a "Mi colección": lo descubierto después se marca como nuevo (dorado).
   collectionSeenAt   DateTime?
   discoveries        Discovery[]
+  achievements       UserAchievement[]
 }
 
 model Session {
@@ -311,4 +312,15 @@ model Discovery {
   @@index([userId, createdAt])
   @@index([characterId])
   @@index([viaComicId])
+}
+
+// Logro conseguido (las reglas viven en server/domain/achievements.ts; el id es el de esa lista).
+// Se guarda la primera vez que se cumple y no se borra aunque luego bajen las cifras.
+model UserAchievement {
+  userId        String
+  achievementId String
+  earnedAt      DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, achievementId])
 }

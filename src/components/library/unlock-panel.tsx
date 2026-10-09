@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { TrophyIcon } from "@/components/ui/icons";
 
 // Forma del `unlock` que devuelve la API (copia local: el cliente no importa src/server).
 export interface UnlockView {
@@ -7,6 +8,8 @@ export interface UnlockView {
   lostCharacters: { id: string; name: string }[];
   newRelationships: number;
   progress: { unlocked: number; total: number };
+  /** Logros conseguidos con este cambio. */
+  achievements?: { id: string; title: string }[];
 }
 
 export function UnlockPanel({ unlock, onClose }: { unlock: UnlockView; onClose: () => void }) {
@@ -68,6 +71,31 @@ export function UnlockPanel({ unlock, onClose }: { unlock: UnlockView; onClose: 
         </p>
       ) : (
         <p className="text-sm text-ink">Leído. Este cómic no te ha descubierto personajes nuevos.</p>
+      )}
+
+      {unlock.achievements && unlock.achievements.length > 0 && (
+        <ul className="mt-4 flex flex-col gap-2 border-t-2 border-ink pt-3">
+          {unlock.achievements.map((a, index) => (
+            <li
+              key={a.id}
+              className="flex items-center gap-3 motion-safe:animate-pop-in"
+              style={{ animationDelay: `${400 + index * 150}ms` }}
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-ink bg-ink text-paper">
+                <TrophyIcon size={20} />
+              </span>
+              <span>
+                <span className="block font-hand text-lg leading-none font-bold text-editor-ink">¡logro conseguido!</span>
+                <span className="block text-sm font-bold text-ink">{a.title}</span>
+              </span>
+            </li>
+          ))}
+          <li>
+            <Link href="/achievements" className="inline-flex min-h-11 items-center text-sm text-ink underline">
+              Ver tus logros
+            </Link>
+          </li>
+        </ul>
       )}
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">

@@ -12,7 +12,7 @@ import {
 
 // Las 5 secciones y qué rutas pertenecen a cada una (la ficha de un personaje es "Colección").
 const SECTIONS = [
-  { href: "/dashboard", label: "Inicio", Icon: HomeIcon, match: ["/dashboard", "/discoveries", "/profile"] },
+  { href: "/dashboard", label: "Inicio", Icon: HomeIcon, match: ["/dashboard", "/discoveries", "/profile", "/achievements"] },
   { href: "/catalog", label: "Catálogo", Icon: CatalogIcon, match: ["/catalog", "/comics"] },
   { href: "/library", label: "Biblioteca", Icon: LibraryIcon, match: ["/library"] },
   { href: "/collection", label: "Colección", Icon: CollectionIcon, match: ["/collection", "/characters"] },

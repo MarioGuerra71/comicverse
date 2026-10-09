@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireUser } from "@/server/auth/session";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { PageHeader } from "@/components/ui/page-parts";
@@ -25,7 +26,10 @@ export default async function ProfilePage() {
           <dd>{memberSince}</dd>
         </div>
       </dl>
-      <SignOutButton showLabel className="mt-8 -ml-3" />
+      <Link href="/achievements" className="mt-6 inline-flex min-h-11 items-center text-sm text-ink underline">
+        Tus logros
+      </Link>
+      <SignOutButton showLabel className="mt-4 -ml-3" />
     </main>
   );
 }

@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { badRequest, getApiUser, parseBody, unauthorized } from "@/server/auth/api";
 import { getComicVineClient } from "@/server/integrations/comic-sources/comicvine/server-client";
 import { ensureCharacterDetails, ensureComicCharacters } from "@/server/jobs/sync-comic-characters";
+import { syncAchievements } from "@/server/services/achievements";
 import {
   ComicNotFoundError,
   getLibraryEntry,
@@ -47,7 +48,10 @@ export async function PUT(request: Request, { params }: Context) {
   }
 
   try {
-    return Response.json(await setComicStatus(db, user.id, comicId, body.data.status));
+    const result = await setComicStatus(db, user.id, comicId, body.data.status);
+    // Logros que se acaban de cumplir con este cambio (para el panel de desbloqueo).
+    const achievements = await syncAchievements(db, user.id);
+    return Response.json({ ...result, achievements });
   } catch (error) {
     if (error instanceof ComicNotFoundError) {
       return Response.json({ error: "COMIC_NOT_FOUND" }, { status: 404 });

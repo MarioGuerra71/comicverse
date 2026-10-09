@@ -84,12 +84,10 @@ function Pocket({
 /** Una página del archivador: cabecera y fundas de 3×3. */
 function BinderPage({
   page,
-  total,
   highlight,
   onOpen,
 }: {
   page: Page | undefined;
-  total: number;
   highlight: string | null;
   onOpen: (card: CollectionCardDto, from: DOMRect) => void;
 }) {
@@ -329,17 +327,17 @@ export function AlbumBinder({ slots, total }: { slots: AlbumSlot[]; total: numbe
       >
         <div className="flex [perspective:2200px]">
           <div className="relative min-w-0 flex-1">
-            <BinderPage page={left} total={total} highlight={highlight} onOpen={open} />
+            <BinderPage page={left} highlight={highlight} onOpen={open} />
             {perView === 1 && flip && leafFront && (
               <div ref={leaf} className="absolute inset-0 origin-left [backface-visibility:hidden] [transform-style:preserve-3d]">
-                <BinderPage page={leafFront} total={total} highlight={null} onOpen={open} />
+                <BinderPage page={leafFront} highlight={null} onOpen={open} />
               </div>
             )}
           </div>
           {perView === 2 && <Rings />}
           {perView === 2 && (
             <div className="relative min-w-0 flex-1 [transform-style:preserve-3d]">
-              <BinderPage page={right} total={total} highlight={highlight} onOpen={open} />
+              <BinderPage page={right} highlight={highlight} onOpen={open} />
               {flip && (
                 // La hoja gira sobre el lomo (borde izquierdo de la página derecha).
                 <div
@@ -348,10 +346,10 @@ export function AlbumBinder({ slots, total }: { slots: AlbumSlot[]; total: numbe
                   style={{ transform: flip.dir === 1 ? "rotateY(0deg)" : "rotateY(-180deg)" }}
                 >
                   <div className="absolute inset-0 [backface-visibility:hidden]">
-                    <BinderPage page={leafFront} total={total} highlight={null} onOpen={open} />
+                    <BinderPage page={leafFront} highlight={null} onOpen={open} />
                   </div>
                   <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]">
-                    <BinderPage page={leafBack} total={total} highlight={null} onOpen={open} />
+                    <BinderPage page={leafBack} highlight={null} onOpen={open} />
                   </div>
                 </div>
               )}

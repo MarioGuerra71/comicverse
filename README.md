@@ -17,6 +17,7 @@
 - **Sin spoilers:** de un personaje que aún no has descubierto, al navegador solo le llega su número en el álbum. No le llegan ni su nombre, ni su imagen, ni su id. Su ficha devuelve el mismo 404 que un personaje inexistente.
 - **Relaciones:** las relaciones curadas (aliado, enemigo, familia, pareja…) se combinan con relaciones derivadas de las coapariciones. Una relación se descubre cuando conoces a los dos personajes.
 - **Universo:** una «página de reparto» de cómic. El protagonista va en una viñeta grande y sus relaciones descubiertas, agrupadas por tipo (aliados, enemigos, familia…) y rotuladas a mano, alrededor. Toca a cualquiera y pasa a ser el protagonista. De las relaciones por descubrir solo se ve cuántas son.
+- **Logros:** 17 insignias de lectura, colección y editoriales (algunas secretas) que se consiguen al leer; salen en el panel de desbloqueo y en su página, con la fecha en que los conseguiste.
 - **Inicio:** tu progreso (porcentaje del universo, personajes, relaciones y series), los últimos descubrimientos y tu actividad reciente.
 - **Diseño responsive real:** barra lateral en escritorio, iconos en tableta y barra inferior en el móvil.
 
@@ -34,7 +35,7 @@
 | ORM | Prisma 7 con `@prisma/adapter-pg` |
 | Autenticación | Better Auth (email y contraseña, sesiones en BD) |
 | Validación | Zod 4, compartida entre cliente y servidor |
-| Tests | Vitest: 125 tests unitarios y 65 de integración contra PostgreSQL real |
+| Tests | Vitest: 130 tests unitarios y 69 de integración contra PostgreSQL real |
 | Tareas programadas | Vercel Cron (novedades diarias) |
 
 ## Arquitectura

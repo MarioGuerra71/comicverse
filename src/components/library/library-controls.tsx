@@ -50,8 +50,11 @@ export function LibraryControls({
       if (!response.ok) throw new Error(String(response.status));
       // Solo los cambios de estado (PUT/DELETE de la entrada) traen `unlock`.
       if (path === "" && method !== "PATCH") {
-        const data = (await response.json()) as { unlock: UnlockView | null };
-        setUnlock(data.unlock);
+        const data = (await response.json()) as {
+          unlock: UnlockView | null;
+          achievements?: UnlockView["achievements"];
+        };
+        setUnlock(data.unlock ? { ...data.unlock, achievements: data.achievements ?? [] } : null);
       }
       // Vuelve a pedir la página al servidor para mostrar lo guardado.
       startTransition(() => router.refresh());
