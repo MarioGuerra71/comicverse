@@ -8,10 +8,13 @@
 
 ## Qué hace
 
-- **Catálogo** de 833 cómics reales del universo de Spider-Man (datos de Comic Vine), con búsqueda, filtro por serie, orden y paginación.
+- **Zonas Marvel y DC:** un selector cambia toda la app de editorial. Marvel se pinta en rojo y DC en azul, y cada zona tiene su propio catálogo, biblioteca, colección, universo y progreso.
+- **Cualquier cómic:** el catálogo parte de un universo semilla (Spider-Man). Si buscas una serie que no está (*Daredevil*, *Absolute Green Lantern*…), se busca en Comic Vine y se añade con un clic, con todos sus cómics. Sus personajes se traen al abrir cada cómic.
+- **Novedades automáticas:** un cron diario de Vercel trae los cómics de Marvel y DC publicados en los últimos días (las series nuevas entran enteras).
 - **Biblioteca personal** por estados (Pendiente, Leyendo, Leído, Abandonado), con puntuación, favoritos, reseñas privadas e historial de cambios.
-- **Desbloqueo de personajes:** al marcar un cómic como leído se descubren sus personajes. Al leer 5 cómics de un mismo personaje, este pasa a estar *coleccionado*. Si desmarcas un cómic, los personajes que solo aparecían en él vuelven a estar por descubrir.
-- **Sin spoilers:** de un personaje que aún no has descubierto, al navegador solo le llega su número de catálogo. No le llegan ni su nombre, ni su imagen, ni su id. Su ficha devuelve el mismo 404 que un personaje inexistente.
+- **Desbloqueo de personajes:** al marcar un cómic como leído se descubren sus personajes (y se completa su ficha desde Comic Vine). Al leer 5 cómics de un mismo personaje, este pasa a estar *coleccionado*. Si desmarcas un cómic, los personajes que solo aparecían en él vuelven a estar por descubrir.
+- **Colección en álbumes:** en cada zona, un álbum por cada serie de tu biblioteca, con sus cromos numerados por orden de aparición y huecos a lápiz para los que faltan.
+- **Sin spoilers:** de un personaje que aún no has descubierto, al navegador solo le llega su número en el álbum. No le llegan ni su nombre, ni su imagen, ni su id. Su ficha devuelve el mismo 404 que un personaje inexistente.
 - **Relaciones:** las relaciones curadas (aliado, enemigo, familia, pareja…) se combinan con relaciones derivadas de las coapariciones. Una relación se descubre cuando conoces a los dos personajes.
 - **Universo:** un grafo interactivo de tus descubrimientos (React Flow), una vista centrada en un personaje y una vista en lista accesible.
 - **Inicio:** tu progreso (porcentaje del universo, personajes, relaciones y series), los últimos descubrimientos y tu actividad reciente.
@@ -32,7 +35,8 @@
 | Autenticación | Better Auth (email y contraseña, sesiones en BD) |
 | Validación | Zod 4, compartida entre cliente y servidor |
 | Grafo | React Flow y `d3-force` para la distribución de los nodos |
-| Tests | Vitest: 118 tests unitarios y 53 de integración contra PostgreSQL real |
+| Tests | Vitest: 124 tests unitarios y 65 de integración contra PostgreSQL real |
+| Tareas programadas | Vercel Cron (novedades diarias) |
 
 ## Arquitectura
 
@@ -57,11 +61,11 @@ Decisiones de diseño destacadas:
 - **Los DTO deciden qué sale hacia el navegador.** Ahí se aplica la regla de spoilers, con tests que garantizan que un personaje bloqueado no expone más que su número.
 - **Los servicios reciben el cliente de base de datos como parámetro**, lo que permite ejecutar los tests de integración contra una base de datos de pruebas real.
 - **Relaciones derivadas con el coeficiente de Ochiai.** Una pareja se considera relacionada si comparte al menos 5 cómics y su coeficiente es ≥ 0,2. Con solo «≥ 5 cómics compartidos», los personajes omnipresentes quedaban conectados con todos.
-- **Importadores idempotentes.** El universo se describe en [`data/universe.json`](data/universe.json), solo con ids verificados. El importador hace `upsert` por `(fuente, id externo)`. La app nunca llama a Comic Vine en tiempo de ejecución.
+- **Importación idempotente y bajo demanda.** El universo semilla se describe en [`data/universe.json`](data/universe.json), solo con ids verificados. Todo se guarda con `upsert` por `(fuente, id externo)`, así que repetir una importación no duplica nada. La web solo llama a Comic Vine cuando hace falta algo nuevo: buscar o añadir una serie, los personajes de un cómic la primera vez que se abre y las novedades diarias. Comic Vine permite unas 200 peticiones por hora, por eso las editoriales de las series desconocidas se consultan en bloque (100 por petición).
 
 ## Puesta en marcha
 
-Requisitos: Node 24, npm, Docker Desktop y una [clave gratuita de Comic Vine](https://comicvine.gamespot.com/api/) (solo para importar los datos).
+Requisitos: Node 24, npm, Docker Desktop y una [clave gratuita de Comic Vine](https://comicvine.gamespot.com/api/) (para importar datos y para la búsqueda en Comic Vine desde la web).
 
 ```bash
 git clone https://github.com/MarioGuerra71/comicverse.git
@@ -114,15 +118,18 @@ Todas las rutas de `/api/v1` requieren sesión y filtran siempre por el usuario 
 
 | Ruta | Descripción |
 |---|---|
-| `GET /comics` | Catálogo con búsqueda, filtro por serie, orden y paginación |
+| `GET /comics` | Catálogo con búsqueda, filtro por serie y editorial (`publisher=marvel\|dc`), orden y paginación |
+| `POST /series/import` | Añade al catálogo una serie de Comic Vine con todos sus cómics |
 | `GET /library` | Biblioteca propia con contadores por estado |
 | `GET/PUT/PATCH/DELETE /library/comics/:id` | Estado, puntuación y favorito de un cómic. Al cambiar el estado se devuelve el resultado del desbloqueo |
 | `GET/PUT/DELETE /library/comics/:id/review` | Reseña privada (solo en cómics leídos) |
-| `GET /collection` | Personajes desbloqueados y, de los bloqueados, solo su número de catálogo |
+| `GET /collection` | Personajes desbloqueados y, de los bloqueados, solo su número |
 | `PATCH /collection/characters/:id/favorite` | Personaje favorito |
 | `GET /characters/:id` | Ficha de un personaje desbloqueado (un bloqueado devuelve 404) |
 | `GET /graph` | Grafo del universo descubierto, con vista opcional centrada en un personaje |
 | `GET /dashboard` · `GET /discoveries` | Progreso, actividad y registro de descubrimientos |
+
+Las rutas de biblioteca, inicio, universo y descubrimientos responden por la zona elegida (cookie `cv-zone`). `GET /api/cron/new-releases` es la tarea diaria y solo acepta `Authorization: Bearer $CRON_SECRET`.
 
 ## Seguridad
 
@@ -142,7 +149,6 @@ Todas las rutas de `/api/v1` requieren sesión y filtran siempre por el usuario 
 
 ## Hoja de ruta
 
-- Ampliar el universo a más series y personajes, incluido DC (el color del editor cambia por editorial).
 - Rediseñar a fondo la vista del grafo.
 - Logros y funciones sociales (seguir usuarios, listas públicas, comparar colecciones).
 - IA opcional (búsqueda en lenguaje natural y recomendaciones), siempre construida con los mismos DTO para no revelar spoilers.
