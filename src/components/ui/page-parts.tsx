@@ -48,7 +48,7 @@ export function PageHeader({
         {/* Rojo pleno bajo el título; el fundido a blanco va en una banda propia a la derecha
             que el texto nunca pisa (si no, un título largo quedaría blanco sobre blanco). */}
         <div className="relative flex min-w-0 items-center bg-brand py-3 pr-10 pl-4 md:pr-[40%]">
-          <h1 className="text-xl font-extrabold tracking-tight text-balance break-words hyphens-auto text-white sm:text-3xl md:text-4xl">
+          <h1 className="text-xl font-extrabold tracking-tight text-balance break-words text-white sm:text-3xl md:text-4xl">
             {title}
           </h1>
           <span

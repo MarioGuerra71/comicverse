@@ -229,6 +229,12 @@ El cajetín impreso de una página de arte original: caja de tinta de 2px sobre 
 ### Locked panel (viñeta por dibujar)
 Solo lápiz azul: viñeta 3:4 con borde de 1,5px y aspa de 1px, y el número a mano en blue-ink. Ni nombre, ni imagen, ni id: del bloqueado solo viaja su número de catálogo.
 
+### Album shelf & binder (colección)
+- **Estantería:** tapa 4:5 con filete de tinta de 2 px sobre `sheet-raised`, lomo de tinta de 20 px a la izquierda con tres anillas en papel, portada del primer cómic a todo color; debajo, título 700, recuento a mano con tres cifras y barra de progreso en tinta sobre papel trabajado. Pegatina «¡N nuevos!» a mano en `editor-ink` sobre papel, girada 3°. Al pasar por encima, la tapa sube 6 px y gira -1° (motion-safe).
+- **Archivador:** tapa de cartón (`sheet-raised`, filete 2 px) con páginas de papel (`sheet`, filete 2 px) y, entre ellas, el lomo de tinta con tres anillas dibujadas en SVG. Cada página: cabecera «Página N» y rango a mano; fundas de 3×3 en `paper` con filete `line-strong`; la carta dentro con filete de tinta y su nombre debajo; lo bloqueado es la funda a lápiz azul con aspa y su número (sin imagen: regla de spoilers). Esquinas dobladas en tinta para pasar página.
+- **Paso de página:** la hoja gira 180° sobre el lomo en 650 ms (cubic-bezier(0.45,0,0.2,1)) con sus dos caras; en el móvil, una página que gira sobre su borde izquierdo.
+- **Carta en grande:** vuela desde su funda (520 ms, ease-out exponencial), fondo de tinta al 80 % con desenfoque, filete de tinta de 3 px, inclinación 3D de hasta 11° y brillo que siguen al puntero; anverso con la imagen y una banda de papel con nombre y número; reverso de papel con la ficha. **Excepción a «sin degradados»:** el brillo holográfico de la carta en grande (degradado en `color-dodge` y reflejo radial) vive solo dentro de la viñeta, como el color pleno.
+
 ### Cast page (página de reparto)
 La página de presentación de personajes: un protagonista en grande y su reparto agrupado por tipo, rotulado a mano. Sin grafo, sin líneas cruzadas: la relación se lee en el rótulo.
 - **Cajetín:** `PageHeader` con el título "Universo de X" y el recuento a mano de relaciones descubiertas sobre el total, con tres cifras ("066/179").

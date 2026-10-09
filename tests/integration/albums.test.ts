@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-import { getGraph, getZoneCollection } from "@/server/services/discovery";
+import { getAlbum, getGraph, getZoneCollection } from "@/server/services/discovery";
 import { getDashboard } from "@/server/services/dashboard";
 import { setComicStatus } from "@/server/services/library";
 import { createCharacter, createComic, createTestDb, createUser, resetDb } from "./test-db";
@@ -65,5 +65,30 @@ describe("getZoneCollection (álbumes por serie)", () => {
 
     expect((await getGraph(db, user.id, undefined, "dc"))!.nodes).toHaveLength(1);
     expect((await getGraph(db, user.id, undefined, "marvel"))!.nodes).toHaveLength(0);
+  });
+
+  it("getAlbum abre el álbum de una serie de tu biblioteca y nada de las que no tienes", async () => {
+    const user = await createUser(db);
+    const other = await createUser(db);
+    const spiderMan = await createCharacter(db, "Spider-Man");
+    const venom = await createCharacter(db, "Venom");
+    const comic = await createComic(db, [spiderMan, venom]);
+    await setComicStatus(db, user.id, comic.id, "READ");
+
+    const data = await getAlbum(db, user.id, comic.seriesId);
+    expect(data?.zone).toBe("marvel");
+    expect(data?.album).toMatchObject({ discovered: 2, total: 2 });
+    // Otro usuario sin cómics de la serie: el álbum no existe para él.
+    expect(await getAlbum(db, other.id, comic.seriesId)).toBeNull();
+    expect(await getAlbum(db, user.id, "00000000-0000-4000-8000-000000000000")).toBeNull();
+  });
+
+  it("la estantería trae la portada del primer cómic de cada serie", async () => {
+    const user = await createUser(db);
+    const comic = await createComic(db, [await createCharacter(db, "Spider-Man")]);
+    await db.comic.update({ where: { id: comic.id }, data: { coverThumbUrl: "https://comicvine.gamespot.com/a/x.jpg" } });
+    await setComicStatus(db, user.id, comic.id, "PENDING");
+    const { albums } = await getZoneCollection(db, user.id, "marvel");
+    expect(albums[0].coverThumbUrl).toBe("https://comicvine.gamespot.com/a/x.jpg");
   });
 });

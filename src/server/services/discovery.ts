@@ -1,5 +1,6 @@
 import type { Prisma, PrismaClient } from "../../../generated/prisma/client";
 import { diffById } from "@/server/domain/unlock";
+import { findSeriesPublisherSlug } from "@/server/repositories/comics";
 import { ZONES, type Zone } from "@/lib/zones";
 import type { RelationshipType } from "@/lib/relationship-types";
 import {
@@ -28,6 +29,8 @@ import {
   findCoAppearancePairs,
   findAlbumRows,
   findCollection,
+  findSeriesAlbumRows,
+  findSeriesCovers,
   findCuratedRelationships,
   findComicByExternalId,
   findUnlockedCharacters,
@@ -267,8 +270,12 @@ export async function getZoneCollection(
   ]);
   const zoneIds = new Set(rows.flatMap((r) => (r.characterId ? [r.characterId] : [])));
   const cards = full.cards.filter((c) => zoneIds.has(c.id));
+  const covers = await findSeriesCovers(db, [...new Set(rows.map((r) => r.seriesId))]);
   return {
-    albums: toAlbums(rows, new Map(cards.map((c) => [c.id, c]))),
+    albums: toAlbums(rows, new Map(cards.map((c) => [c.id, c]))).map((a) => ({
+      ...a,
+      coverThumbUrl: covers.get(a.seriesId) ?? null,
+    })),
     cards: filterCards(cards, input),
     counts: {
       all: zoneIds.size,
@@ -285,4 +292,20 @@ export async function getZoneCollection(
 export async function getCastPage(db: PrismaClient, userId: string, zone: Zone, focusId?: string) {
   const { cards, relationships } = await getUniverse(db, userId, zone);
   return toCastPage(cards, relationships, focusId);
+}
+
+/**
+ * Un álbum (serie) para el archivador. null si el usuario no tiene ningún cómic de la serie.
+ * Incluye la zona de su editorial para pintarlo con su color aunque estés en la otra zona.
+ */
+export async function getAlbum(db: PrismaClient, userId: string, seriesId: string) {
+  const [rows, full, publisherSlug] = await Promise.all([
+    findSeriesAlbumRows(db, userId, seriesId),
+    getCollection(db, userId),
+    findSeriesPublisherSlug(db, seriesId),
+  ]);
+  if (rows.length === 0 || !publisherSlug) return null;
+  const [album] = toAlbums(rows, new Map(full.cards.map((c) => [c.id, c])));
+  const zone = (Object.keys(ZONES) as Zone[]).find((z) => ZONES[z].publisherSlug === publisherSlug) ?? null;
+  return { album, zone };
 }

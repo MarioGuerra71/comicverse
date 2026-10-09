@@ -172,6 +172,8 @@ export type AlbumSlot =
 export interface AlbumDto {
   seriesId: string;
   title: string;
+  /** Tapa del álbum: portada del primer cómic de la serie. */
+  coverThumbUrl?: string | null;
   discovered: number;
   total: number;
   slots: AlbumSlot[];

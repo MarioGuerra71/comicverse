@@ -109,3 +109,11 @@ export function findSeriesOptions(db: PrismaClient, zone?: Zone) {
     select: { id: true, name: true, startYear: true },
   });
 }
+/** Slug de la editorial de una serie (null si la serie no existe). */
+export async function findSeriesPublisherSlug(db: PrismaClient, seriesId: string) {
+  const series = await db.series.findUnique({
+    where: { id: seriesId },
+    select: { publisher: { select: { slug: true } } },
+  });
+  return series?.publisher.slug ?? null;
+}

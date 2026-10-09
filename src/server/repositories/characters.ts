@@ -166,3 +166,33 @@ export function findAlbumRows(db: Db, userId: string, publisherSlug: string) {
     GROUP BY s.id, s.name, s."startYear", c.id
   `;
 }
+
+/** El álbum de una sola serie (vacío si el usuario no tiene ningún cómic de ella). */
+export function findSeriesAlbumRows(db: Db, userId: string, seriesId: string) {
+  return db.$queryRaw<AlbumRow[]>`
+    SELECT s.id AS "seriesId", s.name AS "seriesName", s."startYear" AS "startYear",
+           c.id AS "characterId", MIN(co."releaseDate") AS "firstAppearance"
+    FROM "Series" s
+    LEFT JOIN "Comic" co ON co."seriesId" = s.id
+    LEFT JOIN "ComicCharacter" cc ON cc."comicId" = co.id
+    LEFT JOIN "Character" c ON c.id = cc."characterId" AND c."isCollectible"
+    WHERE s.id = ${seriesId}
+      AND EXISTS (
+        SELECT 1 FROM "UserComic" uc
+        JOIN "Comic" co2 ON co2.id = uc."comicId"
+        WHERE uc."userId" = ${userId} AND co2."seriesId" = s.id
+      )
+    GROUP BY s.id, s.name, s."startYear", c.id
+  `;
+}
+
+/** Portada de cada serie: la de su primer cómic con portada (para la tapa del álbum). */
+export async function findSeriesCovers(db: Db, seriesIds: string[]) {
+  const rows = await db.comic.findMany({
+    where: { seriesId: { in: seriesIds }, coverThumbUrl: { not: null } },
+    distinct: ["seriesId"],
+    orderBy: [{ seriesId: "asc" }, { releaseDate: { sort: "asc", nulls: "last" } }],
+    select: { seriesId: true, coverThumbUrl: true },
+  });
+  return new Map(rows.map((r) => [r.seriesId, r.coverThumbUrl]));
+}

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { normalizeParams, type SearchParams } from "@/lib/search-params";
-import { CharacterCard, LockedCard } from "@/components/characters/character-card";
+import { CharacterCard } from "@/components/characters/character-card";
 import { MarkCollectionSeen } from "@/components/collection/mark-seen";
+import { AlbumShelf } from "@/components/collection/album-shelf";
 import { inkTab as tab, PageHeader, quietLink as sortLink } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { getZoneCollection } from "@/server/services/discovery";
@@ -61,7 +62,7 @@ export default async function CollectionPage({
         figureLabel="personajes"
       >
         <p className="px-4 py-2 text-xs text-ink-soft">
-          Un álbum por cada serie de tu biblioteca. Lee sus cómics para entintar los cromos ·{" "}
+          Un álbum por cada serie de tu biblioteca. Ábrelo y lee sus cómics para entintar los cromos ·{" "}
           <Link href="/graph" className="text-ink underline">
             ver el universo
           </Link>
@@ -117,38 +118,7 @@ export default async function CollectionPage({
       </div>
 
       {input.filter === "all" ? (
-        albums.map((album) => (
-          <section key={album.seriesId} aria-labelledby={`album-${album.seriesId}`} className="mt-10">
-            <div className="flex items-baseline justify-between gap-4 border-b-2 border-ink pb-1">
-              <h2 id={`album-${album.seriesId}`} className="text-xl font-extrabold tracking-tight text-ink">
-                {album.title}
-              </h2>
-              <p className="shrink-0 font-hand text-2xl leading-none font-bold text-ink">
-                {album.discovered}
-                <span className="text-base text-ink-soft">/{album.total}</span>
-              </p>
-            </div>
-            {album.total === 0 ? (
-              <p className="mt-3 text-sm text-ink-soft">
-                Sus personajes aparecerán cuando abras o leas alguno de sus cómics.
-              </p>
-            ) : (
-              <ul className="mt-5 grid grid-cols-3 gap-x-4 gap-y-7 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-                {album.slots.map((slot) =>
-                  slot.kind === "card" ? (
-                    <li key={slot.card.id}>
-                      <CharacterCard card={slot.card} total={album.total} />
-                    </li>
-                  ) : (
-                    <li key={`locked-${slot.number}`}>
-                      <LockedCard number={slot.number} total={album.total} />
-                    </li>
-                  ),
-                )}
-              </ul>
-            )}
-          </section>
-        ))
+        <AlbumShelf albums={albums} />
       ) : cards.length === 0 ? (
         <p className="mt-8 text-sm text-ink-soft">No hay personajes en este filtro.</p>
       ) : (
@@ -160,7 +130,8 @@ export default async function CollectionPage({
           ))}
         </ul>
       )}
-      {hasNew && <MarkCollectionSeen />}
+      {/* En la estantería, lo nuevo se da por visto al abrir su álbum, no aquí. */}
+      {hasNew && input.filter !== "all" && <MarkCollectionSeen />}
     </main>
   );
 }
