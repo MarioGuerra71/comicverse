@@ -1,6 +1,8 @@
 import { db } from "@/lib/db";
 import { getComicVineClient } from "@/server/integrations/comic-sources/comicvine/server-client";
 import { syncNewReleases } from "@/server/jobs/sync-new-releases";
+import { importRelationships } from "@/server/jobs/import-relationships";
+import relationshipsFile from "../../../../../data/relationships.json";
 
 // Unas decenas de peticiones a Comic Vine con 1,1 s de pausa entre ellas.
 export const maxDuration = 300;
@@ -18,6 +20,8 @@ export async function GET(request: Request) {
   if (!client) return Response.json({ error: "COMIC_VINE_DISABLED" }, { status: 503 });
 
   const summary = await syncNewReleases(db, client);
-  console.log("Novedades sincronizadas", summary);
-  return Response.json(summary);
+  // Relaciones curadas: las de personajes que acaban de llegar (p. ej. de DC) entran ahora.
+  const relationships = await importRelationships(db, relationshipsFile);
+  console.log("Novedades sincronizadas", summary, "relaciones", relationships.imported);
+  return Response.json({ ...summary, relationships: relationships.imported });
 }

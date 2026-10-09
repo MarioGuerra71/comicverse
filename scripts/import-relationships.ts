@@ -14,8 +14,11 @@ async function main() {
   const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: databaseUrl }) });
   try {
     const file = JSON.parse(await readFile("data/relationships.json", "utf8"));
-    const count = await importRelationships(db, file);
-    console.log(`Listo: ${count} relaciones curadas importadas.`);
+    const { imported, skipped } = await importRelationships(db, file);
+    console.log(`Listo: ${imported} relaciones curadas importadas.`);
+    if (skipped.length) {
+      console.log(`Pendientes (algún personaje aún no está en la base de datos): ${skipped.join(", ")}`);
+    }
   } finally {
     await db.$disconnect();
   }

@@ -25,8 +25,8 @@ describe("importRelationships", () => {
     const { spiderMan, goblin } = await seedCharacters();
     const data = file([{ a: 1443, b: 58812, type: "ENEMY" }]);
 
-    expect(await importRelationships(db, data)).toBe(1);
-    expect(await importRelationships(db, data)).toBe(1);
+    expect(await importRelationships(db, data)).toEqual({ imported: 1, skipped: [] });
+    expect(await importRelationships(db, data)).toEqual({ imported: 1, skipped: [] });
 
     const rows = await db.characterRelationship.findMany();
     expect(rows).toHaveLength(1);
@@ -35,13 +35,14 @@ describe("importRelationships", () => {
     );
   });
 
-  it("rechaza ids desconocidos, tipos inválidos y parejas repetidas sin cambiar nada", async () => {
+  it("salta ids desconocidos y rechaza tipos inválidos y parejas repetidas sin cambiar nada", async () => {
     await seedCharacters();
     await importRelationships(db, file([{ a: 1443, b: 58812, type: "ENEMY" }]));
 
-    await expect(importRelationships(db, file([{ a: 1443, b: 1, type: "ALLY" }]))).rejects.toThrow(
-      /no importados/,
-    );
+    // Un personaje que aún no existe no es un error: esa pareja se salta y queda pendiente.
+    expect(
+      await importRelationships(db, file([{ a: 1443, b: 58812, type: "ENEMY" }, { a: 1443, b: 1, type: "ALLY", label: "pendiente" }])),
+    ).toEqual({ imported: 1, skipped: ["pendiente"] });
     await expect(
       importRelationships(db, file([{ a: 1443, b: 58812, type: "AMIGOTE" }])),
     ).rejects.toThrow();

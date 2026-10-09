@@ -1,5 +1,5 @@
 {
-  "_info": "Relaciones curadas entre personajes del universo (ids de Comic Vine, como en universe.json). Tipos: ALLY, ENEMY, FAMILY, PARTNER, COMPANION, RIVAL. Revisadas a mano; 'label' y 'note' solo sirven para leer el archivo.",
+  "_info": "Relaciones curadas entre personajes (Marvel y DC) (ids de Comic Vine, como en universe.json). Tipos: ALLY, ENEMY, FAMILY, PARTNER, COMPANION, RIVAL. Revisadas a mano; 'label' y 'note' solo sirven para leer el archivo.",
   "relationships": [
     { "a": 1443, "b": 58812, "type": "ENEMY", "label": "Spider-Man – Green Goblin" },
     { "a": 1443, "b": 1485, "type": "ENEMY", "label": "Spider-Man – Doctor Octopus" },
@@ -65,6 +65,24 @@
     { "a": 6733, "b": 1490, "type": "ENEMY", "label": "Eddie Brock – Carnage" },
     { "a": 24694, "b": 1483, "type": "ENEMY", "label": "Daredevil – Kingpin" },
     { "a": 1480, "b": 58812, "type": "ENEMY", "label": "Gwen Stacy – Green Goblin" },
-    { "a": 4484, "b": 1487, "type": "ENEMY", "label": "Scorpion – J. Jonah Jameson", "note": "Jameson pagó el experimento que lo creó" }
+    { "a": 4484, "b": 1487, "type": "ENEMY", "label": "Scorpion – J. Jonah Jameson", "note": "Jameson pagó el experimento que lo creó" },
+    { "a": 2478, "b": 13380, "type": "PARTNER", "label": "Harry Osborn – Mary Jane", "note": "salieron juntos en los años 70" },
+    { "a": 1699, "b": 1702, "type": "ENEMY", "label": "Batman – Joker" },
+    { "a": 1699, "b": 5556, "type": "FAMILY", "label": "Batman – Alfred Pennyworth", "note": "su mayordomo y figura paterna" },
+    { "a": 1699, "b": 1698, "type": "PARTNER", "label": "Batman – Catwoman" },
+    { "a": 1699, "b": 3727, "type": "ALLY", "label": "Batman – James Gordon" },
+    { "a": 1699, "b": 5368, "type": "ALLY", "label": "Batman – Barbara Gordon", "note": "Batgirl y Oráculo" },
+    { "a": 3727, "b": 5368, "type": "FAMILY", "label": "James Gordon – Barbara Gordon", "note": "padre e hija" },
+    { "a": 1699, "b": 3724, "type": "ENEMY", "label": "Batman – Black Mask" },
+    { "a": 1699, "b": 42288, "type": "ENEMY", "label": "Batman – Carmine Falcone" },
+    { "a": 3727, "b": 5554, "type": "COMPANION", "label": "James Gordon – Harvey Bullock", "note": "compañeros en la policía de Gotham" },
+    { "a": 11202, "b": 22634, "type": "ALLY", "label": "Hal Jordan – Abin Sur", "note": "le cede el anillo (en Absolute Green Lantern se enfrentan)" },
+    { "a": 11202, "b": 10451, "type": "COMPANION", "label": "Hal Jordan – John Stewart", "note": "Green Lanterns de la Tierra" },
+    { "a": 11202, "b": 159016, "type": "COMPANION", "label": "Hal Jordan – Sojourner Mullein" },
+    { "a": 10451, "b": 159016, "type": "COMPANION", "label": "John Stewart – Sojourner Mullein" },
+    { "a": 11202, "b": 1791, "type": "RIVAL", "label": "Hal Jordan – Guy Gardner" },
+    { "a": 10451, "b": 1791, "type": "COMPANION", "label": "John Stewart – Guy Gardner" },
+    { "a": 11202, "b": 18276, "type": "PARTNER", "label": "Hal Jordan – Carol Ferris" },
+    { "a": 11202, "b": 10210, "type": "ENEMY", "label": "Hal Jordan – Hector Hammond" }
   ]
 }
