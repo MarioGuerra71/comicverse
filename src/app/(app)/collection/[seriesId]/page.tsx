@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { AlbumBinder } from "@/components/collection/album-binder";
 import { MarkCollectionSeen } from "@/components/collection/mark-seen";
-import { PageHeader } from "@/components/ui/page-parts";
+import { BackLink, PageHeader } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { getAlbum } from "@/server/services/discovery";
 
@@ -34,9 +34,7 @@ export default async function AlbumPage({ params }: { params: Promise<{ seriesId
   return (
     // El álbum se pinta con el color de su editorial, aunque estés en la otra zona.
     <main data-publisher={zone ?? undefined} className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
-      <Link href="/collection" className="inline-flex min-h-11 items-center text-sm text-ink underline">
-        ← Mi colección
-      </Link>
+      <BackLink href="/collection">Mi colección</BackLink>
       <div className="mt-2">
         <PageHeader
           title={album.title}

@@ -11,6 +11,7 @@ import { DiscoveryItem } from "@/components/characters/discovery-item";
 import { HeaderField, inkButton, SectionHeading } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { getDashboard } from "@/server/services/dashboard";
+import { ArrowIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = { title: "Inicio · ComicVerse" };
 
@@ -86,7 +87,8 @@ export default async function DashboardPage() {
                   {hero.comic.title}
                 </p>
                 <Link href={`/comics/${hero.comic.id}`} className={`${inkButton} mt-6`}>
-                  {hero.status === "READING" ? "Seguir" : "Abrir"} →
+                  {hero.status === "READING" ? "Seguir" : "Abrir"}
+                  <ArrowIcon size={16} />
                 </Link>
               </>
             ) : (

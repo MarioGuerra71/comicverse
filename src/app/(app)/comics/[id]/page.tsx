@@ -5,7 +5,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { zoneOfPublisher } from "@/lib/zones";
-import { PublisherStrip } from "@/components/ui/page-parts";
+import { BackLink, PublisherStrip, SectionHeading } from "@/components/ui/page-parts";
+import { RatingStarIcon } from "@/components/ui/icons";
 import { db } from "@/lib/db";
 import { formatDate, pluralize } from "@/lib/format";
 import { buildCatalogHref } from "@/lib/catalog-url";
@@ -14,6 +15,8 @@ import { getComicDetail } from "@/server/services/catalog";
 import { getComicVineClient } from "@/server/integrations/comic-sources/comicvine/server-client";
 import { ensureComicCharacters } from "@/server/jobs/sync-comic-characters";
 import { getLibraryEntry, getReview } from "@/server/services/library";
+import { getComicCommunity, type ComicCommunityDto } from "@/server/services/social";
+import { READING_STATUS_LABELS } from "@/lib/reading-status";
 import { LibraryControls } from "@/components/library/library-controls";
 
 // cache: la página y su título comparten una sola consulta por petición.
@@ -43,10 +46,11 @@ export default async function ComicPage({
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const [comic, entry, review] = await Promise.all([
+  const [comic, entry, review, community] = await Promise.all([
     loadComic(id),
     getLibraryEntry(db, user.id, id),
     getReview(db, user.id, id),
+    getComicCommunity(db, id, user.id),
   ]);
   if (!comic) notFound();
 
@@ -57,98 +61,177 @@ export default async function ComicPage({
 
   return (
     // Con el color de su editorial (rojo Marvel, azul DC) aunque estés en la otra zona.
-    <main data-publisher={zoneOfPublisher(comic.publisher) ?? undefined} className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-8">
-      <Link href="/catalog" className="text-sm text-ink underline">
-        ← Volver al catálogo
-      </Link>
-      <PublisherStrip name={comic.publisher} />
-
-      <div className="mt-4 grid gap-6 sm:grid-cols-[minmax(0,16rem)_1fr]">
-        <div className="relative aspect-2/3 w-full max-w-64 overflow-hidden rounded-lg border border-edge bg-sheet">
-          {comic.coverUrl ? (
-            <Image
-              src={comic.coverUrl}
-              alt={`Portada de ${comic.title}`}
-              fill
-              unoptimized
-              priority
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-sm text-ink-soft">
-              Sin portada
-            </div>
-          )}
+    <main
+      data-publisher={zoneOfPublisher(comic.publisher) ?? undefined}
+      className="relative isolate mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8"
+    >
+      {/* La portada ilumina la parte de arriba de la página (decorativo). */}
+      {comic.coverUrl && (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] overflow-hidden">
+          <Image src={comic.coverUrl} alt="" fill unoptimized className="scale-110 object-cover opacity-30 blur-3xl saturate-150" />
+          <div className="absolute inset-0 bg-linear-to-b from-transparent via-paper/60 to-paper" />
         </div>
+      )}
 
-        <div className="flex flex-col gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-ink">{comic.title}</h1>
-            {comic.storyTitle && (
-              <p className="mt-1 text-sm text-ink-soft">{comic.storyTitle}</p>
+      <BackLink href="/catalog">Catálogo</BackLink>
+
+      <header className="mt-6 grid items-end gap-8 sm:grid-cols-[minmax(0,15rem)_1fr] md:gap-12">
+        <div className="lightbox-item mx-auto w-52 sm:w-full">
+          <div className="lightbox-cover relative aspect-2/3 overflow-hidden rounded-lg bg-sheet ring-1 ring-white/25">
+            {comic.coverUrl ? (
+              <Image src={comic.coverUrl} alt={`Portada de ${comic.title}`} fill unoptimized priority className="object-cover" />
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-ink-soft">Sin portada</div>
             )}
           </div>
+        </div>
 
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-y border-edge py-2 text-sm text-ink">
-            <dt className="text-ink-soft">Editorial</dt>
-            <dd>{comic.publisher}</dd>
-            <dt className="text-ink-soft">Serie</dt>
-            <dd>
-              <Link
-                href={buildCatalogHref({ seriesId: comic.series.id })}
-                className="underline"
-              >
-                {seriesLabel}
-              </Link>
-            </dd>
-            {releaseDate && (
-              <>
-                <dt className="text-ink-soft">Fecha</dt>
-                <dd>{releaseDate}</dd>
-              </>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <PublisherStrip name={comic.publisher} />
+            {entry && (
+              <span className="mt-3 inline-flex h-8 items-center rounded-full bg-editor/15 px-3 text-xs font-bold tracking-widest text-ink uppercase ring-1 ring-editor">
+                {READING_STATUS_LABELS[entry.status]}
+              </span>
             )}
-          </dl>
+          </div>
+          <h1 className="mt-4 font-display text-5xl leading-[0.9] font-black tracking-tight text-balance text-ink uppercase md:text-7xl">
+            {comic.title}
+          </h1>
+          {comic.storyTitle && <p className="mt-3 text-lg text-ink-soft">{comic.storyTitle}</p>}
 
-          <LibraryControls comicId={comic.id} entry={entry} review={review} />
-
-          <section aria-labelledby="characters-heading">
-            <h2 id="characters-heading" className="text-lg font-extrabold text-ink">
-              {entry?.status === "READ" ? "Personajes" : "Personajes que descubrirás"}
-            </h2>
-            {comic.characterCount > 0 && entry?.status === "READ" ? (
-              <p className="mt-1 text-sm text-ink-soft">
-                Ya leído: {comic.characterCount === 1 ? "su personaje está entintado" : "sus personajes están entintados"} en{" "}
-                <Link href="/collection" className="text-ink underline">
-                  tu colección
+          <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm">
+            <div>
+              <dt className="text-xs tracking-wide text-ink-soft uppercase">Serie</dt>
+              <dd className="mt-0.5">
+                <Link href={buildCatalogHref({ seriesId: comic.series.id })} className="font-semibold text-ink underline-offset-4 hover:underline">
+                  {seriesLabel}
                 </Link>
-                .
-              </p>
-            ) : comic.characterCount > 0 ? (
-              <p className="mt-1 text-sm text-ink-soft">
-                Este cómic contiene{" "}
-                {pluralize(comic.characterCount, "personaje", "personajes")} por
-                descubrir. Se desbloquearán al marcarlo como leído.
+              </dd>
+            </div>
+            {releaseDate && (
+              <div>
+                <dt className="text-xs tracking-wide text-ink-soft uppercase">Publicado</dt>
+                <dd className="mt-0.5 font-semibold text-ink">{releaseDate}</dd>
+              </div>
+            )}
+            <div>
+              <dt className="text-xs tracking-wide text-ink-soft uppercase">Lectores</dt>
+              <dd className="mt-0.5 flex items-center gap-1.5 font-semibold text-ink">
+                {community.readers === 0 ? (
+                  "Sé el primero"
+                ) : (
+                  <>
+                    {pluralize(community.readers, "lector", "lectores")}
+                    {community.averageRating !== null && (
+                      <>
+                        <span className="text-ink-soft">·</span>
+                        <RatingStarIcon size={16} filled className="text-editor" />
+                        {community.averageRating.toLocaleString("es-ES")}
+                      </>
+                    )}
+                  </>
+                )}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </header>
+
+      <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        {/* En el móvil, «Tu lectura» va primero: es lo que vienes a hacer. */}
+        <div className="lg:sticky lg:top-6 lg:order-2 lg:self-start">
+          <LibraryControls comicId={comic.id} entry={entry} review={review} />
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-10 lg:order-1">
+          <section aria-labelledby="characters-heading" className="glass rounded-3xl p-5 ring-1 ring-edge">
+            <h2 id="characters-heading" className="font-display text-2xl font-extrabold tracking-wide text-ink uppercase">
+              {entry?.status === "READ" ? "Su reparto" : "Personajes que descubrirás"}
+            </h2>
+            {comic.characterCount > 0 ? (
+              <p className="mt-2 flex items-baseline gap-3 text-sm text-ink-soft">
+                <span className="neon font-display text-5xl leading-none font-black">{comic.characterCount}</span>
+                {entry?.status === "READ" ? (
+                  <span>
+                    {comic.characterCount === 1 ? "personaje encendido" : "personajes encendidos"} en{" "}
+                    <Link href="/collection" className="text-ink underline">
+                      tu colección
+                    </Link>
+                    .
+                  </span>
+                ) : (
+                  // Solo el número: de un personaje sin descubrir no viaja nada más.
+                  <span>
+                    {comic.characterCount === 1 ? "personaje por descubrir" : "personajes por descubrir"}. Se
+                    desbloquean al marcarlo como leído.
+                  </span>
+                )}
               </p>
             ) : (
-              <p className="mt-1 text-sm text-ink-soft">
-                Este cómic no incluye ningún personaje coleccionable, así que
-                leerlo no desbloqueará nada.
+              <p className="mt-2 text-sm text-ink-soft">
+                Este cómic no incluye ningún personaje coleccionable, así que leerlo no desbloqueará nada.
               </p>
             )}
           </section>
+
+          {comic.description && (
+            <section aria-labelledby="description-heading">
+              <SectionHeading id="description-heading" title="De qué va" />
+              <p className="mt-3 max-w-prose text-base leading-relaxed whitespace-pre-line text-ink">
+                {comic.description}
+              </p>
+            </section>
+          )}
+
+          <CommunityReviews community={community} />
         </div>
       </div>
-
-      {comic.description && (
-        <section aria-labelledby="description-heading" className="mt-8">
-          <h2 id="description-heading" className="text-lg font-extrabold text-ink">
-            Descripción
-          </h2>
-          <p className="mt-2 max-w-prose whitespace-pre-line text-sm leading-relaxed text-ink">
-            {comic.description}
-          </p>
-        </section>
-      )}
     </main>
+  );
+}
+
+/** Reseñas públicas de otros lectores, como en Letterboxd: autor, estrellas y texto. */
+function CommunityReviews({ community }: { community: ComicCommunityDto }) {
+  return (
+    <section aria-labelledby="reviews-heading">
+      <SectionHeading id="reviews-heading" title="Reseñas de lectores" />
+      {community.reviews.length === 0 ? (
+        <p className="mt-3 text-sm text-ink-soft">
+          Aún no hay reseñas públicas de otros lectores.
+        </p>
+      ) : (
+        <ul className="mt-4 flex flex-col divide-y divide-edge">
+          {community.reviews.map((r) => (
+            <li key={r.author.handle} className="flex gap-4 py-5 first:pt-0">
+              <Link
+                href={`/u/${r.author.handle}`}
+                aria-hidden="true"
+                tabIndex={-1}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sheet-raised font-bold text-ink ring-1 ring-edge"
+              >
+                {r.author.name.trim().charAt(0).toUpperCase() || "?"}
+              </Link>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <Link href={`/u/${r.author.handle}`} className="font-semibold text-ink underline-offset-4 hover:underline">
+                    {r.author.name}
+                  </Link>
+                  {r.rating !== null && (
+                    <span className="flex" aria-label={`${r.rating} de 5`}>
+                      {[1, 2, 3, 4, 5].map((v) => (
+                        <RatingStarIcon key={v} size={14} filled={v <= r.rating!} className={v <= r.rating! ? "text-editor" : "text-ink-soft"} />
+                      ))}
+                    </span>
+                  )}
+                  <span className="text-xs text-ink-soft">{formatDate(r.updatedAt.slice(0, 10))}</span>
+                </div>
+                <p className="mt-2 text-sm leading-relaxed whitespace-pre-line text-ink">{r.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

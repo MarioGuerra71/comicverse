@@ -68,12 +68,22 @@ export interface ComicDetailDto {
   characterCount: number;
 }
 
+/**
+ * Quita de la sinopsis la tabla de portadas y autores que Comic Vine añade al final
+ * («List of covers and their creators: …»): no es texto para leer.
+ */
+export function cleanDescription(text: string | null): string | null {
+  if (!text) return null;
+  const cut = text.split(/\s*List of covers/i)[0].trim();
+  return cut || null;
+}
+
 export function toComicDetail(row: ComicDetailRow): ComicDetailDto {
   return {
     id: row.id,
     title: row.title,
     storyTitle: row.storyTitle,
-    description: row.description,
+    description: cleanDescription(row.description),
     releaseDate: row.releaseDate ? row.releaseDate.toISOString().slice(0, 10) : null,
     coverUrl: row.coverUrl,
     series: {

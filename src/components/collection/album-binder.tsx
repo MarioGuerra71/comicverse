@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import type { AlbumSlot, CollectionCardDto } from "@/server/dto/character";
 import { CardViewer } from "@/components/collection/card-viewer";
+import { ArrowIcon } from "@/components/ui/icons";
 
 const PER_PAGE = 9;
 const FLIP_MS = 650;
@@ -23,7 +24,7 @@ function Pocket({
   highlighted: boolean;
   onOpen: (card: CollectionCardDto, from: DOMRect) => void;
 }) {
-  const sleeve = "relative flex flex-col rounded-lg bg-white/[0.03] p-1.5 ring-1 ring-white/10 shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]";
+  const sleeve = "relative flex flex-col rounded-lg bg-sheet p-1.5 ring-1 ring-edge shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]";
   if (!slot) return <div className={`${sleeve} aspect-[3/4.6]`} aria-hidden="true" />;
 
   if (slot.kind === "locked") {
@@ -236,13 +237,15 @@ export function AlbumBinder({ slots, total }: { slots: AlbumSlot[]; total: numbe
       <div className="glass flex flex-col gap-3 rounded-2xl p-3 ring-1 ring-edge lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" onClick={() => go(current - 1)} disabled={current === 0} aria-label="Página anterior" className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-edge px-4 text-sm font-semibold text-ink transition-colors hover:bg-sheet-raised disabled:opacity-40">
-            ‹<span className="ml-1 hidden sm:inline">Anterior</span>
+            <ArrowIcon direction="left" size={16} />
+            <span className="ml-1 hidden sm:inline">Anterior</span>
           </button>
           <span className="flex-1 px-1 text-center text-sm font-semibold whitespace-nowrap text-ink tabular-nums sm:flex-none" aria-live="polite">
             {pageLabel}
           </span>
           <button type="button" onClick={() => go(current + 1)} disabled={current >= spreads - 1} aria-label="Página siguiente" className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-edge px-4 text-sm font-semibold text-ink transition-colors hover:bg-sheet-raised disabled:opacity-40">
-            <span className="mr-1 hidden sm:inline">Siguiente</span>›
+            <span className="mr-1 hidden sm:inline">Siguiente</span>
+            <ArrowIcon size={16} />
           </button>
           <select
             aria-label="Ir a una página"
@@ -301,7 +304,7 @@ export function AlbumBinder({ slots, total }: { slots: AlbumSlot[]; total: numbe
 
       {/* El archivador: tapa de cartón, páginas y anillas. Se desliza para pasar página. */}
       <div
-        className="relative mt-4 touch-pan-y rounded-2xl bg-[#17131d] p-2 shadow-[0_30px_80px_-30px_rgb(0_0_0/0.9)] ring-1 ring-edge select-none sm:p-3"
+        className="relative mt-4 touch-pan-y rounded-2xl bg-paper-raised p-2 shadow-[0_30px_80px_-30px_rgb(0_0_0/0.9)] ring-1 ring-edge select-none sm:p-3"
         onPointerDown={(e) => {
           swipe.current = { x: e.clientX, moved: false };
           suppressClick.current = false;

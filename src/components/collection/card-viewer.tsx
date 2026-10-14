@@ -129,7 +129,7 @@ export function CardViewer({
               }`}
             >
               {/* Anverso: la imagen a todo color con el brillo holográfico encima. */}
-              <div className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl border border-edge bg-[#15121b] shadow-[0_0_60px_var(--glow)] [backface-visibility:hidden]">
+              <div className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl border border-edge bg-paper-raised shadow-[0_0_60px_var(--glow)] [backface-visibility:hidden]">
                 <div className="relative flex-1 overflow-hidden">
                   {card.imageThumbUrl ? (
                     <Image src={card.imageThumbUrl} alt={`Imagen de ${card.name}`} fill unoptimized sizes="400px" className="object-cover" />
@@ -155,7 +155,7 @@ export function CardViewer({
               </div>
 
               {/* Reverso: la ficha del personaje, en papel y tinta. */}
-              <div className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl border border-edge bg-[#15121b] p-5 shadow-[0_0_60px_var(--glow)] [backface-visibility:hidden] [transform:rotateY(180deg)]">
+              <div className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl border border-edge bg-paper-raised p-5 shadow-[0_0_60px_var(--glow)] [backface-visibility:hidden] [transform:rotateY(180deg)]">
                 {card.imageThumbUrl && (
                   <span className="absolute top-5 right-5 block aspect-3/4 w-20 overflow-hidden rounded-lg border border-edge">
                     <Image src={card.imageThumbUrl} alt="" fill unoptimized sizes="80px" className="object-cover" />

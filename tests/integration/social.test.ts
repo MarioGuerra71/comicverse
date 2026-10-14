@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { setComicStatus, writeReview } from "@/server/services/library";
 import {
   follow,
+  getComicCommunity,
   getPublicProfile,
   HandleTakenError,
   listCommunity,
@@ -92,5 +93,28 @@ describe("perfiles públicos", () => {
     // Repetirlo no cambia el que ya tiene.
     expect(await ensureHandle(db, ana.id)).toBe("maria-lopez");
     expect((await getPublicProfile(db, bea.id, "maria-lopez"))?.user.isPublic).toBe(true);
+  });
+});
+
+describe("la comunidad de un cómic", () => {
+  it("cuenta lectores y media, y solo enseña reseñas públicas de perfiles públicos", async () => {
+    const { ana, bea, a } = await seed();
+    await saveHandle(db, ana.id, "ana");
+    await saveHandle(db, bea.id, "bea");
+    await db.userComic.update({ where: { userId_comicId: { userId: ana.id, comicId: a.id } }, data: { rating: 5 } });
+    await db.userComic.update({ where: { userId_comicId: { userId: bea.id, comicId: a.id } }, data: { rating: 4 } });
+    await writeReview(db, ana.id, a.id, "Una joya.", true);
+    await writeReview(db, bea.id, a.id, "Solo para mí.", false);
+
+    const seenByBea = await getComicCommunity(db, a.id, bea.id);
+    expect(seenByBea).toMatchObject({ readers: 2, averageRating: 4.5 });
+    expect(seenByBea.reviews).toEqual([expect.objectContaining({ body: "Una joya.", rating: 5, author: { name: expect.any(String), handle: "ana" } })]);
+
+    // La tuya no se repite en la lista de la comunidad.
+    expect((await getComicCommunity(db, a.id, ana.id)).reviews).toEqual([]);
+
+    // Si Ana hace privado su perfil, su reseña deja de verse.
+    await saveVisibility(db, ana.id, false);
+    expect((await getComicCommunity(db, a.id, bea.id)).reviews).toEqual([]);
   });
 });

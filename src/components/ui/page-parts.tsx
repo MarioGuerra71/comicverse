@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowIcon } from "@/components/ui/icons";
 
 // Piezas comunes del sistema «Tienda de cómics a medianoche» (ver DESIGN.md).
 
@@ -129,8 +130,9 @@ export function Pagination({
       className="mt-8 flex items-center justify-between text-sm"
     >
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} className="flex min-h-11 items-center rounded-full glass px-4 text-ink ring-1 ring-edge hover:bg-sheet-raised">
-          ← Anterior
+        <Link href={hrefFor(page - 1)} className="flex min-h-11 items-center gap-2 rounded-full glass px-4 text-ink ring-1 ring-edge hover:bg-sheet-raised">
+          <ArrowIcon direction="left" size={16} />
+          Anterior
         </Link>
       ) : (
         <span aria-hidden="true" />
@@ -139,8 +141,9 @@ export function Pagination({
         Página <span className="font-display text-xl font-extrabold text-ink">{page}</span> de {totalPages}
       </span>
       {page < totalPages ? (
-        <Link href={hrefFor(page + 1)} className="flex min-h-11 items-center rounded-full glass px-4 text-ink ring-1 ring-edge hover:bg-sheet-raised">
-          Siguiente →
+        <Link href={hrefFor(page + 1)} className="flex min-h-11 items-center gap-2 rounded-full glass px-4 text-ink ring-1 ring-edge hover:bg-sheet-raised">
+          Siguiente
+          <ArrowIcon size={16} />
         </Link>
       ) : (
         <span aria-hidden="true" />
@@ -157,5 +160,18 @@ export function PublisherStrip({ name }: { name: string | null }) {
       <span aria-hidden="true" className="h-2 w-2 rounded-full bg-editor shadow-[0_0_10px_var(--glow)]" />
       <span className="text-xs font-bold tracking-widest text-ink uppercase">{name}</span>
     </div>
+  );
+}
+
+/** Enlace para volver a la pantalla anterior: pastilla de cristal con flecha. */
+export function BackLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="glass inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm text-ink-soft ring-1 ring-edge transition-colors hover:text-ink"
+    >
+      <ArrowIcon direction="left" size={16} />
+      {children}
+    </Link>
   );
 }

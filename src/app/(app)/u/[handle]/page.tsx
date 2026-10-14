@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { formatDate, pluralize } from "@/lib/format";
 import { ZONES } from "@/lib/zones";
 import { FollowButton } from "@/components/social/follow-button";
-import { PageHeader, SectionHeading } from "@/components/ui/page-parts";
+import { BackLink, PageHeader, SectionHeading } from "@/components/ui/page-parts";
 import { RatingStarIcon } from "@/components/ui/icons";
 import { requireUser } from "@/server/auth/session";
 import { getPublicProfile, type ComparedAlbumDto } from "@/server/services/social";
@@ -81,9 +81,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
-      <Link href="/community" className="inline-flex min-h-11 items-center text-sm text-ink underline">
-        ← Comunidad
-      </Link>
+      <BackLink href="/community">Comunidad</BackLink>
       <div className="mt-2">
         <PageHeader title={user.name} figure={pad(albumCount)} figureLabel={albumCount === 1 ? "álbum" : "álbumes"}>
           <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2">

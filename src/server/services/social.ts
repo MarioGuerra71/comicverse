@@ -6,6 +6,8 @@ import { findAlbumRows, findSeriesCovers, findUnlockedCharacters } from "@/serve
 import {
   addFollow,
   countFollowers,
+  aggregateComicReads,
+  findComicReviews,
   findFollowing,
   findProfileSettings,
   findPublicProfiles,
@@ -188,3 +190,27 @@ export async function getPublicProfile(db: PrismaClient, viewerId: string, handl
     })),
   };
 }
+
+/**
+ * Lo que la comunidad dice de un cómic: cuántos lo han leído, su media y las reseñas públicas
+ * de lectores con perfil público. Las cifras son agregadas: no dicen quién lo ha leído.
+ */
+export async function getComicCommunity(db: PrismaClient, comicId: string, userId: string) {
+  const [reads, reviews] = await Promise.all([
+    aggregateComicReads(db, comicId),
+    findComicReviews(db, comicId, userId),
+  ]);
+  const average = reads._avg.rating;
+  return {
+    readers: reads._count._all,
+    averageRating: average === null ? null : Math.round(average * 10) / 10,
+    reviews: reviews.map((r) => ({
+      author: { name: r.entry.user.name, handle: r.entry.user.handle! },
+      rating: r.entry.rating,
+      body: r.body,
+      updatedAt: r.updatedAt.toISOString(),
+    })),
+  };
+}
+
+export type ComicCommunityDto = Awaited<ReturnType<typeof getComicCommunity>>;

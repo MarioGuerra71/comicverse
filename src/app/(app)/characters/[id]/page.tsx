@@ -12,9 +12,10 @@ import { RELATIONSHIP_TYPE_LABELS } from "@/lib/relationship-types";
 import { ComicCard } from "@/components/comics/comic-card";
 import { CARD_STATE_LABELS } from "@/components/characters/character-card";
 import { FavoriteButton } from "@/components/characters/favorite-button";
-import { SectionHeading, PublisherStrip } from "@/components/ui/page-parts";
+import { BackLink, PublisherStrip, SectionHeading } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { getCharacterDetail } from "@/server/services/discovery";
+import { ArrowIcon } from "@/components/ui/icons";
 
 // cache: la página y su título comparten una sola consulta por petición.
 // Bloqueado o inexistente: null (el título no revela el nombre).
@@ -46,11 +47,13 @@ export default async function CharacterPage({
     // Con el color de su editorial (rojo Marvel, azul DC) aunque estés en la otra zona.
     <main data-publisher={zoneOfPublisher(character.publisher) ?? undefined} className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-8">
       <div className="flex flex-wrap justify-between gap-2 text-sm">
-        <Link href="/collection" className="text-ink underline">
-          ← Volver a mi colección
-        </Link>
-        <Link href={`/graph?focus=${character.id}`} className="text-ink underline">
-          Ver su reparto en el universo →
+        <BackLink href="/collection">Mi colección</BackLink>
+        <Link
+          href={`/graph?focus=${character.id}`}
+          className="inline-flex min-h-11 items-center gap-2 px-2 text-ink-soft transition-colors hover:text-ink"
+        >
+          Ver su reparto en el universo
+          <ArrowIcon size={16} />
         </Link>
       </div>
       <PublisherStrip name={character.publisher} />

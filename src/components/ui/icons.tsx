@@ -160,3 +160,48 @@ export function MoreIcon(props: IconProps) {
     </Svg>
   );
 }
+
+/** Flecha para «volver», «siguiente» y llamadas a la acción; `direction` la orienta. */
+export function ArrowIcon({ direction = "right", ...props }: IconProps & { direction?: "left" | "right" }) {
+  return (
+    <Svg {...props}>
+      <path d={direction === "right" ? "M5 12h14m-5-5 5 5-5 5" : "M19 12H5m5-5-5 5 5 5"} />
+    </Svg>
+  );
+}
+
+/** Pendiente: un marcapáginas. */
+export function BookmarkIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M7 4h10v16l-5-3.5L7 20z" />
+    </Svg>
+  );
+}
+
+/** Leído: una marca de verificación. */
+export function CheckIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m5 12.5 4.5 4.5L19 7.5" />
+    </Svg>
+  );
+}
+
+/** Abandonado: pausa (se puede retomar). */
+export function PauseIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M9 6v12M15 6v12" />
+    </Svg>
+  );
+}
+
+/** Editar: un lápiz. */
+export function PencilIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M15.5 5.5 18.5 8.5M5 19l1-4 10-10 3 3-10 10z" />
+    </Svg>
+  );
+}

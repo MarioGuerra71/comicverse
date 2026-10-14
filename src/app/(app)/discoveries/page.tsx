@@ -4,7 +4,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { normalizeParams, type SearchParams } from "@/lib/search-params";
 import { DiscoveryItem } from "@/components/characters/discovery-item";
-import { PageHeader, Pagination } from "@/components/ui/page-parts";
+import { BackLink, PageHeader, Pagination } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { listDiscoveries } from "@/server/services/dashboard";
 import { discoveriesSearchSchema } from "@/server/validation/discoveries";
@@ -25,9 +25,7 @@ export default async function DiscoveriesPage({
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
-      <Link href="/dashboard" className="text-sm text-ink underline">
-        ← Volver al inicio
-      </Link>
+      <BackLink href="/dashboard">Inicio</BackLink>
       <div className="mt-4">
         <PageHeader title="Descubrimientos" figure={result.total} figureLabel="personajes">
           <p className="px-4 py-2 text-xs text-ink-soft">

@@ -92,3 +92,31 @@ export function updateHandle(db: PrismaClient, userId: string, handle: string) {
 export function updateVisibility(db: PrismaClient, userId: string, isPublic: boolean) {
   return db.user.update({ where: { id: userId }, data: { isPublic }, select: { handle: true, isPublic: true } });
 }
+
+/** Reseñas públicas de un cómic escritas por lectores con perfil público (sin la tuya). */
+export function findComicReviews(db: PrismaClient, comicId: string, excludeUserId: string, take = 10) {
+  return db.review.findMany({
+    where: {
+      comicId,
+      isPublic: true,
+      userId: { not: excludeUserId },
+      entry: { status: "READ", user: { isPublic: true, handle: { not: null } } },
+    },
+    orderBy: { updatedAt: "desc" },
+    take,
+    select: {
+      body: true,
+      updatedAt: true,
+      entry: { select: { rating: true, user: { select: { name: true, handle: true } } } },
+    },
+  });
+}
+
+/** Cuántos lo han leído y su puntuación media (cifras agregadas: no dicen quién). */
+export function aggregateComicReads(db: PrismaClient, comicId: string) {
+  return db.userComic.aggregate({
+    where: { comicId, status: "READ" },
+    _count: { _all: true },
+    _avg: { rating: true },
+  });
+}

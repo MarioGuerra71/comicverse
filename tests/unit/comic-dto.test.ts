@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  cleanDescription,
   toComicListItem,
   toComicDetail,
   type ComicListRow,
@@ -84,5 +85,15 @@ describe("toComicDetail", () => {
     expect(dto.releaseDate).toBeNull();
     expect(dto.coverUrl).toBeNull();
     expect(Object.keys(dto)).not.toContain("characters");
+  });
+});
+describe("cleanDescription", () => {
+  it("quita la tabla de portadas de Comic Vine", () => {
+    expect(cleanDescription("Spidey en apuros.\nList of covers and their creators:\nRegRegular Cover")).toBe(
+      "Spidey en apuros.",
+    );
+    expect(cleanDescription("List of covers and their creators: x")).toBeNull();
+    expect(cleanDescription("Sin tabla.")).toBe("Sin tabla.");
+    expect(cleanDescription(null)).toBeNull();
   });
 });

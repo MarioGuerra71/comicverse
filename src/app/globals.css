@@ -11,6 +11,7 @@
   color-scheme: dark;
 
   --paper: #0c0a10; /* suelo: noche cálida */
+  --paper-raised: #16121c; /* objetos opacos sobre el suelo: carta, archivador, lomo */
   --sheet: rgb(255 255 255 / 0.045); /* panel de cristal ahumado */
   --sheet-raised: rgb(255 255 255 / 0.09); /* cristal al pasar o seleccionado */
   --edge: rgb(255 255 255 / 0.12); /* filo de luz de 1 px de los paneles */
@@ -72,6 +73,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
   --color-sheet: var(--sheet);
   --color-sheet-raised: var(--sheet-raised);
   --color-line: var(--line);

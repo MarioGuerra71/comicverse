@@ -23,7 +23,7 @@ export function AlbumShelf({ albums }: { albums: AlbumDto[] }) {
             >
               {/* La tapa: se levanta un poco al pasar por encima, como al sacarla de la balda. */}
               <div className="relative aspect-4/5 overflow-hidden rounded-r-xl rounded-l-md bg-sheet-raised ring-1 ring-edge shadow-[0_20px_40px_-20px_rgb(0_0_0/0.9)] transition-all duration-300 ease-out group-hover:shadow-[0_0_36px_var(--glow)] motion-safe:group-hover:-translate-y-1.5 motion-safe:group-hover:-rotate-1">
-                <div className="absolute inset-y-0 left-0 flex w-5 flex-col items-center justify-around border-r border-edge bg-linear-to-r from-[#1d1924] to-[#2a2533] py-6">
+                <div className="absolute inset-y-0 left-0 flex w-5 flex-col items-center justify-around border-r border-edge bg-linear-to-r from-paper-raised to-sheet-raised py-6">
                   {[0, 1, 2].map((i) => (
                     <span key={i} className="h-2.5 w-2.5 rounded-full bg-paper ring-1 ring-edge" />
                   ))}
