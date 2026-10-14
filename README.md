@@ -150,7 +150,7 @@ Las rutas de biblioteca, inicio, universo y descubrimientos responden por la zon
 
 ## Hoja de ruta
 
-- IA opcional (búsqueda en lenguaje natural y recomendaciones), siempre construida con los mismos DTO para no revelar spoilers.
+- **IA (mejora futura, ya preparada en el código y apagada):** búsqueda en lenguaje natural («cómics donde Venom pelea con Carnage») y recomendaciones de qué leer para completar tus álbumes. La capa `server/integrations/ai` está lista para enchufar un proveedor; el contexto se construye con los mismos DTO, así que nunca incluye spoilers.
 
 ## Créditos y licencia de datos
 

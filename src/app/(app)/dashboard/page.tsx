@@ -76,6 +76,17 @@ export default async function DashboardPage() {
         </p>
       )}
 
+      {/* Hueco reservado para la IA (pendiente: recommendNextReads en services/ai.ts). */}
+      <section aria-labelledby="ai-heading" className="mt-8 border-[1.5px] border-dashed border-blue bg-sheet p-4">
+        <h2 id="ai-heading" className="font-hand text-2xl leading-none font-bold text-blue-ink">
+          qué leer ahora
+        </h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Próximamente: recomendaciones con IA para completar tus álbumes y descubrir nuevas relaciones, sin
+          spoilers.
+        </p>
+      </section>
+
       {recentDiscoveries.length > 0 && (
         <section aria-labelledby="discoveries-heading" className="mt-10">
           <SectionHeading

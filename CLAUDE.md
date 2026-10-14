@@ -337,6 +337,8 @@ Hecho: sección de seguridad en el README (incluido el aviso conocido de `npm au
 
 ## 15. IA (futura; NO implementar en el MVP)
 
+- **Estado (2026-10-14): preparada, sin implementar.** Esqueleto en `server/integrations/ai/provider.ts` (`AIProvider`, `getAIProvider()` = null salvo `AI_ENABLED=true`; activarla sin proveedor lanza un error claro, con test) y `server/services/ai.ts` (`isAIEnabled`, `naturalLanguageSearch` → null, `recommendNextReads` → []). En el Inicio, hueco «qué leer ahora · próximamente». **Pendiente:** elegir proveedor (de pago o local gratuito), `AIGateway` (límites, caché, `AiUsage`), conectar la búsqueda del catálogo y las recomendaciones al hueco del Inicio.
+
 - Todo pasa por el **backend**; nunca desde componentes cliente. Capa prevista: `server/integrations/ai/` con `AIProvider` (`generateText`, `generateStructured`, `embed`) y `AIGateway` (control de uso/coste por usuario, caché, registro `AiUsage`, cambio de proveedor por configuración). Interruptor `AI_ENABLED=false`.
 - **Spoiler-safe por construcción:** el contexto enviado a un modelo se construye con los mismos servicios y DTO que la interfaz (solo lo desbloqueado).
 - Búsqueda en lenguaje natural: el catálogo ya se consulta con un objeto tipado y validado (`comicSearchSchema`); la IA solo tendría que traducir texto a ese objeto.
@@ -390,7 +392,7 @@ Hecho: sección de seguridad en el README (incluido el aviso conocido de `npm au
 
 **Después:**
 - **Fase 8 — Pulido** (seguridad hecha, ver sección 12): diseño visual definitivo con un sistema de diseño (usar las skills **ui-ux-pro-max** e **impeccable**) y `AppShell` responsive, rediseño del grafo, animaciones, accesibilidad, rendimiento, ajuste de ocultar descripciones. **Hecho:** `error.tsx` en `(app)` (no muestra el mensaje interno), errores de Better Auth en español (`lib/auth-errors.ts`, por `code` y 429) y títulos de pestaña en las fichas de cómic y personaje (`generateMetadata` + `cache` de React; un bloqueado se titula solo «ComicVerse»). **No añadir `loading.tsx`:** hace que la respuesta empiece en *streaming* y `notFound()` devuelva **200** (con `noindex`) en vez de 404; comprobado en producción. Auditoría Lighthouse (2026-10-08, build de producción, móvil): accesibilidad 100 en todas las pantallas; buenas prácticas 77 donde hay imágenes, solo por la cookie `__cf_bm` que pone Cloudflare en las imágenes de Comic Vine (aceptado: evitarla exigiría servir las imágenes desde nuestro servidor); catálogo con 4G y CPU ×4: LCP 0,69 s, CLS 0.
-- **Fase 9 — IA** (solo si el usuario decide asumir costes).
+- **Fase 9 — IA** (mejora futura; estructura preparada, ver §15).
 - Despliegue, README, ampliar el universo (más series y personajes, DC), logros, funciones sociales (seguir usuarios, listas públicas, comparar colecciones; la arquitectura debe permitirlas).
 - **No implementar todavía:** IA y recomendaciones con IA.
 
