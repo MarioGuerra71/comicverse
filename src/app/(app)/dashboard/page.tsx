@@ -72,14 +72,7 @@ export default async function DashboardPage() {
       ) : (
         <p className="mt-3 text-sm text-ink-soft">
           En tu biblioteca: {stats.library.READING} leyendo · {stats.library.PENDING} pendientes ·{" "}
-          {stats.library.DROPPED} abandonados ·{" "}
-          <Link href="/achievements" className="text-ink underline">
-            Ver tus logros
-          </Link>{" "}
-          ·{" "}
-          <Link href="/community" className="text-ink underline">
-            Comunidad
-          </Link>
+          {stats.library.DROPPED} abandonados.
         </p>
       )}
 
