@@ -34,7 +34,7 @@ export default function SignUpPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-extrabold tracking-tight text-ink">Crear cuenta</h1>
+      <h1 className="font-display text-4xl font-black tracking-tight text-ink uppercase">Crear cuenta</h1>
 
       {error && (
         <p role="alert" className="text-sm text-danger">

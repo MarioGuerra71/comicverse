@@ -22,10 +22,10 @@ export function AlbumShelf({ albums }: { albums: AlbumDto[] }) {
               aria-label={`${album.title}: ${album.discovered} de ${album.total} personajes`}
             >
               {/* La tapa: se levanta un poco al pasar por encima, como al sacarla de la balda. */}
-              <div className="relative aspect-4/5 border-2 border-ink bg-sheet-raised transition-transform duration-300 ease-out motion-safe:group-hover:-translate-y-1.5 motion-safe:group-hover:-rotate-1">
-                <div className="absolute inset-y-0 left-0 flex w-5 flex-col items-center justify-around border-r-2 border-ink bg-ink py-6">
+              <div className="relative aspect-4/5 overflow-hidden rounded-r-xl rounded-l-md bg-sheet-raised ring-1 ring-edge shadow-[0_20px_40px_-20px_rgb(0_0_0/0.9)] transition-all duration-300 ease-out group-hover:shadow-[0_0_36px_var(--glow)] motion-safe:group-hover:-translate-y-1.5 motion-safe:group-hover:-rotate-1">
+                <div className="absolute inset-y-0 left-0 flex w-5 flex-col items-center justify-around border-r border-edge bg-linear-to-r from-[#1d1924] to-[#2a2533] py-6">
                   {[0, 1, 2].map((i) => (
-                    <span key={i} className="h-2.5 w-2.5 rounded-full border-2 border-paper" />
+                    <span key={i} className="h-2.5 w-2.5 rounded-full bg-paper ring-1 ring-edge" />
                   ))}
                 </div>
                 <div className="absolute inset-y-0 right-0 left-5 overflow-hidden">
@@ -43,7 +43,7 @@ export function AlbumShelf({ albums }: { albums: AlbumDto[] }) {
                   )}
                 </div>
                 {news > 0 && (
-                  <span className="absolute -top-3 -right-2 rotate-3 border-2 border-ink bg-sheet px-2 font-hand text-lg leading-tight font-bold text-editor-ink">
+                  <span className="absolute top-2 right-2 rotate-3 rounded-md bg-paper/90 px-2 ring-1 ring-editor font-hand text-lg leading-tight font-bold text-editor-ink">
                     ¡{news} {news === 1 ? "nuevo" : "nuevos"}!
                   </span>
                 )}
@@ -54,14 +54,14 @@ export function AlbumShelf({ albums }: { albums: AlbumDto[] }) {
               ) : (
                 <>
                 <div className="mt-1 flex items-baseline justify-between gap-2">
-                  <span className="font-hand text-2xl leading-none font-bold text-ink">
+                  <span className="font-display text-2xl leading-none font-extrabold text-ink">
                     {pad(album.discovered)}
                     <span className="text-base font-medium text-ink-soft">/{pad(album.total)}</span>
                   </span>
                   <span className="text-xs text-ink-soft">{percent} %</span>
                 </div>
-                <div className="mt-1.5 h-1.5 bg-sheet-raised" aria-hidden="true">
-                  <div className="h-full bg-ink" style={{ width: `${percent}%` }} />
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-sheet-raised" aria-hidden="true">
+                  <div className="h-full rounded-full bg-editor shadow-[0_0_10px_var(--glow)]" style={{ width: `${percent}%` }} />
                 </div>
                 </>
               )}

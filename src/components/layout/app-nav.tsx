@@ -45,11 +45,11 @@ export function SidebarNav() {
             href={href}
             aria-current={active ? "page" : undefined}
             title={label}
-            className={`flex min-h-11 items-center justify-center gap-3 border-2 px-3 text-sm transition-colors lg:justify-start ${
-              // Sobre el color de la editorial: la sección activa es un recuadro de papel.
+            className={`relative flex min-h-11 items-center justify-center gap-3 rounded-xl px-3 text-sm transition-all duration-200 lg:justify-start ${
+              // Sección activa: cristal encendido con el neón de la editorial.
               active
-                ? "border-white bg-sheet font-semibold text-editor-ink"
-                : "border-transparent font-medium text-white hover:border-white"
+                ? "bg-editor/12 font-semibold text-ink ring-1 ring-editor/60 shadow-[0_0_20px_var(--glow)] [&_svg]:text-editor"
+                : "font-medium text-ink-soft hover:bg-sheet-raised hover:text-ink"
             }`}
           >
             <Icon />
@@ -76,10 +76,10 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Principal"
-      className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-ink bg-sheet pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="glass fixed inset-x-0 bottom-0 z-30 border-t border-edge pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {open && (
-        <ul id="more-menu" className="absolute inset-x-0 bottom-full grid grid-cols-2 gap-2 border-t-2 border-ink bg-sheet p-3">
+        <ul id="more-menu" className="absolute inset-x-0 bottom-full glass grid grid-cols-2 gap-2 border-t border-edge p-3">
           {[...extra, { href: "/profile", label: "Perfil", Icon: HomeIcon, match: ["/profile"] }].map(
             ({ href, label, Icon, match }) => {
               const active = isActive(pathname, match);
@@ -89,8 +89,8 @@ export function BottomNav() {
                     href={href}
                     aria-current={active ? "page" : undefined}
                     onClick={() => setOpen(false)}
-                    className={`flex min-h-12 items-center gap-3 border-2 px-3 text-sm font-semibold ${
-                      active ? "border-ink bg-ink text-paper" : "border-ink bg-sheet text-ink"
+                    className={`flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-semibold ring-1 ${
+                      active ? "bg-editor/15 text-ink ring-editor" : "bg-sheet text-ink ring-edge"
                     }`}
                   >
                     {href === "/profile" ? <span aria-hidden="true" className="h-5 w-5 rounded-full border-2 border-current" /> : <Icon size={20} />}
@@ -108,7 +108,7 @@ export function BottomNav() {
           return (
             <li key={href}>
               <Link href={href} aria-current={active ? "page" : undefined} className={tabClass(active)}>
-                {active && <span aria-hidden="true" className="absolute top-0 h-0.5 w-8 bg-editor" />}
+                {active && <span aria-hidden="true" className="absolute top-0 h-0.5 w-8 rounded-full bg-editor shadow-[0_0_10px_var(--glow)]" />}
                 <Icon size={22} />
                 {label}
               </Link>
@@ -123,7 +123,7 @@ export function BottomNav() {
             onClick={() => setOpen((v) => !v)}
             className={tabClass(extraActive || open)}
           >
-            {extraActive && <span aria-hidden="true" className="absolute top-0 h-0.5 w-8 bg-editor" />}
+            {extraActive && <span aria-hidden="true" className="absolute top-0 h-0.5 w-8 rounded-full bg-editor shadow-[0_0_10px_var(--glow)]" />}
             <MoreIcon size={22} />
             Más
           </button>

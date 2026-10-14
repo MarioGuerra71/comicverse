@@ -100,13 +100,13 @@ export function CardViewer({
 
   return (
     <div role="dialog" aria-modal="true" aria-label={card.name} className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div ref={backdrop} className="absolute inset-0 bg-ink/80 backdrop-blur-sm" onClick={close} />
+      <div ref={backdrop} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={close} />
       <button
         ref={closeButton}
         type="button"
         onClick={close}
         aria-label="Cerrar"
-        className="absolute top-4 right-4 z-10 flex h-11 w-11 items-center justify-center border-2 border-paper text-paper transition-colors hover:bg-paper hover:text-ink"
+        className="absolute top-4 right-4 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-edge bg-white/5 text-ink backdrop-blur transition-colors hover:bg-white/15"
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
           <path d="M5 5l14 14M19 5L5 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -129,7 +129,7 @@ export function CardViewer({
               }`}
             >
               {/* Anverso: la imagen a todo color con el brillo holográfico encima. */}
-              <div className="absolute inset-0 flex flex-col overflow-hidden border-[3px] border-ink bg-sheet [backface-visibility:hidden]">
+              <div className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl border border-edge bg-[#15121b] shadow-[0_0_60px_var(--glow)] [backface-visibility:hidden]">
                 <div className="relative flex-1 overflow-hidden">
                   {card.imageThumbUrl ? (
                     <Image src={card.imageThumbUrl} alt={`Imagen de ${card.name}`} fill unoptimized sizes="400px" className="object-cover" />
@@ -145,9 +145,9 @@ export function CardViewer({
                     className="pointer-events-none absolute inset-0 mix-blend-overlay [background:radial-gradient(circle_at_var(--mx)_var(--my),rgb(255_255_255/0.7),transparent_50%)]"
                   />
                 </div>
-                <div className="flex items-baseline justify-between gap-3 border-t-[3px] border-ink bg-sheet px-3 py-2">
+                <div className="flex items-baseline justify-between gap-3 border-t border-edge px-3 py-2">
                   <span className="truncate text-lg leading-tight font-extrabold text-ink">{card.name}</span>
-                  <span className="shrink-0 font-hand text-2xl leading-none font-bold text-ink">
+                  <span className="shrink-0 font-display text-2xl leading-none font-extrabold text-ink">
                     {card.number !== null ? pad(card.number) : "—"}
                     <span className="text-base font-medium text-ink-soft">/{pad(total)}</span>
                   </span>
@@ -155,13 +155,13 @@ export function CardViewer({
               </div>
 
               {/* Reverso: la ficha del personaje, en papel y tinta. */}
-              <div className="absolute inset-0 flex flex-col border-[3px] border-ink bg-sheet p-5 [backface-visibility:hidden] [transform:rotateY(180deg)]">
+              <div className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl border border-edge bg-[#15121b] p-5 shadow-[0_0_60px_var(--glow)] [backface-visibility:hidden] [transform:rotateY(180deg)]">
                 {card.imageThumbUrl && (
-                  <span className="absolute top-5 right-5 block aspect-3/4 w-20 overflow-hidden border-2 border-ink">
+                  <span className="absolute top-5 right-5 block aspect-3/4 w-20 overflow-hidden rounded-lg border border-edge">
                     <Image src={card.imageThumbUrl} alt="" fill unoptimized sizes="80px" className="object-cover" />
                   </span>
                 )}
-                <p className="font-hand text-3xl leading-none font-bold text-ink">
+                <p className="font-display text-3xl leading-none font-extrabold text-ink">
                   {card.number !== null ? pad(card.number) : "—"}
                   <span className="text-xl text-ink-soft">/{pad(total)}</span>
                 </p>
@@ -170,7 +170,7 @@ export function CardViewer({
                 <p className="mt-2 font-hand text-xl font-bold text-editor-ink">
                   {card.isNew ? "¡nuevo!" : card.state === "COLLECTED" ? "coleccionado" : "descubierto"}
                 </p>
-                <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-y-2 border-ink py-3 text-sm">
+                <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-y border-edge py-3 text-sm">
                   <dt className="text-ink-soft">Cómics leídos</dt>
                   <dd className="text-ink">{pluralize(card.comicsRead, "cómic", "cómics")}</dd>
                   <dt className="text-ink-soft">Favorito</dt>
@@ -191,7 +191,7 @@ export function CardViewer({
         <button
           type="button"
           onClick={() => setFlipped((f) => !f)}
-          className="min-h-11 border-2 border-paper px-4 text-sm font-semibold text-paper transition-colors hover:bg-paper hover:text-ink"
+          className="min-h-11 rounded-full border border-edge bg-white/5 px-5 text-sm font-semibold text-ink backdrop-blur transition-colors hover:bg-white/15"
         >
           {flipped ? "Ver la carta" : "Dar la vuelta"}
         </button>

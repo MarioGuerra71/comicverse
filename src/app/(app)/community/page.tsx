@@ -14,9 +14,9 @@ function ProfileLink({ user }: { user: { name: string; handle: string | null } }
     <li>
       <Link
         href={`/u/${user.handle}`}
-        className="flex min-h-11 items-center gap-3 border-2 border-ink bg-sheet p-3 transition-colors hover:bg-sheet-raised"
+        className="flex min-h-11 items-center gap-3 rounded-2xl border border-edge bg-sheet p-3 transition-colors hover:bg-sheet-raised"
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-ink font-bold text-ink">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-edge font-bold text-ink">
           {user.name.trim().charAt(0).toUpperCase() || "?"}
         </span>
         <span className="min-w-0">

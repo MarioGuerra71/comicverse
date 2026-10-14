@@ -13,6 +13,8 @@ export interface DiscoveryDto {
   character: CharacterSummaryDto;
   viaComic: { id: string; title: string } | null;
   discoveredAt: string;
+  /** Descubierto en las últimas 24 h: lleva la nota «¡nuevo!». */
+  isNew: boolean;
 }
 
 /** Progreso del universo para el dashboard (todo calculado de nuestros datos). */
@@ -39,6 +41,7 @@ const toDiscovery = (row: Awaited<ReturnType<typeof findRecentDiscoveries>>[numb
   character: toCharacterSummary(row.character),
   viaComic: row.viaComic,
   discoveredAt: row.createdAt.toISOString(),
+  isNew: Date.now() - row.createdAt.getTime() < 24 * 60 * 60 * 1000,
 });
 
 /** Últimos personajes descubiertos (uno por personaje, solo los que siguen desbloqueados). */

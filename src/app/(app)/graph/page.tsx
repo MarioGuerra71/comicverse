@@ -38,7 +38,7 @@ const MAX_HIDDEN_PANELS = 6;
 
 function Panel({ card, className = "" }: { card: CollectionCardDto; className?: string }) {
   return (
-    <span className={`relative block aspect-3/4 overflow-hidden border-2 border-ink bg-sheet ${className}`}>
+    <span className={`relative block aspect-3/4 overflow-hidden rounded-lg border border-edge bg-sheet ${className}`}>
       {card.imageThumbUrl ? (
         <Image
           src={card.imageThumbUrl}
@@ -180,11 +180,11 @@ export default async function UniversePage({ searchParams }: { searchParams: Pro
                   }
                   className="sm:col-span-(--span-sm) xl:col-span-(--span-xl)"
                 >
-                  <div className="flex items-baseline justify-between gap-2 border-b-2 border-ink pb-1">
-                    <h3 id={`group-${group.key}`} className="font-hand text-2xl leading-none font-bold text-ink">
+                  <div className="flex items-baseline justify-between gap-2 border-b border-edge pb-1">
+                    <h3 id={`group-${group.key}`} className="font-display tracking-wide uppercase text-2xl leading-none font-extrabold text-ink">
                       {GROUP_LABELS[group.key]}
                     </h3>
-                    <span className="font-hand text-xl leading-none font-bold text-ink-soft">
+                    <span className="font-display text-xl leading-none font-extrabold text-ink-soft">
                       {group.members.length}
                     </span>
                   </div>
@@ -220,10 +220,10 @@ export default async function UniversePage({ searchParams }: { searchParams: Pro
               {hidden > 0 && (
                 <section aria-labelledby="group-hidden" className="sm:col-span-full">
                   <div className="flex items-baseline justify-between gap-4 border-b-[1.5px] border-blue pb-1">
-                    <h3 id="group-hidden" className="font-hand text-3xl leading-none font-bold text-blue-ink">
+                    <h3 id="group-hidden" className="font-display tracking-wide uppercase text-3xl leading-none font-extrabold text-blue-ink">
                       por descubrir
                     </h3>
-                    <span className="font-hand text-2xl leading-none font-bold text-blue-ink">{hidden}</span>
+                    <span className="font-display text-2xl leading-none font-extrabold text-blue-ink">{hidden}</span>
                   </div>
                   {/* Solo el número: de un bloqueado no viaja nada más. */}
                   <ul aria-hidden="true" className="mt-3 grid grid-cols-6 gap-2 sm:gap-4">

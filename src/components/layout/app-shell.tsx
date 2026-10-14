@@ -5,16 +5,15 @@ import { ZoneSwitch } from "@/components/layout/zone-switch";
 import { PanelMark } from "@/components/ui/icons";
 import type { Zone } from "@/lib/zones";
 
+/** El letrero de la tienda: «ComicVerse» en neón del color de la editorial. */
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
-    <Link
-      href="/dashboard"
-      className="flex min-h-11 items-center gap-2 text-white"
-      aria-label="ComicVerse, ir al inicio"
-    >
-      <PanelMark size={22} />
+    <Link href="/dashboard" className="flex min-h-11 items-center gap-2" aria-label="ComicVerse, ir al inicio">
+      <PanelMark size={22} className="text-editor drop-shadow-[0_0_8px_var(--glow)]" />
       <span
-        className={`text-lg font-extrabold tracking-tight ${compact ? "sr-only lg:not-sr-only" : ""}`}
+        className={`neon font-display text-2xl leading-none font-black tracking-wide uppercase ${
+          compact ? "sr-only lg:not-sr-only" : ""
+        }`}
       >
         ComicVerse
       </span>
@@ -23,10 +22,9 @@ function Brand({ compact = false }: { compact?: boolean }) {
 }
 
 /**
- * Estructura de la parte privada, como el borde de una página de arte original:
- * filetes de tinta separan las zonas y el lápiz del editor marca dónde estás.
- * Móvil: barra superior + barra inferior de 5 pestañas. Tablet: carril de iconos.
- * Escritorio: barra lateral con texto.
+ * La tienda de noche: suelo oscuro con el resplandor de la editorial filtrándose desde arriba,
+ * barra lateral de cristal ahumado con el letrero de neón.
+ * Móvil: barra superior de cristal + barra inferior. Tablet: carril de iconos. Escritorio: barra lateral.
  */
 export function AppShell({
   userName,
@@ -40,66 +38,57 @@ export function AppShell({
   const initial = userName.trim().charAt(0).toUpperCase() || "?";
 
   return (
-    // data-publisher cambia el color de la editorial en toda la zona (ver globals.css).
-    <div data-publisher={zone} className="min-h-screen md:pl-20 lg:pl-60">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-20 flex-col border-r-2 border-ink bg-sheet bg-brand-fade-y py-4 md:flex lg:w-60">
-        <div className="flex justify-center px-3 lg:justify-start lg:px-5">
+    // data-publisher cambia el neón de la editorial en toda la zona (ver globals.css).
+    <div data-publisher={zone} className="relative min-h-screen md:pl-20 lg:pl-64">
+      {/* Resplandor del letrero sobre el suelo (decorativo, fijo detrás de todo). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-x-0 top-0 z-0 h-[60vh] bg-[radial-gradient(ellipse_70%_60%_at_60%_-10%,var(--glow),transparent_70%)] opacity-60"
+      />
+
+      <aside className="glass fixed inset-y-0 left-0 z-20 hidden w-20 flex-col border-r border-edge py-5 md:flex lg:w-64">
+        <div className="flex justify-center px-3 lg:justify-start lg:px-6">
           <Brand compact />
         </div>
-        <ZoneSwitch zone={zone} className="mx-3 mt-5 hidden lg:flex" />
-        {/* En el carril de iconos de la tablet, apilado y con la inicial. */}
+        <ZoneSwitch zone={zone} className="mx-4 mt-6 hidden lg:flex" />
         <ZoneSwitch zone={zone} compact className="mx-auto mt-4 w-12 lg:hidden" />
         <div className="mt-6 flex-1">
           <SidebarNav />
         </div>
-        <div className="flex flex-col gap-1 border-t-2 border-ink px-3 pt-3">
+        <div className="flex flex-col gap-1 border-t border-edge px-3 pt-3">
           <Link
             href="/profile"
             title="Perfil"
-            className="flex min-h-11 items-center justify-center gap-3 border-2 border-transparent px-3 text-sm text-ink-soft transition-colors hover:border-ink hover:text-ink lg:justify-start"
+            className="flex min-h-11 items-center justify-center gap-3 rounded-xl px-3 text-sm text-ink-soft transition-colors hover:bg-sheet-raised hover:text-ink lg:justify-start"
           >
             <span
               aria-hidden="true"
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-ink text-xs font-bold text-ink"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sheet-raised text-xs font-bold text-ink ring-1 ring-edge"
             >
               {initial}
             </span>
             <span className="sr-only lg:not-sr-only lg:truncate">{userName}</span>
           </Link>
-          <SignOutButton className="justify-center lg:justify-start" />
+          <SignOutButton className="justify-center rounded-xl lg:justify-start" />
         </div>
       </aside>
 
-      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b-2 border-ink bg-brand px-4 md:hidden">
+      <header className="glass sticky top-0 z-20 flex h-14 items-center justify-between border-b border-edge px-4 md:hidden">
         <Brand />
-        <ZoneSwitch zone={zone} className="ml-auto mr-2" />
-        {/* Fundido a blanco solo detrás del avatar: el texto blanco queda sobre color pleno. */}
-        <span
-          aria-hidden="true"
-          className="absolute inset-y-0 right-0 w-16 bg-linear-to-r from-brand to-sheet"
-        />
-        <Link
-          href="/profile"
-          aria-label={`Perfil de ${userName}`}
-          className="relative flex h-11 w-11 items-center justify-center"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-ink text-sm font-bold text-ink">
+        <ZoneSwitch zone={zone} className="mr-2 ml-auto" />
+        <Link href="/profile" aria-label={`Perfil de ${userName}`} className="flex h-11 w-11 items-center justify-center">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sheet-raised text-sm font-bold text-ink ring-1 ring-edge">
             {initial}
           </span>
         </Link>
       </header>
 
-      <div className="flex min-h-screen flex-col">
+      <div className="relative flex min-h-screen flex-col">
         <div className="flex-1">{children}</div>
         {/* En el móvil el relleno inferior deja sitio a la barra de pestañas fija. */}
-        <footer className="border-t-2 border-ink bg-sheet px-6 pt-4 pb-24 text-xs text-ink-soft md:pb-4">
+        <footer className="border-t border-edge px-6 pt-4 pb-24 text-xs text-ink-soft md:pb-4">
           Datos e imágenes de cómics proporcionados por{" "}
-          <a
-            href="https://comicvine.gamespot.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-ink underline"
-          >
+          <a href="https://comicvine.gamespot.com" target="_blank" rel="noopener noreferrer" className="text-ink underline">
             Comic Vine
           </a>
           . Proyecto personal sin ánimo de lucro.

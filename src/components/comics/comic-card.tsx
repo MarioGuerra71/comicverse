@@ -19,7 +19,7 @@ export function ComicCard({
 
   return (
     <Link href={`/comics/${comic.id}`} className="group flex flex-col">
-      <div className="relative aspect-2/3 overflow-hidden border-2 border-ink bg-sheet">
+      <div className="relative aspect-2/3 overflow-hidden rounded-lg bg-sheet ring-1 ring-edge transition-shadow duration-300 group-hover:shadow-[0_0_28px_var(--glow)]">
         {comic.coverThumbUrl ? (
           <Image
             src={comic.coverThumbUrl}

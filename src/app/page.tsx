@@ -2,11 +2,11 @@ import Link from "next/link";
 import { BrandPanel } from "@/components/auth/brand-panel";
 import { getSession } from "@/server/auth/session";
 
-// Botones claros sobre el bloque rojo: papel con texto de tinta y recuadro blanco.
+// Botones sobre el bloque de la editorial: luz blanca y cristal.
 const lightButton =
-  "inline-flex min-h-11 items-center justify-center border-2 border-ink bg-sheet px-5 text-sm font-semibold text-ink transition-colors hover:bg-sheet-raised";
+  "inline-flex min-h-11 items-center justify-center rounded-full bg-white px-6 text-sm font-semibold text-black transition-all hover:shadow-[0_0_28px_rgb(255_255_255/0.45)]";
 const ghostButton =
-  "inline-flex min-h-11 items-center justify-center border-2 border-white px-5 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-editor-ink";
+  "inline-flex min-h-11 items-center justify-center rounded-full px-6 text-sm font-semibold text-white ring-1 ring-white/60 backdrop-blur transition-colors hover:bg-white/10";
 
 export default async function Home() {
   const session = await getSession();

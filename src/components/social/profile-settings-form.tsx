@@ -44,15 +44,15 @@ export function VisibilitySwitch({ isPublic }: { isPublic: boolean }) {
         aria-checked={value}
         disabled={busy}
         onClick={toggle}
-        className="flex w-full items-center gap-4 border-2 border-ink bg-sheet p-4 text-left transition-colors hover:bg-sheet-raised disabled:opacity-70"
+        className="flex w-full items-center gap-4 rounded-2xl border border-edge bg-sheet p-4 text-left transition-colors hover:bg-sheet-raised disabled:opacity-70"
       >
         {/* El interruptor: tinta llena = público. */}
         <span
           aria-hidden="true"
-          className={`relative h-8 w-14 shrink-0 border-2 border-ink transition-colors ${value ? "bg-ink" : "bg-paper"}`}
+          className={`relative h-8 w-14 shrink-0 rounded-full border border-edge transition-colors ${value ? "bg-editor shadow-[0_0_14px_var(--glow)]" : "bg-paper"}`}
         >
           <span
-            className={`absolute top-0.5 h-5 w-5 border-2 border-ink bg-sheet transition-all duration-200 ${
+            className={`absolute top-1 h-5 w-5 rounded-full bg-ink transition-all duration-200 ${
               value ? "left-[calc(100%-1.5rem)]" : "left-0.5"
             }`}
           />
@@ -134,12 +134,12 @@ export function HandleEditor({ handle }: { handle: string }) {
   const shown = changed ? status[check] : null;
 
   return (
-    <form onSubmit={save} className="border-2 border-ink bg-sheet p-4">
+    <form onSubmit={save} className="rounded-2xl border border-edge bg-sheet p-4">
       <label htmlFor="handle" className="block font-extrabold text-ink">
         Nombre de usuario
       </label>
       <p className="mt-0.5 text-sm text-ink-soft">Es la dirección de tu perfil. Solo letras, números y guiones.</p>
-      <div className="mt-3 flex items-stretch border-2 border-ink bg-paper focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-editor">
+      <div className="mt-3 flex items-stretch rounded-xl border border-edge bg-paper focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-editor">
         <span className="flex items-center pl-3 text-sm text-ink-soft select-none">/u/</span>
         <input
           id="handle"

@@ -1,35 +1,36 @@
 import Link from "next/link";
 
-// Piezas comunes del sistema "Página de arte original" (ver DESIGN.md).
+// Piezas comunes del sistema «Tienda de cómics a medianoche» (ver DESIGN.md).
 
-/** Pestaña entintada: relleno de tinta = seleccionada (igual que la navegación). */
+/** Pestaña: pastilla de cristal; la seleccionada se enciende con el neón de la editorial. */
 export const inkTab = (active: boolean) =>
-  `flex min-h-11 items-center border-2 border-ink px-3 text-sm font-semibold transition-colors ${
-    active ? "bg-ink text-paper" : "bg-sheet text-ink hover:bg-sheet-raised"
+  `flex min-h-11 items-center rounded-full px-4 text-sm font-semibold transition-all duration-200 ${
+    active
+      ? "bg-editor/15 text-ink ring-1 ring-editor shadow-[0_0_18px_var(--glow)]"
+      : "glass text-ink-soft ring-1 ring-edge hover:text-ink hover:bg-sheet-raised"
   }`;
 
-/** Botón principal: tinta llena. */
+/** Botón principal: luz de caja de luz (crema), con halo al pasar. */
 export const inkButton =
-  "inline-flex min-h-11 items-center justify-center gap-2 border-2 border-ink bg-ink px-4 text-sm font-semibold text-paper transition-colors hover:bg-ink/85 disabled:opacity-50";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-paper transition-all duration-200 hover:shadow-[0_0_24px_rgb(244_239_230/0.35)] active:scale-[0.98] disabled:opacity-50";
 
-/** Botón secundario: recuadro entintado sobre papel. */
+/** Botón secundario: cristal ahumado. */
 export const outlineButton =
-  "inline-flex min-h-11 items-center justify-center gap-2 border-2 border-ink bg-sheet px-4 text-sm font-semibold text-ink transition-colors hover:bg-sheet-raised disabled:opacity-50";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full glass px-5 text-sm font-semibold text-ink ring-1 ring-edge transition-colors hover:bg-sheet-raised disabled:opacity-50";
 
-/** Enlace discreto (ordenación, cambios de vista): activo subrayado en el color del editor. */
+/** Enlace discreto (ordenación, cambios de vista): activo subrayado en neón. */
 export const quietLink = (active: boolean) =>
   `flex min-h-11 items-center px-2 text-sm underline-offset-[6px] transition-colors ${
     active ? "font-semibold text-ink underline decoration-editor decoration-2" : "text-ink-soft hover:text-ink"
   }`;
 
-/** Campo de texto o desplegable sobre papel, con filete de tinta. */
+/** Campo de texto o desplegable: cristal con filo de luz. */
 export const inkField =
-  "min-h-11 border-2 border-ink bg-sheet px-3 text-sm text-ink placeholder:text-ink-soft";
+  "min-h-11 rounded-xl border border-edge bg-sheet px-4 text-sm text-ink placeholder:text-ink-soft focus:border-editor focus:outline-none";
 
 /**
- * Cajetín de la página, como el que traen impreso las páginas de arte original:
- * título a la izquierda, una cifra escrita a mano a la derecha y, debajo, una fila
- * opcional de casillas o una línea de texto.
+ * Cabecera de pantalla como el rótulo de una tienda de noche: título en letras de letrero y,
+ * a la derecha, la cifra monumental en neón. Debajo, una barra de cristal opcional.
  */
 export function PageHeader({
   title,
@@ -43,27 +44,21 @@ export function PageHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <header className="border-2 border-ink bg-sheet">
-      <div className="grid grid-cols-[1fr_auto]">
-        {/* Rojo pleno bajo el título; el fundido a blanco va en una banda propia a la derecha
-            que el texto nunca pisa (si no, un título largo quedaría blanco sobre blanco). */}
-        <div className="relative flex min-w-0 items-center bg-brand py-3 pr-10 pl-4 md:pr-[40%]">
-          <h1 className="text-xl font-extrabold tracking-tight text-balance break-words text-white sm:text-3xl md:text-4xl">
-            {title}
-          </h1>
-          <span
-            aria-hidden="true"
-            className="absolute inset-y-0 right-0 w-8 bg-linear-to-r from-brand to-sheet md:w-[38%]"
-          />
-        </div>
+    <header>
+      <div className="flex items-end justify-between gap-4">
+        <h1 className="min-w-0 font-display text-4xl leading-[0.9] font-extrabold tracking-tight text-balance break-words text-ink uppercase sm:text-5xl md:text-6xl">
+          {title}
+        </h1>
         {figure !== undefined && (
-          <div className="border-l-2 border-ink px-4 py-2 text-right whitespace-nowrap">
-            <p className="font-hand text-4xl leading-none font-bold text-ink">{figure}</p>
-            {figureLabel && <p className="text-xs text-ink-soft">{figureLabel}</p>}
+          <div className="shrink-0 text-right">
+            <p className="neon font-display text-5xl leading-none font-black md:text-6xl">{figure}</p>
+            {figureLabel && <p className="mt-1 text-xs tracking-wide text-ink-soft uppercase">{figureLabel}</p>}
           </div>
         )}
       </div>
-      {children && <div className="border-t-2 border-ink">{children}</div>}
+      {/* El filo de neón que separa el rótulo del contenido. */}
+      <div aria-hidden="true" className="mt-4 h-px bg-linear-to-r from-editor via-editor/30 to-transparent" />
+      {children && <div className="glass mt-4 overflow-hidden rounded-2xl ring-1 ring-edge">{children}</div>}
     </header>
   );
 }
@@ -81,12 +76,12 @@ export function HeaderField({
   label: string;
 }) {
   return (
-    <Link href={href} className="flex flex-col bg-sheet px-4 py-2 transition-colors hover:bg-sheet-raised">
-      <span className="font-hand text-3xl leading-none font-bold text-ink">
+    <Link href={href} className="flex flex-col px-4 py-3 transition-colors hover:bg-sheet-raised">
+      <span className="font-display text-4xl leading-none font-extrabold text-ink">
         {value}
-        {total !== undefined && <span className="text-xl text-ink-soft">/{total}</span>}
+        {total !== undefined && <span className="text-2xl font-semibold text-ink-soft">/{total}</span>}
       </span>
-      <span className="text-xs text-ink-soft">{label}</span>
+      <span className="mt-1 text-xs tracking-wide text-ink-soft uppercase">{label}</span>
     </Link>
   );
 }
@@ -104,12 +99,12 @@ export function SectionHeading({
   linkLabel?: string;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b-2 border-ink pb-1">
-      <h2 id={id} className="text-xl font-extrabold tracking-tight text-ink">
+    <div className="flex items-baseline justify-between gap-4">
+      <h2 id={id} className="font-display text-2xl font-extrabold tracking-wide text-ink uppercase md:text-3xl">
         {title}
       </h2>
       {href && (
-        <Link href={href} className="shrink-0 text-sm whitespace-nowrap text-ink underline">
+        <Link href={href} className="shrink-0 text-sm whitespace-nowrap text-ink-soft transition-colors hover:text-editor">
           {linkLabel}
         </Link>
       )}
@@ -131,20 +126,20 @@ export function Pagination({
   return (
     <nav
       aria-label="Paginación"
-      className="mt-8 flex items-center justify-between border-t-2 border-ink pt-2 text-sm"
+      className="mt-8 flex items-center justify-between text-sm"
     >
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} className="flex min-h-11 items-center text-ink underline">
+        <Link href={hrefFor(page - 1)} className="flex min-h-11 items-center rounded-full glass px-4 text-ink ring-1 ring-edge hover:bg-sheet-raised">
           ← Anterior
         </Link>
       ) : (
         <span aria-hidden="true" />
       )}
       <span className="text-ink-soft">
-        Página <span className="font-hand text-xl font-bold text-ink">{page}</span> de {totalPages}
+        Página <span className="font-display text-xl font-extrabold text-ink">{page}</span> de {totalPages}
       </span>
       {page < totalPages ? (
-        <Link href={hrefFor(page + 1)} className="flex min-h-11 items-center text-ink underline">
+        <Link href={hrefFor(page + 1)} className="flex min-h-11 items-center rounded-full glass px-4 text-ink ring-1 ring-edge hover:bg-sheet-raised">
           Siguiente →
         </Link>
       ) : (
@@ -158,8 +153,9 @@ export function Pagination({
 export function PublisherStrip({ name }: { name: string | null }) {
   if (!name) return null;
   return (
-    <div className="mt-3 flex h-8 items-center border-2 border-ink bg-brand-fade-x px-3" aria-label={`Editorial: ${name}`}>
-      <span className="text-xs font-extrabold tracking-wide text-white uppercase">{name}</span>
+    <div className="mt-3 inline-flex h-8 items-center gap-2 rounded-full glass px-3 ring-1 ring-edge" aria-label={`Editorial: ${name}`}>
+      <span aria-hidden="true" className="h-2 w-2 rounded-full bg-editor shadow-[0_0_10px_var(--glow)]" />
+      <span className="text-xs font-bold tracking-widest text-ink uppercase">{name}</span>
     </div>
   );
 }

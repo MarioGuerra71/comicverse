@@ -32,8 +32,8 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
 function ComparedAlbum({ album, name }: { album: ComparedAlbumDto; name: string }) {
   const percent = album.total ? Math.round((album.theirs / album.total) * 100) : 0;
   return (
-    <li className="flex gap-3 border-2 border-ink bg-sheet p-3">
-      <span className="relative aspect-2/3 w-16 shrink-0 overflow-hidden border-2 border-ink bg-paper">
+    <li className="flex gap-3 rounded-2xl border border-edge bg-sheet p-3">
+      <span className="relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-lg border border-edge bg-paper">
         {album.coverThumbUrl && (
           <Image src={album.coverThumbUrl} alt="" fill unoptimized sizes="64px" className="object-cover" />
         )}
@@ -44,12 +44,12 @@ function ComparedAlbum({ album, name }: { album: ComparedAlbumDto; name: string 
           <p className="mt-1 text-xs text-ink-soft">Sin personajes todavía.</p>
         ) : (
           <>
-            <p className="mt-1 font-hand text-xl leading-none font-bold text-ink">
+            <p className="mt-1 font-display text-xl leading-none font-extrabold text-ink">
               {pad(album.theirs)}
               <span className="text-base text-ink-soft">/{pad(album.total)}</span>
             </p>
-            <div className="mt-1 h-1.5 bg-sheet-raised" aria-hidden="true">
-              <div className="h-full bg-ink" style={{ width: `${percent}%` }} />
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-sheet-raised" aria-hidden="true">
+              <div className="h-full rounded-full bg-editor shadow-[0_0_10px_var(--glow)]" style={{ width: `${percent}%` }} />
             </div>
           </>
         )}
@@ -145,7 +145,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           ) : (
             <ul className="mt-4 flex flex-col gap-4">
               {reviews.map((r) => (
-                <li key={r.comic.id} className="border-2 border-ink bg-sheet p-4">
+                <li key={r.comic.id} className="rounded-2xl border border-edge bg-sheet p-4">
                   <div className="flex items-baseline justify-between gap-3">
                     <Link href={`/comics/${r.comic.id}`} className="font-bold text-ink underline">
                       {r.comic.title}

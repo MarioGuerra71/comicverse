@@ -45,7 +45,7 @@ export function CoverShuffle({
             compactOnMobile && index >= 3 ? "hidden md:block" : ""
           }`}
         >
-          <div className="relative aspect-2/3 overflow-hidden border-2 border-ink bg-sheet">
+          <div className="relative aspect-2/3 overflow-hidden rounded-lg border border-edge bg-sheet">
             <Image src={src} alt="" fill unoptimized sizes="160px" className="object-cover" />
           </div>
         </li>

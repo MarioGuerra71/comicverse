@@ -1,0 +1,117 @@
+{
+  "title": "Rediseño de ComicVerse",
+  "question": "Oscuro, con movimiento y 3D, cristal y luz; rojo Marvel y azul DC; álbumes y carta en grande se quedan. Elige una dirección, pide otra tanda o dame una indicación.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Tienda de cómics a medianoche",
+      "kicker": "THE ROLL",
+      "lineage": "tiendas de cómics de noche: cajas de luz, neón y cajas de cómics (longbox)",
+      "thesis": "La app es una tienda de cómics cerrada a medianoche: portadas retroiluminadas como en una caja de luz, el neón de la editorial y cajas de cómics que hojeas con el dedo.",
+      "palette": ["#0c0a10", "#f4efe6", "#ff2d3b", "#2f8cff", "#a88a62"],
+      "materials": ["vidrio retroiluminado", "neón", "cartón de longbox", "portadas a todo color"],
+      "viewport": "Barra lateral de cristal oscuro con el nombre en neón de la editorial; arriba, una caja de luz con tu cómic en curso a sangre; debajo, cajas de cómics: al pasar el dedo, las portadas se inclinan en 3D como al hojear un longbox.",
+      "risk": "Si el neón se usa en todo, cansa: tiene que reservarse para la editorial y lo nuevo.",
+      "raised": [
+        { "from": "Metro (azulejos tipográficos)", "raise": "El color de la editorial inunda zonas enteras (barra, cabecera), no solo acentos." },
+        { "from": "Señalética de aeropuerto", "raise": "El rojo o azul queda reservado a orientación y estado, nunca a decoración." },
+        { "from": "Espécimen tipográfico", "raise": "Jerarquía por contraste de escala: los recuentos de colección a tamaño monumental." },
+        { "from": "Folio botánico", "raise": "Comparaciones registradas: el progreso de los álbumes siempre a la misma escala." }
+      ],
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "barra de cristal + neón de editorial", "x": 0, "y": 0, "w": 2, "h": 10, "accent": true },
+          { "label": "caja de luz: cómic en curso a sangre", "x": 2, "y": 0, "w": 10, "h": 4 },
+          { "label": "longbox: seguir leyendo (hojear en 3D)", "x": 2, "y": 4, "w": 10, "h": 3 },
+          { "label": "álbumes", "x": 2, "y": 7, "w": 6, "h": 3 },
+          { "label": "progreso monumental", "x": 8, "y": 7, "w": 4, "h": 3, "accent": true }
+        ]
+      }
+    },
+    {
+      "id": "model-pick",
+      "label": "Bóveda del coleccionista",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "cartas graduadas en bloques de metacrilato (slabs) y vitrinas de coleccionista",
+      "thesis": "Cada personaje es una carta graduada dentro de un bloque de metacrilato; la colección es una vitrina oscura donde la luz resbala por el cristal.",
+      "palette": ["#0a0c11", "#1a1f2b", "#dfe7f2", "#ff2d3b", "#2f8cff"],
+      "materials": ["metacrilato", "foil holográfico", "terciopelo oscuro", "etiquetas de grado"],
+      "viewport": "Fondo casi negro; la colección como vitrina de slabs que reflejan el cursor; al tocar uno, sale de la vitrina y gira mostrando su etiqueta (cómics leídos, número).",
+      "risk": "Muy espectacular en la colección, pero en catálogo y biblioteca el metacrilato puede sentirse forzado; además es adonde llegan muchas apps de cartas.",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "barra superior de cristal", "x": 0, "y": 0, "w": 12, "h": 1 },
+          { "label": "vitrina de slabs (reflejo que sigue al cursor)", "x": 0, "y": 1, "w": 8, "h": 9, "accent": true },
+          { "label": "etiqueta del slab elegido", "x": 8, "y": 1, "w": 4, "h": 5 },
+          { "label": "progreso del álbum", "x": 8, "y": 6, "w": 4, "h": 4 }
+        ]
+      }
+    },
+    {
+      "id": "challenger-streaming",
+      "label": "Muro de streaming",
+      "verdict": "competitive",
+      "lineage": "catálogos de streaming (Marvel Unlimited, Netflix)",
+      "thesis": "Filas de portadas a sangre sobre negro; la que enfocas crece y cuenta qué es mientras el resto se apaga.",
+      "palette": ["#0a0a0a", "#161616", "#ffffff", "#ff2d3b", "#2f8cff"],
+      "materials": ["portadas a sangre", "fondo neutro profundo", "foco con borde de editorial"],
+      "viewport": "Héroe a pantalla completa con la portada destacada; debajo, filas horizontales (seguir leyendo, novedades, tus álbumes); la portada enfocada se amplía y la fila se eleva.",
+      "case": "Es tu referencia y lo más claro para el catálogo; pierde por poco en personalidad propia.",
+      "risk": "Familiar: puede parecer cualquier app de streaming.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-streaming-title-card-wall-hero.webp",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "barra superior", "x": 0, "y": 0, "w": 12, "h": 1 },
+          { "label": "héroe: portada destacada a sangre", "x": 0, "y": 1, "w": 12, "h": 4, "accent": true },
+          { "label": "fila: seguir leyendo", "x": 0, "y": 5, "w": 12, "h": 2 },
+          { "label": "fila: novedades", "x": 0, "y": 7, "w": 12, "h": 2 },
+          { "label": "fila: tus álbumes", "x": 0, "y": 9, "w": 12, "h": 1 }
+        ]
+      }
+    },
+    {
+      "id": "challenger-metro",
+      "label": "Azulejos tipográficos (Metro)",
+      "verdict": "declined",
+      "lineage": "Windows Phone / Metro",
+      "palette": ["#000000", "#ff2d3b", "#2f8cff", "#ffffff"],
+      "materials": ["campos de color planos", "tipografía gigante"],
+      "thesis": "Texto gigante y bloques de color como contenido.",
+      "viewport": "Panorama de azulejos de color.",
+      "risk": "Plano: choca con el cristal, la luz y el 3D que pediste.",
+      "case": "Pierde en lo que pediste.",
+      "kept": "Su disciplina de color: la editorial inunda zonas enteras."
+    },
+    {
+      "id": "challenger-jcard",
+      "label": "Carátula de cinta (J-card)",
+      "verdict": "declined",
+      "lineage": "cintas de casete rotuladas a mano",
+      "palette": ["#ffffff", "#1d3fbf", "#9a9a9a", "#d01f2a"],
+      "materials": ["boli", "cartulina pautada"],
+      "thesis": "Todo a mano sobre papel pautado.",
+      "viewport": "Una carátula desplegada.",
+      "risk": "Claro y artesanal: lo contrario de oscuro y moderno.",
+      "case": "Pierde en los dos ejes.",
+      "kept": "La nota a mano como única marca humana (los «¡nuevo!»)."
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "steer": true,
+  "canon": true,
+  "canonCard": {
+    "label": "El estándar de la categoría",
+    "thesis": "App oscura moderna bien hecha: tarjetas de cristal, esquinas redondeadas, sombras suaves y un acento.",
+    "palette": ["#09090b", "#18181b", "#fafafa", "#ff2d3b", "#2f8cff"],
+    "materials": ["cristal esmerilado", "tarjetas redondeadas", "sombras suaves"],
+    "viewport": "Barra lateral, cabecera y una rejilla de tarjetas de cristal con portadas.",
+    "risk": "Indistinguible de otras apps por diseño."
+  },
+  "buildPath": { "value": "code", "toggle": false }
+}

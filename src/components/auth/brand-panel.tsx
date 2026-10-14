@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { BRAND_VISITS_COOKIE, brandZoneForVisit } from "@/lib/zones";
+import { BRAND_VISITS_COOKIE, brandZoneForVisit, type Zone } from "@/lib/zones";
 import { db } from "@/lib/db";
 import { CoverShuffle } from "@/components/auth/cover-shuffle";
 import { PanelMark } from "@/components/ui/icons";
@@ -15,14 +15,16 @@ import { comicSearchSchema } from "@/server/validation/catalog";
 export async function BrandPanel({
   children,
   isPageTitle = false,
+  zone: forcedZone,
 }: {
   children?: React.ReactNode;
   /** En la portada el titular es el h1; en el acceso, el h1 es el del formulario. */
   isPageTitle?: boolean;
+  /** Editorial ya elegida por quien la envuelve (a partir de la 3.ª visita es al azar). */
+  zone?: Zone;
 }) {
   const Heading = isPageTitle ? "h1" : "p";
-  const visits = Number((await cookies()).get(BRAND_VISITS_COOKIE)?.value) || 0;
-  const zone = brandZoneForVisit(visits);
+  const zone = forcedZone ?? brandZoneForVisit(Number((await cookies()).get(BRAND_VISITS_COOKIE)?.value) || 0);
 
   // Cuatro grupos de seis portadas de la editorial, repartidos por su catálogo (de lo más
   // antiguo a lo más reciente). Si una editorial tiene pocos cómics, salen menos grupos.
@@ -42,14 +44,14 @@ export async function BrandPanel({
 
   const intro = (
     <>
-      <Link href="/" className="inline-flex items-center gap-2 self-start text-xl font-extrabold text-white">
+      <Link href="/" className="inline-flex items-center gap-2 self-start font-display text-2xl font-black tracking-wide text-white uppercase [text-shadow:0_0_18px_rgb(255_255_255/0.5)]">
         <PanelMark size={26} />
         ComicVerse
       </Link>
       <div>
         <Heading
-          className={`text-4xl leading-[1.05] font-extrabold tracking-tight text-white md:text-6xl ${
-            isPageTitle ? "lg:text-7xl" : ""
+          className={`font-display text-5xl leading-[0.9] font-black tracking-tight text-white uppercase md:text-7xl ${
+            isPageTitle ? "lg:text-8xl" : ""
           }`}
         >
           Lee cómics.

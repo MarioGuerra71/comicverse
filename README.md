@@ -31,7 +31,7 @@
 | Capa | Tecnología |
 |---|---|
 | Framework | Next.js 16 (App Router, Turbopack), React 19, TypeScript estricto |
-| Estilos | Tailwind CSS v4, con un sistema de diseño propio («Página de arte original», ver [`DESIGN.md`](DESIGN.md)) |
+| Estilos | Tailwind CSS v4, con un sistema de diseño propio («Tienda de cómics a medianoche»: modo oscuro, cristal y neón por editorial; ver [`DESIGN.md`](DESIGN.md)) |
 | Base de datos | PostgreSQL 17 (Docker en local) |
 | ORM | Prisma 7 con `@prisma/adapter-pg` |
 | Autenticación | Better Auth (email y contraseña, sesiones en BD) |

@@ -49,8 +49,8 @@ export default async function AlbumPage({ params }: { params: Promise<{ seriesId
           figureLabel="personajes"
         >
           <div className="px-4 py-3">
-            <div className="h-2 bg-sheet-raised" aria-hidden="true">
-              <div className="h-full bg-ink" style={{ width: `${percent}%` }} />
+            <div className="h-2 overflow-hidden rounded-full bg-sheet-raised" aria-hidden="true">
+              <div className="h-full rounded-full bg-editor shadow-[0_0_10px_var(--glow)]" style={{ width: `${percent}%` }} />
             </div>
             <p className="mt-2 text-xs text-ink-soft">
               {percent} % completado ·{" "}

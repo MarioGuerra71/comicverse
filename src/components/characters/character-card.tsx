@@ -18,7 +18,7 @@ export const catalogLabel = (number: number | null) =>
 /** Número de catálogo escrito a mano encima de la viñeta, como el número de página del dibujante. */
 function HandNumber({ number, total, className }: { number: number | null; total: number; className: string }) {
   return (
-    <span className={`font-hand text-2xl leading-none font-bold ${className}`}>
+    <span className={`font-display text-2xl leading-none font-extrabold ${className}`}>
       {number === null ? (
         // Sin número de catálogo (personajes de series añadidas): hueco vacío, la rejilla no se mueve.
         <span className="invisible">000</span>
@@ -44,7 +44,7 @@ export function CharacterCard({ card, total }: { card: CollectionCardDto; total:
     <Link href={`/characters/${card.id}`} className="group flex flex-col">
       <HandNumber number={card.number} total={total} className="text-ink" />
       <div
-        className={`relative mt-1.5 aspect-3/4 overflow-hidden border-2 border-ink bg-sheet ${
+        className={`relative mt-1.5 aspect-3/4 overflow-hidden rounded-lg border border-edge bg-sheet ${
           card.isNew ? "outline-2 outline-offset-4 outline-editor" : ""
         }`}
       >

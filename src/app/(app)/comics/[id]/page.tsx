@@ -64,7 +64,7 @@ export default async function ComicPage({
       <PublisherStrip name={comic.publisher} />
 
       <div className="mt-4 grid gap-6 sm:grid-cols-[minmax(0,16rem)_1fr]">
-        <div className="relative aspect-2/3 w-full max-w-64 overflow-hidden border-2 border-ink bg-sheet">
+        <div className="relative aspect-2/3 w-full max-w-64 overflow-hidden rounded-lg border border-edge bg-sheet">
           {comic.coverUrl ? (
             <Image
               src={comic.coverUrl}
@@ -89,7 +89,7 @@ export default async function ComicPage({
             )}
           </div>
 
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-y-2 border-ink py-2 text-sm text-ink">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-y border-edge py-2 text-sm text-ink">
             <dt className="text-ink-soft">Editorial</dt>
             <dd>{comic.publisher}</dd>
             <dt className="text-ink-soft">Serie</dt>

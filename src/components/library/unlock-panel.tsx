@@ -20,7 +20,7 @@ export function UnlockPanel({ unlock, onClose }: { unlock: UnlockView; onClose: 
   return (
     <div
       role="status"
-      className="border-2 border-ink bg-sheet p-4 motion-safe:animate-pop-in"
+      className="rounded-2xl border border-edge bg-sheet p-4 motion-safe:animate-pop-in"
     >
       {gained > 0 ? (
         <>
@@ -46,7 +46,7 @@ export function UnlockPanel({ unlock, onClose }: { unlock: UnlockView; onClose: 
                   href={`/characters/${character.id}`}
                   className="flex w-20 flex-col gap-1 text-xs text-ink"
                 >
-                  <span className="relative block aspect-3/4 w-full overflow-hidden border-2 border-ink bg-sheet">
+                  <span className="relative block aspect-3/4 w-full overflow-hidden rounded-lg border border-edge bg-sheet">
                     {character.imageThumbUrl && (
                       <Image
                         src={character.imageThumbUrl}
@@ -74,14 +74,14 @@ export function UnlockPanel({ unlock, onClose }: { unlock: UnlockView; onClose: 
       )}
 
       {unlock.achievements && unlock.achievements.length > 0 && (
-        <ul className="mt-4 flex flex-col gap-2 border-t-2 border-ink pt-3">
+        <ul className="mt-4 flex flex-col gap-2 border-t border-edge pt-3">
           {unlock.achievements.map((a, index) => (
             <li
               key={a.id}
               className="flex items-center gap-3 motion-safe:animate-pop-in"
               style={{ animationDelay: `${400 + index * 150}ms` }}
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-ink bg-ink text-paper">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-editor/15 text-editor ring-1 ring-editor shadow-[0_0_18px_var(--glow)]">
                 <TrophyIcon size={20} />
               </span>
               <span>

@@ -27,7 +27,7 @@ export function ZoneSwitch({
   }
 
   return (
-    <div role="group" aria-label="Editorial" className={`flex ${compact ? "flex-col" : ""} ${className}`}>
+    <div role="group" aria-label="Editorial" className={`flex gap-1 rounded-full bg-black/30 p-1 ring-1 ring-edge ${compact ? "flex-col rounded-2xl" : ""} ${className}`}>
       {ZONE_KEYS.map((key) => (
         <button
           key={key}
@@ -35,8 +35,12 @@ export function ZoneSwitch({
           aria-pressed={key === zone}
           aria-label={compact ? ZONES[key].label : undefined}
           onClick={() => choose(key)}
-          className={`min-h-11 flex-1 border-2 border-white ${compact ? "px-0" : "px-3"} text-sm font-bold transition-colors ${
-            key === zone ? "bg-white text-editor-ink" : "text-white hover:bg-white/15"
+          // La zona activa se enciende con su propio neón (rojo Marvel, azul DC).
+          data-publisher={key}
+          className={`min-h-10 flex-1 rounded-full ${compact ? "px-0" : "px-3"} text-sm font-bold transition-all duration-200 ${
+            key === zone
+              ? "bg-editor text-white shadow-[0_0_16px_var(--glow)]"
+              : "text-ink-soft hover:text-ink"
           }`}
         >
           {compact && key === "marvel" ? "M" : ZONES[key].label}

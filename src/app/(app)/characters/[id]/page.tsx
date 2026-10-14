@@ -56,7 +56,7 @@ export default async function CharacterPage({
       <PublisherStrip name={character.publisher} />
 
       <div className="mt-4 grid gap-6 sm:grid-cols-[minmax(0,16rem)_1fr]">
-        <div className="relative aspect-3/4 w-full max-w-64 overflow-hidden border-2 border-ink bg-sheet">
+        <div className="relative aspect-3/4 w-full max-w-64 overflow-hidden rounded-lg border border-edge bg-sheet">
           {character.imageUrl ? (
             <Image
               src={character.imageUrl}
@@ -85,7 +85,7 @@ export default async function CharacterPage({
             )}
           </div>
 
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-y-2 border-ink py-2 text-sm text-ink">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-y border-edge py-2 text-sm text-ink">
             {character.publisher && (
               <>
                 <dt className="text-ink-soft">Editorial</dt>
@@ -133,7 +133,7 @@ export default async function CharacterPage({
               <li key={other.id}>
                 <Link
                   href={`/characters/${other.id}`}
-                  className="flex min-h-11 items-center border-2 border-ink bg-sheet px-3 text-sm font-semibold text-ink transition-colors hover:bg-sheet-raised"
+                  className="flex min-h-11 items-center rounded-full border border-edge bg-sheet px-4 text-sm font-semibold text-ink transition-colors hover:bg-sheet-raised"
                 >
                   {other.name}
                   {type && (

@@ -23,18 +23,18 @@ function Pocket({
   highlighted: boolean;
   onOpen: (card: CollectionCardDto, from: DOMRect) => void;
 }) {
-  const sleeve = "relative flex flex-col border border-line-strong bg-paper p-1.5";
+  const sleeve = "relative flex flex-col rounded-lg bg-white/[0.03] p-1.5 ring-1 ring-white/10 shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]";
   if (!slot) return <div className={`${sleeve} aspect-[3/4.6]`} aria-hidden="true" />;
 
   if (slot.kind === "locked") {
     return (
       <div className={`${sleeve} aspect-[3/4.6]`} aria-label={`Nº ${pad(slot.number)}: personaje por descubrir`}>
-        <div className="relative flex-1 border-[1.5px] border-blue bg-sheet">
+        <div className="relative flex-1 rounded-md border border-dashed border-blue bg-sheet">
           <svg viewBox="0 0 30 40" preserveAspectRatio="none" className="absolute inset-0 h-full w-full text-blue" aria-hidden="true">
             <path d="M0 0 30 40M30 0 0 40" stroke="currentColor" strokeWidth="1" vectorEffect="non-scaling-stroke" />
           </svg>
         </div>
-        <span className="mt-1 font-hand text-lg leading-none font-bold text-blue-ink">{pad(slot.number)}</span>
+        <span className="mt-1 font-display text-lg leading-none font-extrabold text-blue-ink">{pad(slot.number)}</span>
       </div>
     );
   }
@@ -55,7 +55,7 @@ function Pocket({
     >
       <span
         data-art
-        className={`relative block flex-1 overflow-hidden border-2 border-ink bg-sheet ${
+        className={`relative block flex-1 overflow-hidden rounded-md bg-sheet ring-1 ring-edge transition-shadow duration-200 group-hover:shadow-[0_0_20px_var(--glow)] ${
           card.isNew ? "outline-2 outline-offset-2 outline-editor" : ""
         }`}
       >
@@ -68,12 +68,12 @@ function Pocket({
       <span className="mt-1 flex items-baseline justify-between gap-1">
         <span className="truncate text-xs leading-tight font-bold text-ink">{card.name}</span>
         {/* En el móvil el número ya va en la cabecera de la página: más sitio para el nombre. */}
-        <span className="hidden shrink-0 font-hand text-lg leading-none font-bold text-ink sm:inline">
+        <span className="hidden shrink-0 font-display text-lg leading-none font-extrabold text-ink sm:inline">
           {pad(card.number ?? 0)}
         </span>
       </span>
       {card.isNew && (
-        <span className="absolute -top-2 -right-1 rotate-3 border-2 border-ink bg-sheet px-1 font-hand text-sm leading-tight font-bold text-editor-ink">
+        <span className="absolute -top-2 -right-1 rotate-3 rounded bg-paper/90 px-1 ring-1 ring-editor font-hand text-sm leading-tight font-bold text-editor-ink">
           ¡nuevo!
         </span>
       )}
@@ -91,14 +91,14 @@ function BinderPage({
   highlight: string | null;
   onOpen: (card: CollectionCardDto, from: DOMRect) => void;
 }) {
-  if (!page) return <div className="h-full border-2 border-ink bg-sheet" aria-hidden="true" />;
+  if (!page) return <div className="h-full rounded-xl bg-sheet ring-1 ring-edge" aria-hidden="true" />;
   const numbers = page.slots.map((s) => (s.kind === "card" ? (s.card.number ?? 0) : s.number));
   const filled = page.slots.filter((s) => s.kind === "card").length;
   return (
-    <section aria-label={`Página ${page.index + 1}`} className="flex h-full flex-col border-2 border-ink bg-sheet p-3 sm:p-4">
+    <section aria-label={`Página ${page.index + 1}`} className="flex h-full flex-col rounded-xl bg-sheet p-3 ring-1 ring-edge sm:p-4">
       <header className="mb-3 flex items-baseline justify-between">
         <h2 className="text-xs font-bold tracking-wide text-ink">Página {page.index + 1}</h2>
-        <span className="font-hand text-lg leading-none font-bold text-ink-soft">
+        <span className="font-display text-lg leading-none font-extrabold text-ink-soft">
           {numbers.length ? `${pad(Math.min(...numbers))}–${pad(Math.max(...numbers))}` : ""} · {filled}/
           {page.slots.length}
         </span>
@@ -124,7 +124,7 @@ function BinderPage({
 function Rings() {
   return (
     <div className="relative hidden w-10 shrink-0 md:block" aria-hidden="true">
-      <div className="absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 bg-ink" />
+      <div className="absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 rounded-full bg-linear-to-b from-transparent via-ink-soft to-transparent" />
       {["18%", "50%", "82%"].map((top) => (
         <svg key={top} viewBox="0 0 48 24" className="absolute left-1/2 h-6 w-12 -translate-x-1/2 -translate-y-1/2 text-ink" style={{ top }}>
           <ellipse cx="24" cy="12" rx="21" ry="8" fill="var(--paper)" stroke="currentColor" strokeWidth="2.5" />
@@ -233,22 +233,22 @@ export function AlbumBinder({ slots, total }: { slots: AlbumSlot[]; total: numbe
   return (
     <div className="mt-6">
       {/* Barra del archivador. */}
-      <div className="flex flex-col gap-3 border-2 border-ink bg-sheet p-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="glass flex flex-col gap-3 rounded-2xl p-3 ring-1 ring-edge lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" onClick={() => go(current - 1)} disabled={current === 0} aria-label="Página anterior" className="flex min-h-11 min-w-11 items-center justify-center border-2 border-ink px-3 text-sm font-semibold text-ink transition-colors hover:bg-sheet-raised disabled:opacity-40">
+          <button type="button" onClick={() => go(current - 1)} disabled={current === 0} aria-label="Página anterior" className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-edge px-4 text-sm font-semibold text-ink transition-colors hover:bg-sheet-raised disabled:opacity-40">
             ‹<span className="ml-1 hidden sm:inline">Anterior</span>
           </button>
           <span className="flex-1 px-1 text-center text-sm font-semibold whitespace-nowrap text-ink tabular-nums sm:flex-none" aria-live="polite">
             {pageLabel}
           </span>
-          <button type="button" onClick={() => go(current + 1)} disabled={current >= spreads - 1} aria-label="Página siguiente" className="flex min-h-11 min-w-11 items-center justify-center border-2 border-ink px-3 text-sm font-semibold text-ink transition-colors hover:bg-sheet-raised disabled:opacity-40">
+          <button type="button" onClick={() => go(current + 1)} disabled={current >= spreads - 1} aria-label="Página siguiente" className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-edge px-4 text-sm font-semibold text-ink transition-colors hover:bg-sheet-raised disabled:opacity-40">
             <span className="mr-1 hidden sm:inline">Siguiente</span>›
           </button>
           <select
             aria-label="Ir a una página"
             value={current}
             onChange={(e) => go(Number(e.target.value))}
-            className="min-h-11 border-2 border-ink bg-sheet px-2 text-sm text-ink"
+            className="min-h-11 rounded-full border border-edge bg-sheet px-3 text-sm text-ink"
           >
             {Array.from({ length: spreads }, (_, s) => {
               const nums = pagesOf(s).flatMap((p) => p.slots.map((x) => (x.kind === "card" ? (x.card.number ?? 0) : x.number)));
@@ -272,9 +272,9 @@ export function AlbumBinder({ slots, total }: { slots: AlbumSlot[]; total: numbe
               }}
               placeholder="Buscar…"
               aria-label="Buscar personaje en el álbum"
-              className="min-h-11 min-w-0 flex-1 border-2 border-ink bg-sheet px-3 text-sm text-ink placeholder:text-ink-soft sm:w-44 sm:flex-none"
+              className="min-h-11 min-w-0 flex-1 rounded-l-full border border-edge bg-sheet px-4 text-sm text-ink placeholder:text-ink-soft sm:w-44 sm:flex-none"
             />
-            <button type="submit" className="min-h-11 border-2 border-l-0 border-ink bg-ink px-3 text-sm font-semibold text-paper">
+            <button type="submit" className="min-h-11 rounded-r-full border border-l-0 border-edge bg-ink px-4 text-sm font-semibold text-paper">
               Buscar
             </button>
           </form>
@@ -285,8 +285,8 @@ export function AlbumBinder({ slots, total }: { slots: AlbumSlot[]; total: numbe
               setOnlyMine((v) => !v);
               setSpread(0);
             }}
-            className={`flex min-h-11 items-center border-2 border-ink px-3 text-sm font-semibold transition-colors ${
-              onlyMine ? "bg-ink text-paper" : "bg-sheet text-ink hover:bg-sheet-raised"
+            className={`flex min-h-11 items-center rounded-full border border-edge px-4 text-sm font-semibold transition-colors ${
+              onlyMine ? "bg-editor text-white" : "bg-sheet text-ink hover:bg-sheet-raised"
             }`}
           >
             Solo los que tengo
@@ -301,7 +301,7 @@ export function AlbumBinder({ slots, total }: { slots: AlbumSlot[]; total: numbe
 
       {/* El archivador: tapa de cartón, páginas y anillas. Se desliza para pasar página. */}
       <div
-        className="relative mt-4 touch-pan-y border-2 border-ink bg-sheet-raised p-2 select-none sm:p-3"
+        className="relative mt-4 touch-pan-y rounded-2xl bg-[#17131d] p-2 shadow-[0_30px_80px_-30px_rgb(0_0_0/0.9)] ring-1 ring-edge select-none sm:p-3"
         onPointerDown={(e) => {
           swipe.current = { x: e.clientX, moved: false };
           suppressClick.current = false;

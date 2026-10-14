@@ -32,8 +32,8 @@ export async function RemoteSeriesResults({ zone, query }: { zone: Zone; query: 
       ) : (
         <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {series.map((s) => (
-            <li key={s.externalId} className="flex gap-3 border-2 border-ink bg-sheet p-3">
-              <div className="relative aspect-2/3 w-16 shrink-0 overflow-hidden border-2 border-ink bg-paper">
+            <li key={s.externalId} className="flex gap-3 rounded-2xl border border-edge bg-sheet p-3">
+              <div className="relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-lg border border-edge bg-paper">
                 {s.coverThumbUrl && (
                   <Image src={s.coverThumbUrl} alt="" fill unoptimized sizes="64px" className="object-cover" />
                 )}

@@ -1,54 +1,71 @@
 @import "tailwindcss";
 
 /*
- * Sistema de diseño "Página de arte original" (ver DESIGN.md, PRODUCT.md y
- * .impeccable/surfaces/). Cada pantalla es una página de cómic a lápiz y tinta:
- * cartulina, lápiz azul de boceto, tinta negra y el lápiz del editor
- * en el color de la editorial. El color pleno solo vive dentro de las viñetas
- * (portadas e imágenes). Solo tema claro (decisión del usuario).
+ * Sistema de diseño «Tienda de cómics a medianoche» (ver DESIGN.md, PRODUCT.md y
+ * .impeccable/surfaces/). Una tienda de cómics cerrada de noche: portadas retroiluminadas
+ * como en una caja de luz, el neón de la editorial (rojo Marvel / azul DC) y cristal ahumado.
+ * Los nombres de los tokens se conservan del sistema anterior (paper = suelo, sheet = panel,
+ * ink = texto) para que todas las pantallas cambien desde aquí.
  */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  --paper: #f4f1ea; /* cartulina: suelo */
-  --sheet: #fbfaf6; /* papel de barras y paneles */
-  --sheet-raised: #ece7dc; /* papel al pasar el ratón o seleccionado */
-  --line: rgb(20 20 20 / 0.14); /* filetes neutros */
-  --line-strong: rgb(20 20 20 / 0.32);
-  --ink: #141414; /* tinta: texto y viñetas (16:1 sobre la cartulina) */
-  --ink-soft: #55534d; /* tinta suave: secundario (6,7:1) */
-  --blue: #8ec5e8; /* lápiz azul no fotográfico: retícula y bocetos (solo líneas) */
-  --blue-ink: #2f72a3; /* lápiz azul legible para texto (4,7:1) */
-  --danger: #b3261e; /* errores (6:1) */
+  --paper: #0c0a10; /* suelo: noche cálida */
+  --sheet: rgb(255 255 255 / 0.045); /* panel de cristal ahumado */
+  --sheet-raised: rgb(255 255 255 / 0.09); /* cristal al pasar o seleccionado */
+  --edge: rgb(255 255 255 / 0.12); /* filo de luz de 1 px de los paneles */
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.2);
+  --ink: #f4efe6; /* luz de caja de luz: texto (17:1 sobre el suelo) */
+  --ink-soft: #a9a2b5; /* secundario (7,6:1) */
+  --blue: rgb(169 162 181 / 0.3); /* huecos por descubrir: luz apagada */
+  --blue-ink: #8a8396; /* número de un hueco por descubrir (5,3:1) */
+  --danger: #ff6b6b;
 
-  /* Lápiz del editor = color de la editorial. Marvel por defecto (rojo inspirado). */
-  --editor: #e62429; /* marcas, rodeos, sección activa */
-  --editor-ink: #b81a1f; /* el mismo color, legible como texto (6:1) */
-  /* Color de la editorial en bloque (menú y cabeceras), con texto blanco encima (5,6:1). */
-  --brand: #e62429;
+  /* Neón de la editorial. Marvel por defecto. */
+  --editor: #ff2d3b;
+  --editor-ink: #ff5560; /* el mismo neón legible como texto pequeño (5,9:1) */
+  --brand: #ff2d3b;
+  --glow: rgb(255 45 59 / 0.35);
 
-  /* Nombres genéricos que aún usan las pantallas sin rediseñar. */
   --background: var(--paper);
   --foreground: var(--ink);
 }
 
-/* Zona de DC: el lápiz del editor pasa al azul inspirado en DC (solo color, sin marca). */
-[data-publisher="dc"] {
-  --editor: #0476f2;
-  --editor-ink: #0258b8;
-  --brand: #0367d6; /* algo más oscuro que --editor para que el blanco se lea (5,4:1) */
+/* Explícito también para Marvel: una zona Marvel dentro de una DC debe volver al rojo. */
+[data-publisher="marvel"] {
+  --editor: #ff2d3b;
+  --editor-ink: #ff5560;
+  --brand: #ff2d3b;
+  --glow: rgb(255 45 59 / 0.35);
 }
 
-/*
- * Bloques de la editorial (petición del usuario): rojo Marvel que se funde a blanco, como su
- * logotipo; en DC, azul y blanco. Horizontal en las cabeceras, vertical en el menú lateral.
- * El texto blanco va siempre sobre el tramo de color pleno.
- */
+[data-publisher="dc"] {
+  --editor: #2f8cff;
+  --editor-ink: #5aa5ff;
+  --brand: #2f8cff;
+  --glow: rgb(47 140 255 / 0.35);
+}
+
+/* Bloques de la editorial: el neón se apaga hacia la noche. */
 @utility bg-brand-fade-x {
-  background-image: linear-gradient(100deg, var(--brand) 0%, var(--brand) 55%, var(--sheet) 100%);
+  background-image: linear-gradient(100deg, var(--brand) 0%, color-mix(in oklab, var(--brand) 70%, black) 55%, transparent 100%);
 }
 @utility bg-brand-fade-y {
-  background-image: linear-gradient(180deg, var(--brand) 0%, var(--brand) 60%, var(--sheet) 100%);
+  background-image: linear-gradient(180deg, color-mix(in oklab, var(--brand) 85%, black) 0%, color-mix(in oklab, var(--brand) 35%, var(--paper)) 55%, var(--paper) 100%);
+}
+
+/* Cristal ahumado: panel translúcido con desenfoque y un filo de luz arriba. */
+@utility glass {
+  background-color: var(--sheet);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+/* Neón: texto con halo del color de la editorial. */
+@utility neon {
+  color: var(--editor);
+  text-shadow: 0 0 6px var(--glow), 0 0 22px var(--glow);
 }
 
 @theme inline {
@@ -58,6 +75,7 @@
   --color-sheet: var(--sheet);
   --color-sheet-raised: var(--sheet-raised);
   --color-line: var(--line);
+  --color-edge: var(--edge);
   --color-line-strong: var(--line-strong);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
@@ -70,6 +88,8 @@
   --font-sans: var(--font-geist-sans);
   /* Letra del editor a mano: notas al margen y números de catálogo. */
   --font-hand: var(--font-caveat);
+  /* Rotulación de letrero nocturno: títulos y recuentos monumentales. */
+  --font-display: var(--font-display-face);
 }
 
 /* Animación de desbloqueo: aparece y crece un poco. Se usa con motion-safe:. */
@@ -89,7 +109,6 @@
 }
 
 body {
-  /* Cartulina lisa: el lápiz azul solo aparece donde dice algo (viñetas por dibujar). */
   background-color: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans), system-ui, sans-serif;
@@ -100,7 +119,7 @@ body {
 /* Lo que dibuja el navegador también es parte del diseño. */
 ::selection {
   background: var(--editor);
-  color: var(--sheet);
+  color: #fff;
 }
 
 :focus-visible {
@@ -139,8 +158,54 @@ progress::-webkit-progress-bar {
   background: var(--sheet-raised);
 }
 progress::-webkit-progress-value {
-  background: var(--ink);
+  background: var(--editor);
 }
 progress::-moz-progress-bar {
-  background: var(--ink);
+  background: var(--editor);
+}
+
+/* El longbox: una caja de cartón con las portadas inclinadas hacia atrás; se levantan al pasar o enfocar. */
+.longbox {
+  border-bottom: 4px solid rgb(168 138 98 / 0.45);
+  box-shadow: inset 0 -28px 30px -24px rgb(168 138 98 / 0.18);
+}
+.longbox-cover {
+  transform: perspective(900px) rotateX(26deg) translateY(8px);
+  transform-origin: bottom center;
+  transition:
+    transform 450ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 18px 30px -18px rgb(0 0 0 / 0.9);
+}
+.longbox-item:hover .longbox-cover,
+.longbox-item:focus-visible .longbox-cover {
+  transform: perspective(900px) rotateX(0deg) translateY(-10px) scale(1.04);
+  box-shadow:
+    0 24px 40px -16px rgb(0 0 0 / 0.9),
+    0 0 32px var(--glow);
+}
+
+/* La portada de la caja de luz: inclinada en reposo, se endereza al pasar o enfocar. */
+.lightbox-cover {
+  transform: perspective(1200px) rotateY(-14deg) rotate(-2deg);
+  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow:
+    0 30px 60px -20px rgb(0 0 0 / 0.9),
+    0 0 48px var(--glow);
+}
+.lightbox-item:hover .lightbox-cover,
+.lightbox-item:focus-visible .lightbox-cover {
+  transform: perspective(1200px) rotateY(0deg) translateY(-6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .longbox-cover,
+  .longbox-item:hover .longbox-cover,
+  .longbox-item:focus-visible .longbox-cover,
+  .lightbox-cover,
+  .lightbox-item:hover .lightbox-cover,
+  .lightbox-item:focus-visible .lightbox-cover {
+    transform: none;
+    transition: none;
+  }
 }

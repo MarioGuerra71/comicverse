@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Caveat, Geist } from "next/font/google";
+import { Big_Shoulders, Caveat, Geist } from "next/font/google";
 import { connection } from "next/server";
 import "./globals.css";
 
@@ -16,6 +16,14 @@ const caveat = Caveat({
   subsets: ["latin", "latin-ext"],
 });
 
+// Rotulación de letrero nocturno (OFL), servida desde el propio dominio por next/font.
+const display = Big_Shoulders({
+  variable: "--font-display-face",
+  subsets: ["latin", "latin-ext"],
+  weight: "variable",
+  axes: ["opsz"],
+});
+
 export const metadata: Metadata = {
   title: "ComicVerse",
   description: "Descubre el universo de los cómics mientras lo lees.",
@@ -28,7 +36,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${caveat.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${caveat.variable} ${display.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

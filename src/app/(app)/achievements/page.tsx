@@ -24,16 +24,16 @@ function Badge({ item }: { item: AchievementDto }) {
   return (
     <li
       className={`flex gap-4 p-4 ${
-        earned ? "border-2 border-ink bg-sheet" : "border-[1.5px] border-blue bg-sheet"
+        earned ? "rounded-2xl border border-editor/40 bg-editor/5" : "rounded-2xl border border-dashed border-blue bg-sheet"
       }`}
     >
-      {/* Sello: tinta llena si está conseguido, a lápiz azul si no. */}
+      {/* Sello: encendido en neón si está conseguido, trazo azul tenue si no. */}
       <span
-        className={`flex h-14 w-14 shrink-0 items-center justify-center ${
-          earned ? "border-2 border-ink bg-ink text-paper" : "border-[1.5px] border-blue text-blue-ink"
+        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${
+          earned ? "bg-editor/15 text-editor ring-1 ring-editor shadow-[0_0_18px_var(--glow)]" : "border border-dashed border-blue text-blue-ink"
         }`}
       >
-        {hidden ? <span className="font-hand text-2xl font-bold">?</span> : <TrophyIcon size={26} />}
+        {hidden ? <span className="font-display text-2xl font-extrabold">?</span> : <TrophyIcon size={26} />}
       </span>
       <div className="min-w-0 flex-1">
         <h3 className={`leading-tight font-extrabold ${earned ? "text-ink" : hidden ? "text-blue-ink" : "text-ink"}`}>
@@ -48,11 +48,11 @@ function Badge({ item }: { item: AchievementDto }) {
           item.current !== null &&
           item.target !== null && (
             <div className="mt-2">
-              <span className="font-hand text-lg leading-none font-bold text-blue-ink">
+              <span className="font-display text-lg leading-none font-extrabold text-ink">
                 {item.target >= 100 && item.id.startsWith("album") ? `${item.current} %` : `${pad(item.current)}/${pad(item.target)}`}
               </span>
-              <div className="mt-1 h-1.5 bg-sheet-raised" aria-hidden="true">
-                <div className="h-full bg-blue-ink" style={{ width: `${percent}%` }} />
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-sheet-raised" aria-hidden="true">
+                <div className="h-full rounded-full bg-editor" style={{ width: `${percent}%` }} />
               </div>
             </div>
           )
