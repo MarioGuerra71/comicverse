@@ -56,10 +56,13 @@ export function LibraryControls({
   comicId,
   entry,
   review,
+  earlierUnread = 0,
 }: {
   comicId: string;
   entry: LibraryControlsEntry | null;
   review: { body: string; isPublic: boolean; updatedAt: string } | null;
+  /** Cómics anteriores de la misma serie que aún no has leído (para «hasta aquí»). */
+  earlierUnread?: number;
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -72,9 +75,10 @@ export function LibraryControls({
   // Estrellas iluminadas al pasar por encima (vista previa antes de puntuar).
   const [hover, setHover] = useState<number | null>(null);
   const [editing, setEditing] = useState(false);
+  const [confirmUpTo, setConfirmUpTo] = useState(false);
 
   // path: "" para la entrada de la biblioteca, "/review" para la reseña.
-  async function send(method: "PUT" | "PATCH" | "DELETE", body?: object, path = "") {
+  async function send(method: "PUT" | "PATCH" | "DELETE" | "POST", body?: object, path = "") {
     setSaving(true);
     setError(null);
     try {
@@ -93,6 +97,15 @@ export function LibraryControls({
         setUnlock(data.unlock ? { ...data.unlock, achievements: data.achievements ?? [] } : null);
       }
       if (path === "/review") setEditing(false);
+      if (path === "/read-up-to") {
+        const data = (await response.json()) as {
+          changed: number;
+          unlock: UnlockView | null;
+          achievements?: UnlockView["achievements"];
+        };
+        setUnlock(data.unlock ? { ...data.unlock, achievements: data.achievements ?? [], comics: data.changed } : null);
+        setConfirmUpTo(false);
+      }
       // Vuelve a pedir la página al servidor para mostrar lo guardado.
       startTransition(() => router.refresh());
     } catch {
@@ -106,6 +119,7 @@ export function LibraryControls({
     "inline-flex min-h-11 items-center gap-1.5 px-2 text-sm text-ink-soft underline-offset-4 transition-colors hover:text-ink hover:underline disabled:opacity-50";
   const lit = hover ?? entry?.rating ?? 0;
   const isRead = entry?.status === "READ";
+  const upToTotal = earlierUnread + (isRead ? 0 : 1);
 
   return (
     <section aria-labelledby="library-heading" className="glass flex flex-col gap-5 rounded-3xl p-5 ring-1 ring-edge">
@@ -142,6 +156,36 @@ export function LibraryControls({
           );
         })}
       </div>
+
+      {/* «Hasta aquí»: para ponerse al día con una serie de una vez. */}
+      {earlierUnread > 0 &&
+        (confirmUpTo ? (
+          <div role="group" aria-label="Confirmar" className="rounded-2xl bg-sheet p-4 ring-1 ring-edge">
+            <p className="text-sm text-ink">
+              Se marcarán como leídos <strong>{upToTotal} cómics</strong> de esta serie: del primero hasta este.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" disabled={busy} onClick={() => send("POST", undefined, "/read-up-to")} className={inkButton}>
+                {busy ? "Marcando…" : "Sí, marcarlos"}
+              </button>
+              <button type="button" disabled={busy} onClick={() => setConfirmUpTo(false)} className={quietButton}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => setConfirmUpTo(true)}
+            className="flex min-h-11 items-center gap-2 rounded-2xl border border-dashed border-edge px-3 text-left text-sm text-ink-soft transition-colors hover:bg-sheet-raised hover:text-ink disabled:opacity-60"
+          >
+            <CheckIcon size={18} />
+            {earlierUnread === 1
+              ? "Marcar también el anterior como leído"
+              : `Marcar como leídos también los ${earlierUnread} anteriores`}
+          </button>
+        ))}
 
       {entry && (
         <div className="flex flex-wrap items-center justify-between gap-2">

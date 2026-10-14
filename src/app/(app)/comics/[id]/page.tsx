@@ -14,7 +14,7 @@ import { requireUser } from "@/server/auth/session";
 import { getComicDetail } from "@/server/services/catalog";
 import { getComicVineClient } from "@/server/integrations/comic-sources/comicvine/server-client";
 import { ensureComicCharacters } from "@/server/jobs/sync-comic-characters";
-import { getLibraryEntry, getReview } from "@/server/services/library";
+import { findUnreadUpTo, getLibraryEntry, getReview } from "@/server/services/library";
 import { getComicCommunity, type ComicCommunityDto } from "@/server/services/social";
 import { READING_STATUS_LABELS } from "@/lib/reading-status";
 import { LibraryControls } from "@/components/library/library-controls";
@@ -53,6 +53,9 @@ export default async function ComicPage({
     getComicCommunity(db, id, user.id),
   ]);
   if (!comic) notFound();
+  // Anteriores de la serie sin leer (sin contar este): para «marcar también los anteriores».
+  const unreadUpTo = await findUnreadUpTo(db, user.id, id);
+  const earlierUnread = unreadUpTo.filter((comicId) => comicId !== id).length;
 
   const seriesLabel = comic.series.startYear
     ? `${comic.series.name} (${comic.series.startYear})`
@@ -141,7 +144,7 @@ export default async function ComicPage({
       <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
         {/* En el móvil, «Tu lectura» va primero: es lo que vienes a hacer. */}
         <div className="lg:sticky lg:top-6 lg:order-2 lg:self-start">
-          <LibraryControls comicId={comic.id} entry={entry} review={review} />
+          <LibraryControls comicId={comic.id} entry={entry} review={review} earlierUnread={earlierUnread} />
         </div>
 
         <div className="flex min-w-0 flex-col gap-10 lg:order-1">

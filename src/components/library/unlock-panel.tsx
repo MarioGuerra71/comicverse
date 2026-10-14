@@ -10,18 +10,27 @@ export interface UnlockView {
   progress: { unlocked: number; total: number };
   /** Logros conseguidos con este cambio. */
   achievements?: { id: string; title: string }[];
+  /** Cuántos cómics se han marcado de golpe (marcación múltiple o «hasta aquí»). */
+  comics?: number;
 }
+
+/** En un lote grande se enseñan las primeras cartas y el resto como cifra. */
+const MAX_SHOWN = 12;
 
 export function UnlockPanel({ unlock, onClose }: { unlock: UnlockView; onClose: () => void }) {
   const gained = unlock.newCharacters.length;
   const lost = unlock.lostCharacters.length;
   const progress = `${unlock.progress.unlocked} / ${unlock.progress.total} personajes descubiertos`;
+  const batch = (unlock.comics ?? 1) > 1;
 
   return (
     <div
       role="status"
       className="rounded-2xl border border-edge bg-sheet p-4 motion-safe:animate-pop-in"
     >
+      {batch && (
+        <p className="mb-2 text-xs tracking-wide text-ink-soft uppercase">{unlock.comics} cómics marcados</p>
+      )}
       {gained > 0 ? (
         <>
           <p className="font-hand text-2xl leading-none font-bold text-editor-ink">¡entintado!</p>
@@ -36,7 +45,7 @@ export function UnlockPanel({ unlock, onClose }: { unlock: UnlockView; onClose: 
             </p>
           )}
           <ul className="mt-3 flex flex-wrap gap-3">
-            {unlock.newCharacters.map((character, index) => (
+            {unlock.newCharacters.slice(0, MAX_SHOWN).map((character, index) => (
               <li
                 key={character.id}
                 className="motion-safe:animate-pop-in"
@@ -62,6 +71,9 @@ export function UnlockPanel({ unlock, onClose }: { unlock: UnlockView; onClose: 
               </li>
             ))}
           </ul>
+          {gained > MAX_SHOWN && (
+            <p className="mt-2 text-sm text-ink-soft">y {gained - MAX_SHOWN} más en tu colección.</p>
+          )}
         </>
       ) : lost > 0 ? (
         <p className="text-sm text-ink">
@@ -70,7 +82,9 @@ export function UnlockPanel({ unlock, onClose }: { unlock: UnlockView; onClose: 
             : `${lost} personajes vuelven a estar por descubrir.`}
         </p>
       ) : (
-        <p className="text-sm text-ink">Leído. Este cómic no te ha descubierto personajes nuevos.</p>
+        <p className="text-sm text-ink">
+          {batch ? "Hecho. No te han descubierto personajes nuevos." : "Leído. Este cómic no te ha descubierto personajes nuevos."}
+        </p>
       )}
 
       {unlock.achievements && unlock.achievements.length > 0 && (

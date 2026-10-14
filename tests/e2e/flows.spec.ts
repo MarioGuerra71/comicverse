@@ -85,3 +85,35 @@ test("cambiar de editorial desde la ficha de un cómic vuelve al catálogo de la
   await expect(page.getByRole("link", { name: new RegExp(SEED.dcComic) }).first()).toBeVisible();
   await expect(page.getByText(SEED.marvelComic)).toHaveCount(0);
 });
+
+test("marcar varios cómics como leídos de una vez desde el catálogo", async ({ page, baseURL }) => {
+  await signUp(page, baseURL!);
+  await page.goto("/catalog");
+  await page.getByRole("button", { name: "Seleccionar varios" }).click();
+  await page.getByRole("button", { name: `Seleccionar ${SEED.marvelComic}` }).click();
+  await page.getByRole("button", { name: `Seleccionar ${SEED.marvelLater[0].title}` }).click();
+  await expect(page.getByText("2 seleccionados")).toBeVisible();
+
+  await page.getByRole("button", { name: "Marcar", exact: true }).click();
+  // Un solo resumen para todo el lote: Peter, Mary y Harry.
+  await expect(page.getByText("2 cómics marcados")).toBeVisible();
+  await expect(page.getByText("3 nuevos descubrimientos")).toBeVisible();
+  // Y en el catálogo ya se ven como leídos.
+  await expect(page.getByText("leído", { exact: true })).toHaveCount(2);
+});
+
+test("marcar como leídos los anteriores de una serie desde la ficha de un cómic", async ({ page, baseURL }) => {
+  await signUp(page, baseURL!);
+  await page.goto("/catalog");
+  await page.getByRole("link", { name: new RegExp(SEED.marvelLater[1].title) }).first().click();
+
+  await page.getByRole("button", { name: "Marcar como leídos también los 2 anteriores" }).click();
+  await expect(page.getByText("Se marcarán como leídos")).toContainText("3 cómics");
+  await page.getByRole("button", { name: "Sí, marcarlos" }).click();
+
+  await expect(page.getByText("3 cómics marcados")).toBeVisible();
+  await expect(page.getByText("4 nuevos descubrimientos")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Leído", exact: true })).toHaveAttribute("aria-pressed", "true");
+  // Ya no queda nada anterior por marcar.
+  await expect(page.getByRole("button", { name: /también los? .*anterior/ })).toHaveCount(0);
+});

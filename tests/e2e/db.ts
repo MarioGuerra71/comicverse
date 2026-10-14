@@ -14,4 +14,9 @@ export const SEED = {
   dcComic: "Prueba DC #1",
   // Personajes del cómic de Marvel: no pueden salir en la página antes de leerlo.
   marvelCharacters: ["Peter Prueba", "Mary Prueba"],
+  // Números siguientes de la misma serie (para «marcar varios» y «hasta aquí»).
+  marvelLater: [
+    { title: "Prueba Marvel #2", character: "Harry Prueba" },
+    { title: "Prueba Marvel #3", character: "Gwen Prueba" },
+  ],
 };

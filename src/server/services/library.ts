@@ -23,6 +23,7 @@ import {
   updateEntry,
 } from "@/server/repositories/library";
 import { recordDiscoveries } from "@/server/repositories/discoveries";
+import { issuesUpTo } from "@/server/domain/series-order";
 import type {
   LibrarySearchInput,
   UpdateEntryInput,
@@ -106,6 +107,100 @@ export async function setComicStatus(
       unlock,
     };
   });
+}
+
+/**
+ * Cambia el estado de varios cómics a la vez (p. ej. «marcar 6 como leídos») en una sola
+ * transacción: o se guardan todos o ninguno. El desbloqueo se calcula una vez para todo el lote
+ * y cada personaje nuevo se atribuye al primer cómic de la lista en el que aparece.
+ */
+export async function setComicsStatus(
+  db: PrismaClient,
+  userId: string,
+  comicIds: string[],
+  status: ReadingStatus,
+  now: Date = new Date(),
+) {
+  return db.$transaction(
+    async (tx) => {
+      const found = await tx.comic.count({ where: { id: { in: comicIds } } });
+      if (found !== comicIds.length) throw new ComicNotFoundError();
+
+      const currents = await tx.userComic.findMany({ where: { userId, comicId: { in: comicIds } } });
+      const byId = new Map(currents.map((c) => [c.comicId, c]));
+      const changes = comicIds
+        .map((id) => {
+          const current = byId.get(id) ?? null;
+          return { id, current, change: applyStatusChange(current, status, now) };
+        })
+        .filter((c) => c.change.changed || !c.current);
+
+      const tracksUnlocks = changes.some((c) => c.change.becameRead || c.change.stoppedBeingRead);
+      const before = tracksUnlocks ? await snapshotUnlocked(tx, userId) : null;
+
+      for (const { id, current, change } of changes) {
+        await saveEntry(tx, userId, id, change.next);
+        await addHistory(tx, userId, id, current?.status ?? null, status);
+      }
+
+      const unlock: UnlockResult | null = before ? await buildUnlockResult(tx, userId, before) : null;
+      if (unlock?.newCharacters.length) {
+        const order = new Map(changes.map((c, i) => [c.id, i]));
+        const links = await tx.comicCharacter.findMany({
+          where: {
+            comicId: { in: changes.map((c) => c.id) },
+            characterId: { in: unlock.newCharacters.map((c) => c.id) },
+          },
+          select: { comicId: true, characterId: true },
+        });
+        links.sort((a, b) => order.get(a.comicId)! - order.get(b.comicId)!);
+        const byComic = new Map<string, string[]>();
+        const seen = new Set<string>();
+        for (const { comicId, characterId } of links) {
+          if (seen.has(characterId)) continue;
+          seen.add(characterId);
+          byComic.set(comicId, [...(byComic.get(comicId) ?? []), characterId]);
+        }
+        for (const [comicId, ids] of byComic) await recordDiscoveries(tx, userId, comicId, ids);
+      }
+
+      return { changed: changes.length, unlock };
+    },
+    // Un lote grande son unos cientos de escrituras: más margen que el de por defecto (5 s).
+    { timeout: 30_000 },
+  );
+}
+
+/**
+ * Los cómics de la serie de `comicId` desde el primero hasta él, que aún no has leído
+ * (para «marcar como leídos hasta aquí»).
+ */
+export async function findUnreadUpTo(db: PrismaClient, userId: string, comicId: string) {
+  const comic = await db.comic.findUnique({ where: { id: comicId }, select: { seriesId: true } });
+  if (!comic) throw new ComicNotFoundError();
+  const [issues, read] = await Promise.all([
+    db.comic.findMany({
+      where: { seriesId: comic.seriesId },
+      select: { id: true, issueNumber: true, releaseDate: true },
+    }),
+    db.userComic.findMany({
+      where: { userId, status: "READ", comic: { seriesId: comic.seriesId } },
+      select: { comicId: true },
+    }),
+  ]);
+  const readIds = new Set(read.map((r) => r.comicId));
+  return issuesUpTo(issues, comicId)
+    .filter((issue) => !readIds.has(issue.id))
+    .map((issue) => issue.id);
+}
+
+/** Estado de lectura de unos cómics (los que no están en tu biblioteca no salen). */
+export async function getStatuses(db: PrismaClient, userId: string, comicIds: string[]) {
+  const rows = await db.userComic.findMany({
+    where: { userId, comicId: { in: comicIds } },
+    select: { comicId: true, status: true },
+  });
+  return new Map(rows.map((r) => [r.comicId, r.status]));
 }
 
 export async function removeFromLibrary(

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { READING_STATUS_LABELS, READING_STATUSES } from "@/lib/reading-status";
 import { normalizeParams, type SearchParams } from "@/lib/search-params";
-import { ComicCard } from "@/components/comics/comic-card";
+import { SelectableComicGrid } from "@/components/library/selectable-comic-grid";
 import { inkTab, PageHeader, Pagination } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { listLibrary } from "@/server/services/library";
@@ -83,23 +83,20 @@ export default async function LibraryPage({
           </Link>
         </div>
       ) : (
-        <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {result.items.map((item, index) => (
-            <li key={item.comic.id} className="flex flex-col">
-              <ComicCard comic={item.comic} eager={index < 6} />
-              {/* Notas a lápiz del lector bajo la viñeta, como en el Inicio. */}
-              <p className="mt-1 font-hand text-lg leading-tight font-bold text-ink">
-                {[
-                  !input.status && READING_STATUS_LABELS[item.status].toLowerCase(),
-                  item.rating !== null && `${item.rating}/5`,
-                  item.isFavorite && "favorito",
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-            </li>
-          ))}
-        </ul>
+        <SelectableComicGrid
+          items={result.items.map((item) => ({
+            comic: item.comic,
+            // Notas a lápiz del lector bajo la portada, como en el Inicio.
+            note:
+              [
+                !input.status && READING_STATUS_LABELS[item.status].toLowerCase(),
+                item.rating !== null && `${item.rating}/5`,
+                item.isFavorite && "favorito",
+              ]
+                .filter(Boolean)
+                .join(" · ") || undefined,
+          }))}
+        />
       )}
 
       <Pagination

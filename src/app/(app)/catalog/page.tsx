@@ -3,7 +3,9 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { buildCatalogHref } from "@/lib/catalog-url";
-import { ComicCard } from "@/components/comics/comic-card";
+import { SelectableComicGrid } from "@/components/library/selectable-comic-grid";
+import { getStatuses } from "@/server/services/library";
+import { READING_STATUS_LABELS } from "@/lib/reading-status";
 import { RemoteSeriesResults } from "@/components/catalog/remote-series-results";
 import { inkButton, inkField, PageHeader, Pagination } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
@@ -39,6 +41,8 @@ export default async function CatalogPage({
     searchComics(db, input),
     listSeries(db, zone),
   ]);
+  // Lo que ya tienes en tu biblioteca se ve en la portada («leído», «pendiente»…).
+  const statuses = await getStatuses(db, user.id, result.items.map((c) => c.id));
 
   const hrefFor = (page: number) =>
     buildCatalogHref({
@@ -108,13 +112,12 @@ export default async function CatalogPage({
           )}
         </div>
       ) : (
-        <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {result.items.map((comic, index) => (
-            <li key={comic.id}>
-              <ComicCard comic={comic} eager={index < 6} />
-            </li>
-          ))}
-        </ul>
+        <SelectableComicGrid
+          items={result.items.map((comic) => {
+            const status = statuses.get(comic.id);
+            return { comic, note: status ? READING_STATUS_LABELS[status].toLowerCase() : undefined };
+          })}
+        />
       )}
 
       <Pagination page={result.page} totalPages={result.totalPages} hrefFor={hrefFor} />

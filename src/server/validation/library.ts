@@ -13,6 +13,17 @@ export const setStatusSchema = z.object({
   status: readingStatusSchema,
 });
 
+/** Varios cómics a la vez: sin repetidos y con un tope (una página del catálogo cabe de sobra). */
+export const MAX_BULK = 100;
+export const bulkStatusSchema = z.object({
+  comicIds: z
+    .array(z.uuid())
+    .min(1)
+    .max(MAX_BULK)
+    .transform((ids) => [...new Set(ids)]),
+  status: readingStatusSchema,
+});
+
 export const librarySearchSchema = z.object({
   status: readingStatusSchema.optional(),
   page: z.coerce.number().int().min(1).default(1),

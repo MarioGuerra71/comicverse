@@ -89,11 +89,12 @@ export async function ensureComicCharacters(
 export async function ensureCharacterDetails(
   db: PrismaClient,
   client: ComicVineClient | null,
-  comicId: string,
+  comicId: string | string[],
 ) {
   if (!client) return;
+  const comicIds = Array.isArray(comicId) ? comicId : [comicId];
   const pending = await db.character.findMany({
-    where: { source: SOURCE, detailsSyncedAt: null, comics: { some: { comicId } } },
+    where: { source: SOURCE, detailsSyncedAt: null, comics: { some: { comicId: { in: comicIds } } } },
     select: { id: true, externalId: true },
     take: MAX_DETAILS_PER_READ,
   });
@@ -113,4 +114,25 @@ export async function ensureCharacterDetails(
       console.error("No se pudo completar la ficha del personaje", character.id, error);
     }
   }
+}
+
+/** Cómics de un lote cuyos personajes se traen de Comic Vine antes de marcarlos (~1 s cada uno). */
+const MAX_SYNCS_PER_BATCH = 10;
+
+/**
+ * Prepara un lote antes de marcarlo como leído: trae los personajes de los cómics que aún no los
+ * tienen (empezando por el final de la lista, lo último que has leído) y completa hasta 12 fichas.
+ * ponytail: con más de 10 cómics sin sincronizar, el resto desbloquea al abrir su ficha
+ * (el desbloqueo se calcula, no se guarda); si molesta, sincronizarlos en el cron diario.
+ */
+export async function ensureBatchReady(db: PrismaClient, client: ComicVineClient | null, comicIds: string[]) {
+  if (!client) return;
+  const unsynced = await db.comic.findMany({
+    where: { id: { in: comicIds }, charactersSyncedAt: null, source: SOURCE },
+    select: { id: true },
+  });
+  const pending = new Set(unsynced.map((c) => c.id));
+  const toSync = [...comicIds].reverse().filter((id) => pending.has(id)).slice(0, MAX_SYNCS_PER_BATCH);
+  for (const id of toSync) await ensureComicCharacters(db, client, id);
+  await ensureCharacterDetails(db, client, comicIds);
 }
