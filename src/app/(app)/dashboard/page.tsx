@@ -75,6 +75,10 @@ export default async function DashboardPage() {
           {stats.library.DROPPED} abandonados ·{" "}
           <Link href="/achievements" className="text-ink underline">
             Ver tus logros
+          </Link>{" "}
+          ·{" "}
+          <Link href="/community" className="text-ink underline">
+            Comunidad
           </Link>
         </p>
       )}

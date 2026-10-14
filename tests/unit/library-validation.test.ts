@@ -73,7 +73,7 @@ describe("updateEntrySchema", () => {
 
 describe("reviewSchema", () => {
   it("recorta los espacios y rechaza reseñas vacías", () => {
-    expect(reviewSchema.parse({ body: "  Muy bueno  " })).toEqual({ body: "Muy bueno" });
+    expect(reviewSchema.parse({ body: "  Muy bueno  " })).toEqual({ body: "Muy bueno", isPublic: false });
     expect(reviewSchema.safeParse({ body: "   " }).success).toBe(false);
     expect(reviewSchema.safeParse({}).success).toBe(false);
   });

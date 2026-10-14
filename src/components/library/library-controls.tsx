@@ -26,7 +26,7 @@ export function LibraryControls({
 }: {
   comicId: string;
   entry: LibraryControlsEntry | null;
-  review: { body: string; updatedAt: string } | null;
+  review: { body: string; isPublic: boolean; updatedAt: string } | null;
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -155,13 +155,13 @@ export function LibraryControls({
           key={review?.updatedAt ?? "new"}
           onSubmit={(event) => {
             event.preventDefault();
-            const body = new FormData(event.currentTarget).get("body");
-            send("PUT", { body }, "/review");
+            const form = new FormData(event.currentTarget);
+            send("PUT", { body: form.get("body"), isPublic: form.get("isPublic") === "on" }, "/review");
           }}
           className="flex flex-col gap-2"
         >
           <label htmlFor="review-body" className="text-sm text-ink-soft">
-            Tu reseña (privada)
+            Tu reseña
           </label>
           <textarea
             id="review-body"
@@ -172,6 +172,15 @@ export function LibraryControls({
             defaultValue={review?.body ?? ""}
             className={`${inkField} py-2`}
           />
+          <label className="flex min-h-11 items-center gap-2 text-sm text-ink">
+            <input
+              type="checkbox"
+              name="isPublic"
+              defaultChecked={review?.isPublic ?? false}
+              className="h-5 w-5 accent-[var(--ink)]"
+            />
+            Mostrarla en mi perfil público
+          </label>
           <div className="flex flex-wrap gap-2">
             <button type="submit" disabled={busy} className={inkButton}>
               {review ? "Guardar cambios" : "Guardar reseña"}

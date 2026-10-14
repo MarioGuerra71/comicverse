@@ -158,13 +158,14 @@ export async function writeReview(
   userId: string,
   comicId: string,
   body: string,
+  isPublic = false,
 ) {
   return db.$transaction(async (tx) => {
     const entry = await findEntry(tx, userId, comicId);
     if (!entry) throw new NotInLibraryError();
     if (entry.status !== "READ") throw new ReviewRequiresReadError();
 
-    return { review: toReview(await saveReview(tx, userId, comicId, body)) };
+    return { review: toReview(await saveReview(tx, userId, comicId, body, isPublic)) };
   });
 }
 

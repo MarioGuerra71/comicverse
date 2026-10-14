@@ -18,6 +18,7 @@
 - **Relaciones:** las relaciones curadas (aliado, enemigo, familia, pareja…) se combinan con relaciones derivadas de las coapariciones. Una relación se descubre cuando conoces a los dos personajes.
 - **Universo:** una «página de reparto» de cómic. El protagonista va en una viñeta grande y sus relaciones descubiertas, agrupadas por tipo (aliados, enemigos, familia…) y rotuladas a mano, alrededor. Toca a cualquiera y pasa a ser el protagonista. De las relaciones por descubrir solo se ve cuántas son.
 - **Logros:** 17 insignias de lectura, colección y editoriales (algunas secretas) que se consiguen al leer; salen en el panel de desbloqueo y en su página, con la fecha en que los conseguiste.
+- **Comunidad:** perfil público opcional (privado por defecto) con tus álbumes, últimas lecturas y las reseñas que elijas publicar; seguir a otros lectores y comparar álbumes sin spoilers (de lo que tú no has descubierto solo ves cuántos te faltan).
 - **Inicio:** tu progreso (porcentaje del universo, personajes, relaciones y series), los últimos descubrimientos y tu actividad reciente.
 - **Diseño responsive real:** barra lateral en escritorio, iconos en tableta y barra inferior en el móvil.
 
@@ -35,7 +36,7 @@
 | ORM | Prisma 7 con `@prisma/adapter-pg` |
 | Autenticación | Better Auth (email y contraseña, sesiones en BD) |
 | Validación | Zod 4, compartida entre cliente y servidor |
-| Tests | Vitest: 130 tests unitarios y 69 de integración contra PostgreSQL real |
+| Tests | Vitest: 131 tests unitarios y 74 de integración contra PostgreSQL real |
 | Tareas programadas | Vercel Cron (novedades diarias) |
 
 ## Arquitectura
@@ -149,7 +150,6 @@ Las rutas de biblioteca, inicio, universo y descubrimientos responden por la zon
 
 ## Hoja de ruta
 
-- Logros y funciones sociales (seguir usuarios, listas públicas, comparar colecciones).
 - IA opcional (búsqueda en lenguaje natural y recomendaciones), siempre construida con los mismos DTO para no revelar spoilers.
 
 ## Créditos y licencia de datos

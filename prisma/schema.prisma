@@ -42,6 +42,11 @@ model User {
   collectionSeenAt   DateTime?
   discoveries        Discovery[]
   achievements       UserAchievement[]
+  // Perfil público (privado por defecto): se ve en /u/<handle> solo si isPublic.
+  handle             String?   @unique
+  isPublic           Boolean   @default(false)
+  following          Follow[]  @relation("Following")
+  followers          Follow[]  @relation("Followers")
 }
 
 model Session {
@@ -248,6 +253,8 @@ model Review {
   userId    String
   comicId   String
   body      String
+  // Visible en el perfil público del autor (si su perfil es público).
+  isPublic  Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   entry     UserComic @relation(fields: [userId, comicId], references: [userId, comicId], onDelete: Cascade)
@@ -323,4 +330,16 @@ model UserAchievement {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, achievementId])
+}
+
+// Un usuario sigue a otro (solo a perfiles públicos).
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
 }

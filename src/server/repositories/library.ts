@@ -49,11 +49,11 @@ export function findReview(db: Db, userId: string, comicId: string) {
   });
 }
 
-export function saveReview(db: Db, userId: string, comicId: string, body: string) {
+export function saveReview(db: Db, userId: string, comicId: string, body: string, isPublic: boolean) {
   return db.review.upsert({
     where: { userId_comicId: { userId, comicId } },
-    create: { userId, comicId, body },
-    update: { body },
+    create: { userId, comicId, body, isPublic },
+    update: { body, isPublic },
   });
 }
 

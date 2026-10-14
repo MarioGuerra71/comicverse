@@ -49,16 +49,22 @@ export function AlbumShelf({ albums }: { albums: AlbumDto[] }) {
                 )}
               </div>
               <p className="mt-3 text-sm leading-tight font-bold text-ink">{album.title}</p>
-              <div className="mt-1 flex items-baseline justify-between gap-2">
-                <span className="font-hand text-2xl leading-none font-bold text-ink">
-                  {pad(album.discovered)}
-                  <span className="text-base font-medium text-ink-soft">/{pad(album.total)}</span>
-                </span>
-                <span className="text-xs text-ink-soft">{percent} %</span>
-              </div>
-              <div className="mt-1.5 h-1.5 bg-sheet-raised" aria-hidden="true">
-                <div className="h-full bg-ink" style={{ width: `${percent}%` }} />
-              </div>
+              {album.total === 0 ? (
+                <p className="mt-1 text-xs text-ink-soft">Sin personajes todavía: abre uno de sus cómics.</p>
+              ) : (
+                <>
+                <div className="mt-1 flex items-baseline justify-between gap-2">
+                  <span className="font-hand text-2xl leading-none font-bold text-ink">
+                    {pad(album.discovered)}
+                    <span className="text-base font-medium text-ink-soft">/{pad(album.total)}</span>
+                  </span>
+                  <span className="text-xs text-ink-soft">{percent} %</span>
+                </div>
+                <div className="mt-1.5 h-1.5 bg-sheet-raised" aria-hidden="true">
+                  <div className="h-full bg-ink" style={{ width: `${percent}%` }} />
+                </div>
+                </>
+              )}
             </Link>
           </li>
         );

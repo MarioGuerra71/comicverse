@@ -1,10 +1,14 @@
 import Link from "next/link";
+import { db } from "@/lib/db";
+import { ProfileSettingsForm } from "@/components/social/profile-settings-form";
+import { getProfileSettings } from "@/server/services/social";
 import { requireUser } from "@/server/auth/session";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { PageHeader } from "@/components/ui/page-parts";
 
 export default async function ProfilePage() {
   const user = await requireUser();
+  const settings = await getProfileSettings(db, user.id);
   const memberSince = new Intl.DateTimeFormat("es-ES", {
     dateStyle: "long",
   }).format(user.createdAt);
@@ -26,9 +30,15 @@ export default async function ProfilePage() {
           <dd>{memberSince}</dd>
         </div>
       </dl>
-      <Link href="/achievements" className="mt-6 inline-flex min-h-11 items-center text-sm text-ink underline">
-        Tus logros
-      </Link>
+      <ProfileSettingsForm handle={settings?.handle ?? null} isPublic={settings?.isPublic ?? false} />
+      <div className="mt-6 flex flex-wrap gap-x-6">
+        <Link href="/achievements" className="inline-flex min-h-11 items-center text-sm text-ink underline">
+          Tus logros
+        </Link>
+        <Link href="/community" className="inline-flex min-h-11 items-center text-sm text-ink underline">
+          Comunidad
+        </Link>
+      </div>
       <SignOutButton showLabel className="mt-4 -ml-3" />
     </main>
   );

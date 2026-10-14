@@ -32,7 +32,7 @@ export async function PUT(request: Request, { params }: Context) {
   if (body.error) return body.error;
 
   try {
-    return Response.json(await writeReview(db, user.id, comicId, body.data.body));
+    return Response.json(await writeReview(db, user.id, comicId, body.data.body, body.data.isPublic));
   } catch (error) {
     if (error instanceof NotInLibraryError) {
       return Response.json({ error: "NOT_IN_LIBRARY" }, { status: 404 });

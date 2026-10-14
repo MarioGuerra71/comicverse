@@ -36,4 +36,6 @@ export type UpdateEntryInput = z.infer<typeof updateEntrySchema>;
 // Reseña en texto plano; se guarda sin espacios sobrantes al principio y al final.
 export const reviewSchema = z.object({
   body: z.string().trim().min(1).max(5000),
+  // Visible en tu perfil público (si lo tienes público). Por defecto, privada.
+  isPublic: z.boolean().default(false),
 });

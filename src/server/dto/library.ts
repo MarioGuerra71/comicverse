@@ -69,9 +69,10 @@ export function toLibraryItem(row: LibraryItemRow): LibraryItemDto {
 
 export interface ReviewDto {
   body: string;
+  isPublic: boolean;
   updatedAt: string;
 }
 
-export function toReview(row: { body: string; updatedAt: Date }): ReviewDto {
-  return { body: row.body, updatedAt: row.updatedAt.toISOString() };
+export function toReview(row: { body: string; isPublic: boolean; updatedAt: Date }): ReviewDto {
+  return { body: row.body, isPublic: row.isPublic, updatedAt: row.updatedAt.toISOString() };
 }
