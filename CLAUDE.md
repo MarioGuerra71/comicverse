@@ -305,7 +305,8 @@ Hecho: sección de seguridad en el README (incluido el aviso conocido de `npm au
 - Estado: **134 unitarios + 75 de integración** pasando (Fase 8, tras traducir los errores de acceso) (los de desbloqueo están en `tests/integration/unlock.test.ts`).
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.mts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
-- E2E con Playwright más adelante (opcional).
+- **CI (GitHub Actions, `.github/workflows/ci.yml`):** en cada push a `main` y en cada PR: `npm ci` → typecheck → lint → tests unitarios → tests de integración contra un PostgreSQL 17 de servicio → `npm run build`, con variables de entorno ficticias. Ojo: el `package-lock.json` generado en Windows omitía dependencias opcionales de Linux (`@emnapi/*`) y `npm ci` fallaba; si vuelve a pasar, regenerarlo en Linux (`docker run node:24 … npm install --package-lock-only`). `typecheck` hace antes `next typegen` (tipos globales como `LayoutProps`, que no existen en un clon limpio).
+- E2E con Playwright: pendiente, tras el rediseño.
 - Antes de cada commit: `npm test`, `npm run typecheck`, `npm run lint` (y `npm run test:integration` si se toca BD, repositorios o servicios).
 
 ---
