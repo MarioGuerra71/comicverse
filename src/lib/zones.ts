@@ -34,3 +34,18 @@ export function brandZoneForVisit(visits: number, random: () => number = Math.ra
 export function zoneOfPublisher(name: string | null | undefined): Zone | null {
   return ZONE_KEYS.find((z) => ZONES[z].publisherName === name) ?? null;
 }
+
+// Fichas que pertenecen a una sola editorial: al cambiar de zona se vuelve a su sección.
+const DETAIL_SECTIONS: [prefix: string, section: string][] = [
+  ["/comics/", "/catalog"],
+  ["/characters/", "/collection"],
+  ["/collection/", "/collection"],
+];
+
+/**
+ * A dónde ir al cambiar de editorial: una ficha (cómic, personaje, álbum) vuelve a su sección
+ * y el resto de pantallas se recarga sin sus filtros (serie, foco…), que eran de la otra zona.
+ */
+export function zoneSwitchTarget(pathname: string): string {
+  return DETAIL_SECTIONS.find(([prefix]) => pathname.startsWith(prefix))?.[1] ?? pathname;
+}

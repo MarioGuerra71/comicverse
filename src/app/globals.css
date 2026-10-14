@@ -145,6 +145,12 @@ textarea {
   accent-color: var(--editor);
 }
 
+/* La lista desplegable la pinta el sistema: fondo opaco de la tienda para que se lea. */
+select option {
+  background-color: var(--paper-raised);
+  color: var(--ink);
+}
+
 input::placeholder,
 textarea::placeholder {
   color: var(--ink-soft);

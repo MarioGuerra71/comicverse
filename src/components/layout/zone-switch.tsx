@@ -1,13 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { ZONE_COOKIE, ZONE_KEYS, ZONES, type Zone } from "@/lib/zones";
+import { usePathname, useRouter } from "next/navigation";
+import { ZONE_COOKIE, ZONE_KEYS, ZONES, zoneSwitchTarget, type Zone } from "@/lib/zones";
 
 function saveZone(zone: Zone) {
   document.cookie = `${ZONE_COOKIE}=${zone}; path=/; max-age=31536000; samesite=lax`;
 }
 
-/** Selector Marvel | DC sobre el bloque de la editorial: guarda la zona y recarga los datos. */
+/** Selector Marvel | DC: guarda la zona y lleva a la misma sección en la otra editorial (sin filtros de la anterior). */
 export function ZoneSwitch({
   zone,
   compact = false,
@@ -19,10 +19,13 @@ export function ZoneSwitch({
   className?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   function choose(next: Zone) {
     if (next === zone) return;
     saveZone(next);
+    // push a la ruta sin query y refresh: la página se vuelve a pedir con la cookie nueva.
+    router.push(zoneSwitchTarget(pathname));
     router.refresh();
   }
 
