@@ -1,0 +1,68 @@
+# Comprobación automática en cada push y pull request: si falla, no se da por bueno el cambio.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: comicverse
+          POSTGRES_PASSWORD: comicverse_dev
+          POSTGRES_DB: comicverse_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U comicverse"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # Valores solo para CI (no son secretos de verdad): la app valida el entorno al arrancar.
+    env:
+      DATABASE_URL: postgresql://comicverse:comicverse_dev@localhost:5432/comicverse_test?schema=public
+      TEST_DATABASE_URL: postgresql://comicverse:comicverse_dev@localhost:5432/comicverse_test?schema=public
+      BETTER_AUTH_SECRET: ci-secret-solo-para-pruebas-0123456789abcdef
+      BETTER_AUTH_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependencias (genera también el cliente de Prisma)
+        run: npm ci
+
+      - name: Tipos
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests unitarios
+        run: npm test
+
+      - name: Tests de integración (PostgreSQL real)
+        run: npm run test:integration
+
+      - name: Build de producción
+        run: npm run build
