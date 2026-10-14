@@ -57,3 +57,8 @@ skills-lock.json
 # Estado temporal de las páginas de decisión de impeccable
 /.impeccable/questions/
 /.impeccable/review/
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/

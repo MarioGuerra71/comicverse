@@ -106,6 +106,7 @@ Las variables se validan al arrancar. `.env` no se versiona.
 | `npm run dev` / `build` / `start` | Desarrollo, compilación y producción |
 | `npm test` | Tests unitarios |
 | `npm run test:integration` | Tests contra la base de datos `comicverse_test` (necesita Docker) |
+| `npm run test:e2e` | Tests de extremo a extremo con Playwright (escritorio y móvil; necesita Docker) |
 | `npm run typecheck` / `lint` | TypeScript y ESLint |
 | `npm run universe:import` | Importar el universo de `data/universe.json` desde Comic Vine |
 | `npm run universe:resolve` | Buscar y verificar ids de Comic Vine antes de ampliar el universo |

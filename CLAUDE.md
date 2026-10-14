@@ -90,6 +90,7 @@ npm run dev                          # http://localhost:3000
 npm test                             # Vitest (una vez)
 npm run test:watch
 npm run test:integration             # tests contra PostgreSQL real (BD comicverse_test; Docker en marcha)
+npm run test:e2e                     # Playwright: build de producción en :3100 contra la BD comicverse_e2e_test
 npm run typecheck                    # tsc --noEmit
 npm run lint
 npm run universe:resolve             # resuelve candidatos -> data/universe.resolved.json (no versionado)
@@ -306,7 +307,7 @@ Hecho: sección de seguridad en el README (incluido el aviso conocido de `npm au
 - Prueba cada capa con su propio test; los DTO tienen un test que garantiza que **no exponen personajes**, solo su número.
 - **Integración** (`npm run test:integration`, `vitest.integration.config.mts`): BD `comicverse_test` en el mismo contenedor. URL por defecto en `tests/integration/test-db.ts` (credenciales de desarrollo; se puede cambiar con `TEST_DATABASE_URL`), sin `.env.test`. Por seguridad, se niega a ejecutarse si el nombre de la BD no termina en `_test`. El setup global ejecuta `prisma migrate deploy`, que también crea la BD si no existe. Cada test empieza con `resetDb` (`TRUNCATE ... CASCADE`). Los archivos se ejecutan de uno en uno (`fileParallelism: false`). Los servicios reciben el cliente de pruebas como parámetro. Aquí van los tests de desbloqueo y concurrencia.
 - **CI (GitHub Actions, `.github/workflows/ci.yml`):** en cada push a `main` y en cada PR: `npm ci` → typecheck → lint → tests unitarios → tests de integración contra un PostgreSQL 17 de servicio → `npm run build`, con variables de entorno ficticias. Ojo: el `package-lock.json` generado en Windows omitía dependencias opcionales de Linux (`@emnapi/*`) y `npm ci` fallaba; si vuelve a pasar, regenerarlo en Linux (`docker run node:24 … npm install --package-lock-only`). `typecheck` hace antes `next typegen` (tipos globales como `LayoutProps`, que no existen en un clon limpio).
-- E2E con Playwright: pendiente, tras el rediseño.
+- **E2E** (`npm run test:e2e`, `playwright.config.ts`, `tests/e2e/`): Chromium en escritorio y móvil (Pixel 7) contra un build de producción en el puerto 3100 y la BD `comicverse_e2e_test` (`E2E_DATABASE_URL`; también exige el sufijo `_test`). Antes de arrancar la app, `tests/e2e/seed.ts` migra, vacía la BD y crea un cómic de Marvel y otro de DC **con sus personajes ya sincronizados** (no se llama a Comic Vine). Cada test crea su lector con una IP distinta en `x-forwarded-for` (el límite de intentos de Better Auth va por IP). Cubren: redirección sin sesión, registro, leer → desbloqueo sin spoilers previos → puntuar y reseñar, y cambio de editorial desde una ficha. Localmente hace el build (para el servidor de desarrollo antes: comparten `.next`). En CI van al final, tras el build.
 - Antes de cada commit: `npm test`, `npm run typecheck`, `npm run lint` (y `npm run test:integration` si se toca BD, repositorios o servicios).
 
 ---

@@ -66,3 +66,20 @@ jobs:
 
       - name: Build de producción
         run: npm run build
+
+      # E2E: la app de verdad (el build de arriba) en Chromium, escritorio y móvil, contra su propia BD.
+      - name: Instalar Chromium para Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Tests E2E (Playwright)
+        run: npm run test:e2e
+        env:
+          E2E_DATABASE_URL: postgresql://comicverse:comicverse_dev@localhost:5432/comicverse_e2e_test?schema=public
+
+      - name: Informe de Playwright si algo falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
