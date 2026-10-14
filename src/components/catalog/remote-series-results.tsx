@@ -4,14 +4,25 @@ import { db } from "@/lib/db";
 import { ZONES, type Zone } from "@/lib/zones";
 import { getComicVineClient } from "@/server/integrations/comic-sources/comicvine/server-client";
 import { searchRemoteSeries } from "@/server/services/remote-catalog";
+import { isRateLimited, LIMITS } from "@/server/rate-limit";
 import { pluralize } from "@/lib/format";
 import { SectionHeading } from "@/components/ui/page-parts";
 import { ImportSeriesButton } from "@/components/catalog/import-series-button";
 
 /** Series de Comic Vine que coinciden con la búsqueda (va en un Suspense: no frena el catálogo). */
-export async function RemoteSeriesResults({ zone, query }: { zone: Zone; query: string }) {
+export async function RemoteSeriesResults({ zone, query, userId }: { zone: Zone; query: string; userId: string }) {
   const client = getComicVineClient();
   if (!client) return null;
+
+  // Cada búsqueda gasta una petición de la cuota de Comic Vine, que es de todos.
+  if (await isRateLimited(db, `remote-search:${userId}`, LIMITS.remoteSearch)) {
+    return (
+      <p className="mt-10 text-sm text-ink-soft">
+        Has buscado mucho en Comic Vine en la última hora. Mientras tanto, el catálogo de arriba sigue
+        funcionando.
+      </p>
+    );
+  }
 
   let series;
   try {

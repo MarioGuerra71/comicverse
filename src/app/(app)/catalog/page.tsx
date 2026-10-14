@@ -26,7 +26,7 @@ export default async function CatalogPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  await requireUser();
+  const user = await requireUser();
 
   const parsed = comicSearchSchema.safeParse(
     normalizeParams(await searchParams),
@@ -124,7 +124,7 @@ export default async function CatalogPage({
         <Suspense
           fallback={<p className="mt-12 text-sm text-ink-soft">Buscando también en Comic Vine…</p>}
         >
-          <RemoteSeriesResults zone={zone} query={input.q} />
+          <RemoteSeriesResults zone={zone} query={input.q} userId={user.id} />
         </Suspense>
       )}
     </main>

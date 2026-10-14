@@ -8,7 +8,7 @@ import { inkButton } from "@/components/ui/page-parts";
 /** Añade una serie de Comic Vine al catálogo y abre el catálogo filtrado por ella. */
 export function ImportSeriesButton({ externalId, zone }: { externalId: number; zone: Zone }) {
   const router = useRouter();
-  const [state, setState] = useState<"idle" | "loading" | "error">("idle");
+  const [state, setState] = useState<"idle" | "loading" | "error" | "limited">("idle");
 
   async function add() {
     setState("loading");
@@ -18,6 +18,7 @@ export function ImportSeriesButton({ externalId, zone }: { externalId: number; z
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ externalId, publisher: zone }),
       });
+      if (response.status === 429) return setState("limited");
       if (!response.ok) throw new Error(String(response.status));
       const { seriesId } = (await response.json()) as { seriesId: string };
       router.push(`/catalog?seriesId=${seriesId}`);
@@ -34,6 +35,11 @@ export function ImportSeriesButton({ externalId, zone }: { externalId: number; z
       {state === "loading" && (
         <p role="status" className="text-xs text-ink-soft">
           Trayendo todos sus cómics; una serie larga tarda unos segundos.
+        </p>
+      )}
+      {state === "limited" && (
+        <p role="alert" className="text-xs text-danger">
+          Has añadido varias series en poco tiempo. Vuelve a intentarlo dentro de una hora.
         </p>
       )}
       {state === "error" && (

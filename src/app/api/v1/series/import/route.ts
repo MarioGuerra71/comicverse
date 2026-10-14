@@ -4,6 +4,7 @@ import { ComicVineError } from "@/server/integrations/comic-sources/comicvine/cl
 import { getComicVineClient } from "@/server/integrations/comic-sources/comicvine/server-client";
 import { importRemoteSeries, WrongPublisherError } from "@/server/services/remote-catalog";
 import { importSeriesSchema } from "@/server/validation/remote-catalog";
+import { isRateLimited, LIMITS } from "@/server/rate-limit";
 
 // Una serie larga son varias páginas de Comic Vine con una pausa de 1,1 s entre ellas.
 export const maxDuration = 300;
@@ -15,6 +16,11 @@ export async function POST(request: Request) {
 
   const body = await parseBody(request, importSeriesSchema);
   if (body.error) return body.error;
+
+  // La cuota de Comic Vine es de todos: pocas importaciones por hora y lector.
+  if (await isRateLimited(db, `series-import:${user.id}`, LIMITS.seriesImport)) {
+    return Response.json({ error: "RATE_LIMITED" }, { status: 429, headers: { "Retry-After": "3600" } });
+  }
 
   const client = getComicVineClient();
   if (!client) return Response.json({ error: "COMIC_VINE_DISABLED" }, { status: 503 });

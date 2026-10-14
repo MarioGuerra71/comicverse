@@ -1,8 +1,16 @@
+import { timingSafeEqual } from "node:crypto";
 import { db } from "@/lib/db";
 import { getComicVineClient } from "@/server/integrations/comic-sources/comicvine/server-client";
 import { syncNewReleases } from "@/server/jobs/sync-new-releases";
 import { importRelationships } from "@/server/jobs/import-relationships";
 import relationshipsFile from "../../../../../data/relationships.json";
+
+/** Compara en tiempo constante: el tiempo de respuesta no da pistas sobre el secreto. */
+function sameSecret(given: string, expected: string) {
+  const a = Buffer.from(given);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
 // Unas decenas de peticiones a Comic Vine con 1,1 s de pausa entre ellas.
 export const maxDuration = 300;
@@ -13,7 +21,7 @@ export const maxDuration = 300;
  */
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
-  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!secret || !sameSecret(request.headers.get("authorization") ?? "", `Bearer ${secret}`)) {
     return Response.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   const client = getComicVineClient();
