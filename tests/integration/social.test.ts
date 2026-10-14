@@ -6,7 +6,9 @@ import {
   HandleTakenError,
   listCommunity,
   ProfileNotFoundError,
-  saveProfileSettings,
+  ensureHandle,
+  saveHandle,
+  saveVisibility,
 } from "@/server/services/social";
 import { createCharacter, createComic, createTestDb, createUser, resetDb } from "./test-db";
 
@@ -31,9 +33,10 @@ async function seed() {
 }
 
 describe("perfiles públicos", () => {
-  it("un perfil es privado por defecto y nadie más lo ve", async () => {
+  it("si lo hace privado nadie más lo ve", async () => {
     const { ana, bea } = await seed();
-    await saveProfileSettings(db, ana.id, "ana", false);
+    await saveHandle(db, ana.id, "ana");
+    await saveVisibility(db, ana.id, false);
     expect(await getPublicProfile(db, bea.id, "ana")).toBeNull();
     // El dueño sí ve el suyo.
     expect((await getPublicProfile(db, ana.id, "ana"))?.isMe).toBe(true);
@@ -41,13 +44,13 @@ describe("perfiles públicos", () => {
 
   it("el nombre de usuario es único", async () => {
     const { ana, bea } = await seed();
-    await saveProfileSettings(db, ana.id, "ana", true);
-    await expect(saveProfileSettings(db, bea.id, "ana", true)).rejects.toBeInstanceOf(HandleTakenError);
+    await saveHandle(db, ana.id, "ana");
+    await expect(saveHandle(db, bea.id, "ana")).rejects.toBeInstanceOf(HandleTakenError);
   });
 
   it("la comparación da cifras y nunca dice quién te falta", async () => {
     const { ana, bea } = await seed();
-    await saveProfileSettings(db, ana.id, "ana", true);
+    await saveHandle(db, ana.id, "ana");
     const profile = (await getPublicProfile(db, bea.id, "ana"))!;
     const [album] = profile.shelves.find((s) => s.zone === "marvel")!.albums;
     expect(album).toMatchObject({ total: 3, theirs: 3, mine: 2, ahead: 1, behind: 0 });
@@ -57,7 +60,7 @@ describe("perfiles públicos", () => {
 
   it("solo se ven las reseñas marcadas como públicas", async () => {
     const { ana, bea, a, b } = await seed();
-    await saveProfileSettings(db, ana.id, "ana", true);
+    await saveHandle(db, ana.id, "ana");
     await writeReview(db, ana.id, a.id, "Pública", true);
     await writeReview(db, ana.id, b.id, "Privada", false);
     const profile = (await getPublicProfile(db, bea.id, "ana"))!;
@@ -66,10 +69,11 @@ describe("perfiles públicos", () => {
 
   it("solo se puede seguir a perfiles públicos y aparecen en la comunidad", async () => {
     const { ana, bea } = await seed();
-    await saveProfileSettings(db, ana.id, "ana", false);
+    await saveHandle(db, ana.id, "ana");
+    await saveVisibility(db, ana.id, false);
     await expect(follow(db, bea.id, "ana")).rejects.toBeInstanceOf(ProfileNotFoundError);
 
-    await saveProfileSettings(db, ana.id, "ana", true);
+    await saveVisibility(db, ana.id, true);
     await follow(db, bea.id, "ana");
     await follow(db, bea.id, "ana");
     const community = await listCommunity(db, bea.id);
@@ -77,5 +81,16 @@ describe("perfiles públicos", () => {
     expect(community.profiles.map((u) => u.handle)).toEqual(["ana"]);
     expect((await getPublicProfile(db, bea.id, "ana"))?.isFollowing).toBe(true);
     await expect(follow(db, ana.id, "ana")).rejects.toBeInstanceOf(ProfileNotFoundError);
+  });
+
+  it("el perfil es público por defecto y el nombre de usuario sale del nombre, sin repetirse", async () => {
+    const ana = await createUser(db);
+    const bea = await createUser(db);
+    await db.user.updateMany({ where: { id: { in: [ana.id, bea.id] } }, data: { name: "María López" } });
+    expect(await ensureHandle(db, ana.id)).toBe("maria-lopez");
+    expect(await ensureHandle(db, bea.id)).toBe("maria-lopez-2");
+    // Repetirlo no cambia el que ya tiene.
+    expect(await ensureHandle(db, ana.id)).toBe("maria-lopez");
+    expect((await getPublicProfile(db, bea.id, "maria-lopez"))?.user.isPublic).toBe(true);
   });
 });

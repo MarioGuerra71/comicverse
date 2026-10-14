@@ -3,6 +3,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
+import { ensureHandle } from "@/server/services/social";
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
@@ -13,6 +14,10 @@ export const auth = betterAuth({
     .filter(Boolean)
     .map((host) => `https://${host}`),
   database: prismaAdapter(db, { provider: "postgresql" }),
+  // Al registrarse, nombre de usuario propuesto a partir del nombre (perfil público por defecto).
+  databaseHooks: {
+    user: { create: { after: async (user) => void (await ensureHandle(db, user.id)) } },
+  },
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,

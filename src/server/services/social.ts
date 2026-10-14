@@ -1,6 +1,7 @@
 import type { PrismaClient } from "../../../generated/prisma/client";
 import { Prisma } from "../../../generated/prisma/client";
 import { ZONES, ZONE_KEYS, type Zone } from "@/lib/zones";
+import { handleFromName, handleWithSuffix } from "@/lib/handles";
 import { findAlbumRows, findSeriesCovers, findUnlockedCharacters } from "@/server/repositories/characters";
 import {
   addFollow,
@@ -10,27 +11,62 @@ import {
   findPublicProfiles,
   findPublicReviews,
   findRecentReads,
+  findHandleOwner,
   findUserByHandle,
+  findUserName,
   isFollowing,
   removeFollow,
-  updateProfileSettings,
+  updateHandle,
+  updateVisibility,
 } from "@/server/repositories/social";
 
 export class HandleTakenError extends Error {}
 export class ProfileNotFoundError extends Error {}
 
-export function getProfileSettings(db: PrismaClient, userId: string) {
+/** Ajustes del perfil; si al usuario aún no se le asignó nombre de usuario, se le asigna ahora. */
+export async function getProfileSettings(db: PrismaClient, userId: string) {
+  await ensureHandle(db, userId);
   return findProfileSettings(db, userId);
 }
 
-export async function saveProfileSettings(db: PrismaClient, userId: string, handle: string, isPublic: boolean) {
+/**
+ * Le da un nombre de usuario a partir de su nombre («María López» → maria-lopez, o maria-lopez-2
+ * si está cogido). No hace nada si ya tiene uno.
+ */
+export async function ensureHandle(db: PrismaClient, userId: string) {
+  const user = await findUserName(db, userId);
+  if (!user || user.handle) return user?.handle ?? null;
+  const base = handleFromName(user.name);
+  for (let n = 1; n < 1000; n++) {
+    const candidate = n === 1 ? base : handleWithSuffix(base, n);
+    if (await findHandleOwner(db, candidate)) continue;
+    try {
+      return (await updateHandle(db, userId, candidate)).handle;
+    } catch (error) {
+      // Otro registro simultáneo se lo quedó: probar el siguiente.
+      if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) throw error;
+    }
+  }
+  return null;
+}
+
+/** ¿Está libre ese nombre de usuario? (el propio cuenta como libre). */
+export async function isHandleAvailable(db: PrismaClient, userId: string, handle: string) {
+  const owner = await findHandleOwner(db, handle);
+  return owner === null || owner === userId;
+}
+
+export async function saveHandle(db: PrismaClient, userId: string, handle: string) {
   try {
-    return await updateProfileSettings(db, userId, handle, isPublic);
+    return await updateHandle(db, userId, handle);
   } catch (error) {
-    // Nombre de usuario ya en uso (índice único).
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new HandleTakenError();
     throw error;
   }
+}
+
+export function saveVisibility(db: PrismaClient, userId: string, isPublic: boolean) {
+  return updateVisibility(db, userId, isPublic);
 }
 
 export async function listCommunity(db: PrismaClient, userId: string, q?: string) {

@@ -42,9 +42,10 @@ model User {
   collectionSeenAt   DateTime?
   discoveries        Discovery[]
   achievements       UserAchievement[]
-  // Perfil público (privado por defecto): se ve en /u/<handle> solo si isPublic.
+  // Perfil público (público por defecto, decisión del usuario): /u/<handle>. El handle se
+  // propone solo al registrarse a partir del nombre y se puede cambiar en el perfil.
   handle             String?   @unique
-  isPublic           Boolean   @default(false)
+  isPublic           Boolean   @default(true)
   following          Follow[]  @relation("Following")
   followers          Follow[]  @relation("Followers")
 }

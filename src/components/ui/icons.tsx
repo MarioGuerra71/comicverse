@@ -137,3 +137,26 @@ export function TrophyIcon(props: IconProps) {
     </Svg>
   );
 }
+
+/** Comunidad: dos lectores (cabezas y hombros). */
+export function CommunityIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="9" cy="8" r="3" />
+      <path d="M3.5 19c.6-3 2.8-5 5.5-5s4.9 2 5.5 5" />
+      <circle cx="16.5" cy="9" r="2.4" />
+      <path d="M15.5 14.2c2.4 0 4.3 1.8 5 4.8" />
+    </Svg>
+  );
+}
+
+/** Más: tres puntos. */
+export function MoreIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="5" cy="12" r="1.2" />
+      <circle cx="12" cy="12" r="1.2" />
+      <circle cx="19" cy="12" r="1.2" />
+    </Svg>
+  );
+}

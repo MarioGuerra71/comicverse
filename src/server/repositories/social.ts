@@ -6,10 +6,6 @@ export function findProfileSettings(db: PrismaClient, userId: string) {
   return db.user.findUnique({ where: { id: userId }, select: { handle: true, isPublic: true } });
 }
 
-export function updateProfileSettings(db: PrismaClient, userId: string, handle: string, isPublic: boolean) {
-  return db.user.update({ where: { id: userId }, data: { handle, isPublic }, select: { handle: true, isPublic: true } });
-}
-
 export function findUserByHandle(db: PrismaClient, handle: string) {
   return db.user.findUnique({ where: { handle }, select: { ...publicUserSelect, isPublic: true } });
 }
@@ -79,4 +75,20 @@ export function findPublicReviews(db: PrismaClient, userId: string) {
       entry: { select: { rating: true, comic: { select: { id: true, title: true, coverThumbUrl: true } } } },
     },
   });
+}
+
+export async function findHandleOwner(db: PrismaClient, handle: string) {
+  return (await db.user.findUnique({ where: { handle }, select: { id: true } }))?.id ?? null;
+}
+
+export function findUserName(db: PrismaClient, userId: string) {
+  return db.user.findUnique({ where: { id: userId }, select: { name: true, handle: true } });
+}
+
+export function updateHandle(db: PrismaClient, userId: string, handle: string) {
+  return db.user.update({ where: { id: userId }, data: { handle }, select: { handle: true, isPublic: true } });
+}
+
+export function updateVisibility(db: PrismaClient, userId: string, isPublic: boolean) {
+  return db.user.update({ where: { id: userId }, data: { isPublic }, select: { handle: true, isPublic: true } });
 }
