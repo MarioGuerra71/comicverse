@@ -289,7 +289,7 @@ export function AlbumBinder({ slots, total }: { slots: AlbumSlot[]; total: numbe
               setSpread(0);
             }}
             className={`flex min-h-11 items-center rounded-full border border-edge px-4 text-sm font-semibold transition-colors ${
-              onlyMine ? "bg-editor text-white" : "bg-sheet text-ink hover:bg-sheet-raised"
+              onlyMine ? "bg-editor/20 text-ink ring-1 ring-editor" : "bg-sheet text-ink hover:bg-sheet-raised"
             }`}
           >
             Solo los que tengo

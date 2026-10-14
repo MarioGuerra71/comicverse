@@ -42,7 +42,7 @@ export function ZoneSwitch({
           data-publisher={key}
           className={`min-h-10 flex-1 rounded-full ${compact ? "px-0" : "px-3"} text-sm font-bold transition-all duration-200 ${
             key === zone
-              ? "bg-editor text-white shadow-[0_0_16px_var(--glow)]"
+              ? "bg-editor/20 text-ink ring-1 ring-editor shadow-[0_0_16px_var(--glow)]"
               : "text-ink-soft hover:text-ink"
           }`}
         >
