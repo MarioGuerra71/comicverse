@@ -29,10 +29,13 @@ function Brand({ compact = false }: { compact?: boolean }) {
 export function AppShell({
   userName,
   zone,
+  isDemo = false,
   children,
 }: {
   userName: string;
   zone: Zone;
+  /** Cuenta de demo: aviso de que caduca y enlace para crear una de verdad. */
+  isDemo?: boolean;
   children: React.ReactNode;
 }) {
   const initial = userName.trim().charAt(0).toUpperCase() || "?";
@@ -84,6 +87,14 @@ export function AppShell({
       </header>
 
       <div className="relative flex min-h-screen flex-col">
+        {isDemo && (
+          <p className="border-b border-edge px-6 py-2 text-center text-xs text-ink-soft">
+            Estás en la demo: esta cuenta y lo que hagas en ella se borran en 24 h.{" "}
+            <Link href="/sign-up" className="text-ink underline">
+              Crear mi cuenta
+            </Link>
+          </p>
+        )}
         <div className="flex-1">{children}</div>
         {/* En el móvil el relleno inferior deja sitio a la barra de pestañas fija. */}
         <footer className="border-t border-edge px-6 pt-4 pb-24 text-xs text-ink-soft md:pb-4">

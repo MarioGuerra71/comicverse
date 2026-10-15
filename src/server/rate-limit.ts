@@ -6,6 +6,8 @@ export const LIMITS = {
   seriesImport: { max: 5, windowMs: 60 * 60 * 1000 },
   // Cada búsqueda en el catálogo es una petición a Comic Vine.
   remoteSearch: { max: 30, windowMs: 60 * 60 * 1000 },
+  // Cada demo crea una cuenta y marca una docena de cómics: pocas por hora y IP.
+  demo: { max: 5, windowMs: 60 * 60 * 1000 },
 } as const;
 
 /**

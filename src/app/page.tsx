@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandPanel } from "@/components/auth/brand-panel";
+import { DemoButton } from "@/components/auth/demo-button";
 import { getSession } from "@/server/auth/session";
 
 // Botones sobre el bloque de la editorial: luz blanca y cristal.
@@ -27,6 +28,7 @@ export default async function Home() {
               <Link href="/sign-in" className={ghostButton}>
                 Iniciar sesión
               </Link>
+              <DemoButton className={ghostButton} />
             </>
           )}
         </div>

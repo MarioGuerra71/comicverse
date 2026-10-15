@@ -3,7 +3,8 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { inkButton, inkField } from "@/components/ui/page-parts";
+import { DemoButton } from "@/components/auth/demo-button";
+import { inkButton, inkField, outlineButton } from "@/components/ui/page-parts";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { signIn } from "@/lib/auth-client";
 
@@ -77,6 +78,11 @@ export default function SignInPage() {
           Regístrate
         </Link>
       </p>
+
+      <div className="flex flex-col gap-2 border-t border-edge pt-6">
+        <p className="text-sm text-ink-soft">¿Solo quieres echar un vistazo? Entra en una cuenta de prueba que ya tiene cómics leídos.</p>
+        <DemoButton className={outlineButton} />
+      </div>
     </div>
   );
 }
