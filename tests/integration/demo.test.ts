@@ -9,11 +9,11 @@ beforeEach(() => resetDb(db));
 afterAll(() => db.$disconnect());
 
 describe("seedDemoAccount", () => {
-  it("marca como leídos solo cómics con personajes con ficha e imagen y pone el perfil privado", async () => {
+  it("marca como leídos solo cómics con la ficha de sus personajes y pone el perfil privado", async () => {
     const user = await createUser(db);
     const peter = await createCharacter(db, "Peter");
     const mary = await createCharacter(db, "Mary");
-    await db.character.update({ where: { id: peter.id }, data: { detailsSyncedAt: new Date(), imageUrl: "https://example.com/p.jpg" } });
+    await db.character.update({ where: { id: peter.id }, data: { detailsSyncedAt: new Date() } });
     const synced = await createComic(db, [peter]);
     const noImage = await createComic(db, [peter, mary]);
     const pending = await createComic(db);

@@ -20,10 +20,10 @@ export async function seedDemoAccount(db: PrismaClient, userId: string) {
     const comics = await db.comic.findMany({
       where: {
         charactersSyncedAt: { not: null },
-        // Con todos sus personajes ya con ficha e imagen: sin huecos «Sin imagen» en las cartas.
+        // Con la ficha de todos sus personajes ya traída (con su imagen, si Comic Vine la tiene).
         characters: {
           some: { character: { isCollectible: true } },
-          every: { character: { detailsSyncedAt: { not: null }, imageUrl: { not: null } } },
+          every: { character: { detailsSyncedAt: { not: null } } },
         },
         series: { publisher: { slug: ZONES[zone as keyof typeof ZONES].publisherSlug } },
       },
