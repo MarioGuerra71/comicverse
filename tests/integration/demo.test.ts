@@ -9,15 +9,15 @@ beforeEach(() => resetDb(db));
 afterAll(() => db.$disconnect());
 
 describe("seedDemoAccount", () => {
-  it("marca como leídos solo cómics con la ficha de sus personajes y pone el perfil privado", async () => {
+  it("marca como leídos solo cómics con algún coleccionable con imagen y pone el perfil privado", async () => {
     const user = await createUser(db);
     const peter = await createCharacter(db, "Peter");
     const mary = await createCharacter(db, "Mary");
-    await db.character.update({ where: { id: peter.id }, data: { detailsSyncedAt: new Date() } });
-    const synced = await createComic(db, [peter]);
-    const noImage = await createComic(db, [peter, mary]);
+    const extra = await createCharacter(db, "Extra", { isCollectible: false });
+    await db.character.updateMany({ where: { id: { in: [peter.id, extra.id] } }, data: { imageUrl: "https://example.com/x.jpg" } });
+    const synced = await createComic(db, [peter, mary]);
+    const noImage = await createComic(db, [mary, extra]);
     const pending = await createComic(db);
-    await db.comic.updateMany({ where: { id: { in: [synced.id, noImage.id] } }, data: { charactersSyncedAt: new Date() } });
 
     await seedDemoAccount(db, user.id);
 
@@ -25,7 +25,7 @@ describe("seedDemoAccount", () => {
     expect(read.map((r) => r.comicId)).toEqual([synced.id]);
     expect(read.map((r) => r.comicId)).not.toContain(pending.id);
     expect(read.map((r) => r.comicId)).not.toContain(noImage.id);
-    expect(await db.discovery.count({ where: { userId: user.id, characterId: peter.id } })).toBe(1);
+    expect(await db.discovery.count({ where: { userId: user.id } })).toBe(2);
     expect((await db.user.findUniqueOrThrow({ where: { id: user.id } })).isPublic).toBe(false);
   });
 });

@@ -10,7 +10,7 @@ const DEMO_READS = { marvel: 12, dc: 6 } as const;
 /**
  * Prepara una cuenta de demo recién creada: perfil privado (no sale en Comunidad) y unos cómics
  * ya leídos de cada editorial, para que la colección y el universo no empiecen vacíos.
- * Solo usa cómics con sus personajes ya sincronizados: no gasta cuota de Comic Vine.
+ * Solo usa personajes que ya están en la BD: no gasta cuota de Comic Vine.
  */
 export async function seedDemoAccount(db: PrismaClient, userId: string) {
   await db.user.update({ where: { id: userId }, data: { isPublic: false } });
@@ -19,12 +19,8 @@ export async function seedDemoAccount(db: PrismaClient, userId: string) {
   for (const [zone, take] of Object.entries(DEMO_READS)) {
     const comics = await db.comic.findMany({
       where: {
-        charactersSyncedAt: { not: null },
-        // Con la ficha de todos sus personajes ya traída (con su imagen, si Comic Vine la tiene).
-        characters: {
-          some: { character: { isCollectible: true } },
-          every: { character: { detailsSyncedAt: { not: null } } },
-        },
+        // Con algún personaje coleccionable que ya tiene su imagen (los del universo semilla).
+        characters: { some: { character: { isCollectible: true, imageUrl: { not: null } } } },
         series: { publisher: { slug: ZONES[zone as keyof typeof ZONES].publisherSlug } },
       },
       orderBy: [{ releaseDate: { sort: "asc", nulls: "last" } }, { id: "asc" }],
