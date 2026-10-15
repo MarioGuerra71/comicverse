@@ -4,7 +4,7 @@
 
 > **Demo:** [comicverse-eight.vercel.app](https://comicverse-eight.vercel.app) (Vercel + Neon). Pulsa «Probar la demo» para entrar sin registrarte: cada visitante tiene su propia cuenta temporal (se borra a las 24 h) con unos cómics ya leídos.
 
-![Mi colección: personajes descubiertos entintados y huecos por descubrir a lápiz azul](docs/capturas/coleccion.png)
+![Álbum de cartas: personajes descubiertos y huecos por descubrir](docs/capturas/coleccion.png)
 
 ## Qué hace
 
@@ -24,7 +24,7 @@
 
 | Desbloqueo al marcar como leído | Inicio |
 |---|---|
-| ![Panel «¡entintado!» con 12 nuevos descubrimientos](docs/capturas/desbloqueo-movil.png) | ![Inicio con el progreso del universo](docs/capturas/inicio.png) |
+| ![Panel «¡entintado!» con un nuevo descubrimiento](docs/capturas/desbloqueo-movil.png) | ![Inicio con el progreso del universo](docs/capturas/inicio.png) |
 
 ## Stack
 
@@ -157,4 +157,4 @@ Las rutas de biblioteca, inicio, universo y descubrimientos responden por la zon
 
 Datos e imágenes de cómics proporcionados por [Comic Vine](https://comicvine.gamespot.com/). Las imágenes se enlazan desde su CDN y no se redistribuyen. Es un proyecto personal sin ánimo de lucro, sin relación con Marvel, DC ni Comic Vine; no usa sus logotipos ni sus tipografías.
 
-![Ficha de personaje con sus relaciones descubiertas](docs/capturas/personaje.png)
+![Universo de Spider-Man: su reparto por aliados, familia, pareja, rivales y enemigos](docs/capturas/personaje.png)
