@@ -6,16 +6,27 @@ import { db } from "@/lib/db";
 import { READING_STATUS_LABELS, READING_STATUSES } from "@/lib/reading-status";
 import { normalizeParams, type SearchParams } from "@/lib/search-params";
 import { SelectableComicGrid } from "@/components/library/selectable-comic-grid";
-import { inkTab, PageHeader, Pagination } from "@/components/ui/page-parts";
+import { SeriesShelf } from "@/components/library/series-shelf";
+import { ArrowIcon, FolderIcon, GridIcon } from "@/components/ui/icons";
+import { PageHeader, Pagination, segment, segmentGroup } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
-import { listLibrary } from "@/server/services/library";
-import { librarySearchSchema } from "@/server/validation/library";
+import { listLibrary, listLibrarySeries } from "@/server/services/library";
+import { librarySearchSchema, type LibrarySearchInput } from "@/server/validation/library";
 
 export const metadata: Metadata = { title: "Mi biblioteca · ComicVerse" };
 
-function libraryHref(status?: string, page?: number) {
+const VIEWS = [
+  { value: "comics", label: "Cómics", Icon: GridIcon },
+  { value: "series", label: "Series", Icon: FolderIcon },
+] as const;
+
+type HrefInput = Partial<Pick<LibrarySearchInput, "status" | "view" | "series" | "page">>;
+
+function libraryHref({ status, view, series, page }: HrefInput) {
   const query = new URLSearchParams();
   if (status) query.set("status", status);
+  if (view === "series") query.set("view", view);
+  if (series) query.set("series", series);
   if (page && page > 1) query.set("page", String(page));
   const queryString = query.toString();
   return queryString ? `/library?${queryString}` : "/library";
@@ -34,7 +45,13 @@ export default async function LibraryPage({
   const input = parsed.success ? parsed.data : librarySearchSchema.parse({});
 
   const zone = await getZone();
-  const result = await listLibrary(db, user.id, input, zone);
+  // En «Por series» sin carpeta abierta se ven las carpetas; al abrir una, sus cómics.
+  const showFolders = input.view === "series" && !input.series;
+  const [result, folders] = await Promise.all([
+    listLibrary(db, user.id, input, zone),
+    showFolders ? listLibrarySeries(db, user.id, input.status, zone) : null,
+  ]);
+  const openSeries = input.series ? result.items[0]?.comic.series : undefined;
   const totalInLibrary = Object.values(result.counts).reduce((a, b) => a + b, 0);
 
   const tabs = [
@@ -50,28 +67,76 @@ export default async function LibraryPage({
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
       <PageHeader title={`Mi biblioteca ${ZONES[zone].label}`} figure={totalInLibrary} figureLabel={totalInLibrary === 1 ? "cómic" : "cómics"} />
 
-      {/* En el móvil, las pestañas se desplazan en horizontal en vez de partirse. */}
-      <nav
-        aria-label="Estados de lectura"
-        className="-mx-4 mt-6 flex gap-2 overflow-x-auto px-4 whitespace-nowrap scrollbar-none md:mx-0 md:px-0"
-      >
-        {tabs.map((tab) => {
-          const active = tab.status === input.status;
-          return (
+      {/* Una sola barra: estado de lectura a la izquierda, vista a la derecha. En el móvil, el estado se desplaza. */}
+      <div className="mt-6 flex items-center justify-between gap-3">
+        <nav aria-label="Estados de lectura" className="-ml-4 min-w-0 overflow-x-auto pl-4 scrollbar-none md:ml-0 md:pl-0">
+          <div className={segmentGroup}>
+            {/* Los estados vacíos no ocupan sitio (salvo si es el que estás viendo). */}
+            {tabs
+              .filter((tab) => tab.count > 0 || tab.status === input.status || !tab.status)
+              .map((tab) => {
+                const active = tab.status === input.status;
+                return (
+                  <Link
+                    key={tab.label}
+                    href={libraryHref({ ...input, status: tab.status, page: 1 })}
+                    aria-current={active ? "page" : undefined}
+                    className={`${segment(active)} whitespace-nowrap`}
+                  >
+                    {tab.label}
+                    <span className="text-xs font-normal text-ink-soft tabular-nums">{tab.count}</span>
+                  </Link>
+                );
+              })}
+          </div>
+        </nav>
+        <nav aria-label="Vista" className={segmentGroup}>
+          {VIEWS.map(({ value, label, Icon }) => (
             <Link
-              key={tab.label}
-              href={libraryHref(tab.status)}
-              aria-current={active ? "page" : undefined}
-              className={inkTab(active)}
+              key={value}
+              href={libraryHref({ status: input.status, view: value })}
+              aria-current={input.view === value ? "page" : undefined}
+              aria-label={label}
+              title={label}
+              className={`${segment(input.view === value)} px-2.5 sm:px-3.5`}
             >
-              {tab.label}
-              <span className="ml-1.5 font-normal">{tab.count}</span>
+              <Icon size={18} />
+              <span className="hidden sm:inline">{label}</span>
             </Link>
-          );
-        })}
-      </nav>
+          ))}
+        </nav>
+      </div>
 
-      {result.items.length === 0 ? (
+      {input.series && (
+        <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line pb-3">
+          <Link
+            href={libraryHref({ status: input.status, view: "series" })}
+            className="inline-flex min-h-11 items-center gap-1.5 text-sm text-ink-soft hover:text-ink"
+          >
+            <ArrowIcon direction="left" size={16} />
+            Series
+          </Link>
+          {openSeries && (
+            <h2 className="text-base font-bold text-ink">
+              <span aria-hidden="true" className="mr-3 font-normal text-ink-soft">/</span>
+              {openSeries.name}
+              {openSeries.startYear && <span className="font-normal text-ink-soft"> ({openSeries.startYear})</span>}
+            </h2>
+          )}
+        </div>
+      )}
+
+      {folders ? (
+        folders.length === 0 ? (
+          <p className="mt-10 text-ink">
+            {input.status
+              ? `No tienes series con cómics en «${READING_STATUS_LABELS[input.status]}».`
+              : "Aún no tienes cómics en tu biblioteca."}
+          </p>
+        ) : (
+          <SeriesShelf series={folders} hrefFor={(series) => libraryHref({ status: input.status, view: "series", series })} />
+        )
+      ) : result.items.length === 0 ? (
         <div className="mt-10">
           <p className="text-ink">
             {input.status
@@ -99,11 +164,9 @@ export default async function LibraryPage({
         />
       )}
 
-      <Pagination
-        page={result.page}
-        totalPages={result.totalPages}
-        hrefFor={(page) => libraryHref(input.status, page)}
-      />
+      {!folders && (
+        <Pagination page={result.page} totalPages={result.totalPages} hrefFor={(page) => libraryHref({ ...input, page })} />
+      )}
     </main>
   );
 }

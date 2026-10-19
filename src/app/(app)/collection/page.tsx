@@ -5,7 +5,7 @@ import { normalizeParams, type SearchParams } from "@/lib/search-params";
 import { CharacterCard } from "@/components/characters/character-card";
 import { MarkCollectionSeen } from "@/components/collection/mark-seen";
 import { AlbumShelf } from "@/components/collection/album-shelf";
-import { inkTab as tab, PageHeader, quietLink as sortLink } from "@/components/ui/page-parts";
+import { PageHeader, segment, segmentGroup } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { getZoneCollection } from "@/server/services/discovery";
 import { getZone } from "@/server/zone";
@@ -79,36 +79,32 @@ export default async function CollectionPage({
         </p>
       )}
 
-      {/* En el móvil, cada fila se desplaza en horizontal en vez de partirse. */}
-      <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <nav
-          aria-label="Filtrar la colección"
-          className="-mx-4 flex gap-2 overflow-x-auto px-4 whitespace-nowrap scrollbar-none md:mx-0 md:px-0"
-        >
-          {FILTERS.map((f) => (
-            <Link
-              key={f.value}
-              href={collectionHref({ ...input, filter: f.value })}
-              aria-current={input.filter === f.value ? "page" : undefined}
-              className={tab(input.filter === f.value)}
-            >
-              {f.label}
-              <span className="ml-1.5 font-normal">{counts[f.value]}</span>
-            </Link>
-          ))}
+      {/* Una sola barra, como la de la biblioteca: filtro a la izquierda, orden a la derecha. */}
+      <div className="mt-6 flex items-center justify-between gap-3">
+        <nav aria-label="Filtrar la colección" className="-ml-4 min-w-0 overflow-x-auto pl-4 scrollbar-none md:ml-0 md:pl-0">
+          <div className={segmentGroup}>
+            {/* Los filtros vacíos no ocupan sitio (salvo si es el que estás viendo). */}
+            {FILTERS.filter((f) => counts[f.value] > 0 || f.value === input.filter || f.value === "all").map((f) => (
+              <Link
+                key={f.value}
+                href={collectionHref({ ...input, filter: f.value })}
+                aria-current={input.filter === f.value ? "page" : undefined}
+                className={`${segment(input.filter === f.value)} whitespace-nowrap`}
+              >
+                {f.label}
+                <span className="text-xs font-normal text-ink-soft tabular-nums">{counts[f.value]}</span>
+              </Link>
+            ))}
+          </div>
         </nav>
         {input.filter !== "all" && (
-          <nav
-            aria-label="Ordenar"
-            className="-mx-4 flex items-center gap-1 overflow-x-auto px-4 text-sm whitespace-nowrap scrollbar-none md:mx-0 md:px-0"
-          >
-            <span className="text-ink-soft">Ordenar</span>
+          <nav aria-label="Ordenar" className={segmentGroup}>
             {SORTS.map((s) => (
               <Link
                 key={s.value}
                 href={collectionHref({ ...input, sort: s.value })}
                 aria-current={input.sort === s.value ? "true" : undefined}
-                className={sortLink(input.sort === s.value)}
+                className={`${segment(input.sort === s.value)} whitespace-nowrap`}
               >
                 {s.label}
               </Link>

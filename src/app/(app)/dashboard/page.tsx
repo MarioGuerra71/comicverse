@@ -6,7 +6,6 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { describeActivity } from "@/lib/activity";
-import { READING_STATUS_LABELS } from "@/lib/reading-status";
 import { DiscoveryItem } from "@/components/characters/discovery-item";
 import { HeaderField, inkButton, SectionHeading } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
@@ -136,7 +135,7 @@ export default async function DashboardPage() {
 
       {longbox.length > 0 && (
         <section aria-labelledby="recent-heading" className="mt-12">
-          <SectionHeading id="recent-heading" title="Tu longbox" href="/library" linkLabel="Ver biblioteca" />
+          <SectionHeading id="recent-heading" title="Tu longbox" href="/library?status=READ" linkLabel="Ver biblioteca" />
           {/* El longbox: hojea las portadas; se levantan al pasar o enfocar. */}
           <ul className="longbox -mx-4 mt-4 flex gap-5 overflow-x-auto px-4 pt-6 pb-4 scrollbar-none md:mx-0 md:grid md:grid-cols-5 md:overflow-visible md:px-5">
             {longbox.map((item) => (
@@ -159,7 +158,6 @@ export default async function DashboardPage() {
                     )}
                   </span>
                   <span className="mt-3 block text-sm leading-tight font-bold text-ink">{item.comic.title}</span>
-                  <span className="mt-0.5 block text-xs text-ink-soft">{READING_STATUS_LABELS[item.status]}</span>
                 </Link>
               </li>
             ))}

@@ -140,7 +140,7 @@ function Rings() {
  * Archivador de un álbum (mecánica inspirada en los álbumes de cartas: fundas de 3×3, doble
  * página con anillas, hoja que gira al pasar página). En el móvil, una página cada vez.
  */
-export function AlbumBinder({ slots, total }: { slots: AlbumSlot[]; total: number }) {
+export function AlbumBinder({ slots, total, seriesId }: { slots: AlbumSlot[]; total: number; seriesId: string }) {
   const [perView, setPerView] = useState(2);
   const [spread, setSpread] = useState(0);
   const [onlyMine, setOnlyMine] = useState(false);
@@ -389,6 +389,7 @@ export function AlbumBinder({ slots, total }: { slots: AlbumSlot[]; total: numbe
         <CardViewer
           card={viewer.card}
           total={total}
+          seriesId={seriesId}
           from={viewer.from}
           onClosed={() => {
             const id = viewer.card.id;

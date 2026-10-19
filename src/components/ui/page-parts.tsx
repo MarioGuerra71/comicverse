@@ -175,3 +175,10 @@ export function BackLink({ href, children }: { href: string; children: React.Rea
     </Link>
   );
 }
+
+/** Control segmentado: varias opciones en una sola cápsula; la activa, rellena sin neón. */
+export const segmentGroup = "inline-flex shrink-0 rounded-full bg-sheet p-1 ring-1 ring-edge";
+export const segment = (active: boolean) =>
+  `inline-flex min-h-9 items-center gap-1.5 rounded-full px-3.5 text-sm transition-colors ${
+    active ? "bg-sheet-raised font-semibold text-ink ring-1 ring-edge" : "text-ink-soft hover:text-ink"
+  }`;

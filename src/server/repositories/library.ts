@@ -80,13 +80,13 @@ export function addHistory(
 export async function findLibraryPage(
   db: PrismaClient,
   userId: string,
-  input: LibrarySearchInput,
+  input: Omit<LibrarySearchInput, "view">,
   zone?: Zone,
 ) {
   const where: Prisma.UserComicWhereInput = {
     userId,
     ...(input.status ? { status: input.status } : {}),
-    ...(zone ? { comic: comicInZone(zone) } : {}),
+    comic: { ...comicInZone(zone), ...(input.series ? { seriesId: input.series } : {}) },
   };
 
   const [rows, total] = await db.$transaction([
@@ -112,6 +112,18 @@ export async function findLibraryPage(
 }
 
 /** Últimos cambios del historial de lectura, con el cómic. */
+/** Todas tus entradas (con su serie) para agrupar la biblioteca en carpetas, las más recientes primero. */
+export function findLibrarySeriesRows(db: PrismaClient, userId: string, status?: ReadingStatus, zone?: Zone) {
+  return db.userComic.findMany({
+    where: { userId, ...(status ? { status } : {}), comic: comicInZone(zone) },
+    orderBy: [{ updatedAt: "desc" }, { comicId: "asc" }],
+    select: {
+      status: true,
+      comic: { select: { coverThumbUrl: true, series: { select: { id: true, name: true, startYear: true } } } },
+    },
+  });
+}
+
 export function findRecentHistory(db: PrismaClient, userId: string, take: number, zone?: Zone) {
   return db.readingHistory.findMany({
     where: { userId, ...(zone ? { comic: comicInZone(zone) } : {}) },

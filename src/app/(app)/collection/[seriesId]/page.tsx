@@ -65,7 +65,7 @@ export default async function AlbumPage({ params }: { params: Promise<{ seriesId
           Sus personajes aparecerán cuando abras o leas alguno de sus cómics.
         </p>
       ) : (
-        <AlbumBinder slots={album.slots} total={album.total} />
+        <AlbumBinder slots={album.slots} total={album.total} seriesId={album.seriesId} />
       )}
       {hasNew && <MarkCollectionSeen />}
     </main>

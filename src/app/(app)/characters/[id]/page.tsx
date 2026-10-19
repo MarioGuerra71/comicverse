@@ -12,6 +12,7 @@ import { RELATIONSHIP_TYPE_LABELS } from "@/lib/relationship-types";
 import { ComicCard } from "@/components/comics/comic-card";
 import { CARD_STATE_LABELS } from "@/components/characters/character-card";
 import { FavoriteButton } from "@/components/characters/favorite-button";
+import { VersionPicker } from "@/components/characters/version-picker";
 import { BackLink, PublisherStrip, SectionHeading } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { getCharacterDetail } from "@/server/services/discovery";
@@ -36,18 +37,28 @@ export async function generateMetadata({
 
 export default async function CharacterPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ series?: string | string[] }>;
 }) {
   // Bloqueado, inexistente o id no válido: la misma página 404.
   const character = await loadCharacter((await params).id);
   if (!character) notFound();
+  // Si vienes de un álbum (?series=), la ficha enseña su versión en esa serie.
+  const { series } = await searchParams;
+  const version = character.versions.find((v) => v.seriesId === series);
+  const image = version?.imageUrl ?? character.imageUrl;
 
   return (
     // Con el color de su editorial (rojo Marvel, azul DC) aunque estés en la otra zona.
     <main data-publisher={zoneOfPublisher(character.publisher) ?? undefined} className="mx-auto max-w-4xl px-4 py-6 md:px-8 md:py-8">
       <div className="flex flex-wrap justify-between gap-2 text-sm">
-        <BackLink href="/collection">Mi colección</BackLink>
+        {version ? (
+          <BackLink href={`/collection/${version.seriesId}`}>{version.seriesTitle}</BackLink>
+        ) : (
+          <BackLink href="/collection">Mi colección</BackLink>
+        )}
         <Link
           href={`/graph?focus=${character.id}`}
           className="inline-flex min-h-11 items-center gap-2 px-2 text-ink-soft transition-colors hover:text-ink"
@@ -60,9 +71,9 @@ export default async function CharacterPage({
 
       <div className="mt-4 grid gap-6 sm:grid-cols-[minmax(0,16rem)_1fr]">
         <div className="relative aspect-3/4 w-full max-w-64 overflow-hidden rounded-lg border border-edge bg-sheet">
-          {character.imageUrl ? (
+          {image ? (
             <Image
-              src={character.imageUrl}
+              src={image}
               alt={`Imagen de ${character.name}`}
               fill
               unoptimized
@@ -86,6 +97,7 @@ export default async function CharacterPage({
             {character.realName && (
               <p className="mt-1 text-sm text-ink-soft">{character.realName}</p>
             )}
+            {version && <p className="mt-1 text-xs text-ink-soft">Versión de {version.seriesTitle}</p>}
           </div>
 
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-y border-edge py-2 text-sm text-ink">
@@ -127,6 +139,22 @@ export default async function CharacterPage({
           )}
         </div>
       </div>
+
+      {character.versions.length > 0 && (
+        <section aria-labelledby="versions-heading" className="mt-8">
+          <SectionHeading id="versions-heading" title="Sus versiones" />
+          <p className="mt-1 max-w-prose text-sm text-ink-soft">
+            Elige con qué imagen sale su carta en el álbum de cada serie que has leído.
+          </p>
+          <VersionPicker
+            characterId={character.id}
+            characterName={character.name}
+            originalImage={character.imageUrl ?? character.imageThumbUrl}
+            versions={character.versions}
+            initialSeriesId={version?.seriesId}
+          />
+        </section>
+      )}
 
       <section aria-labelledby="relationships-heading" className="mt-8">
         <SectionHeading id="relationships-heading" title="Relaciones descubiertas" />

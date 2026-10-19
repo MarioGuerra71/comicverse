@@ -1,7 +1,11 @@
 // Reglas de seguridad HTTP (puras, con tests). Las aplica src/proxy.ts.
 
-/** Dominios externos de los que cargamos imágenes (hotlinking de Comic Vine). */
-const IMAGE_HOSTS = ["https://comicvine.gamespot.com"];
+/**
+ * De dónde cargamos imágenes: Comic Vine (hotlinking) y cualquier web con HTTPS, porque cada
+ * usuario puede pegar el enlace que quiera para la imagen de un personaje (solo la ve él).
+ * Una imagen no ejecuta código; lo peligroso (scripts) sigue limitado por script-src.
+ */
+const IMAGE_HOSTS = ["https://comicvine.gamespot.com", "https:"];
 
 /**
  * Content Security Policy con nonce: el navegador solo ejecuta scripts que lleven el nonce

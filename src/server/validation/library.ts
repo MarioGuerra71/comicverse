@@ -26,6 +26,9 @@ export const bulkStatusSchema = z.object({
 
 export const librarySearchSchema = z.object({
   status: readingStatusSchema.optional(),
+  // «series»: una carpeta por serie; al abrir una, `series` filtra la rejilla a sus cómics.
+  view: z.enum(["comics", "series"]).default("comics"),
+  series: z.uuid().optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(60).default(24),
 });

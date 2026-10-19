@@ -15,6 +15,7 @@ import {
   toCastPage,
   toCharacterDetail,
   toCharacterSummary,
+  toCharacterVersions,
   toCollection,
   type CharacterSummaryDto,
 } from "@/server/dto/character";
@@ -34,6 +35,10 @@ import {
   findCuratedRelationships,
   findComicByExternalId,
   findUnlockedCharacters,
+  deleteVersionImage,
+  findVersionImages,
+  hasReadCharacterInSeries,
+  saveVersionImage,
 } from "@/server/repositories/characters";
 
 type Db = PrismaClient | Prisma.TransactionClient;
@@ -216,9 +221,10 @@ export async function getCharacterDetail(db: PrismaClient, userId: string, id: s
   );
   if (!detail) return null;
 
-  const [unlocked, relationships] = await Promise.all([
+  const [unlocked, relationships, chosen] = await Promise.all([
     findUnlockedCharacters(db, userId),
     getRelationships(db),
+    findVersionImages(db, userId, { characterId: id }),
   ]);
   const unlockedById = new Map(unlocked.map((c) => [c.id, c]));
   // Primero las curadas (con tipo), después por puntuación.
@@ -238,7 +244,25 @@ export async function getCharacterDetail(db: PrismaClient, userId: string, id: s
     ...detail,
     relationships: discovered,
     hiddenRelationships: mine.length - discovered.length,
+    versions: toCharacterVersions(detail.comics, chosen),
   };
+}
+
+/**
+ * Elige (o, con null, quita) la imagen de un personaje en una serie. Solo si has leído algún
+ * cómic de esa serie en el que aparece; si no, CharacterNotFoundError (no se revela nada).
+ */
+export async function setCharacterVersionImage(
+  db: PrismaClient,
+  userId: string,
+  characterId: string,
+  seriesId: string,
+  imageUrl: string | null,
+) {
+  if (!(await hasReadCharacterInSeries(db, userId, characterId, seriesId))) throw new CharacterNotFoundError();
+  if (imageUrl) await saveVersionImage(db, userId, characterId, seriesId, imageUrl);
+  else await deleteVersionImage(db, userId, characterId, seriesId);
+  return { imageUrl };
 }
 
 /** Marca o desmarca un favorito. Bloqueado o inexistente: CharacterNotFoundError (no se revela nada). */
@@ -299,13 +323,17 @@ export async function getCastPage(db: PrismaClient, userId: string, zone: Zone, 
  * Incluye la zona de su editorial para pintarlo con su color aunque estés en la otra zona.
  */
 export async function getAlbum(db: PrismaClient, userId: string, seriesId: string) {
-  const [rows, full, publisherSlug] = await Promise.all([
+  const [rows, full, publisherSlug, chosen] = await Promise.all([
     findSeriesAlbumRows(db, userId, seriesId),
     getCollection(db, userId),
     findSeriesPublisherSlug(db, seriesId),
+    findVersionImages(db, userId, { seriesId }),
   ]);
   if (rows.length === 0 || !publisherSlug) return null;
-  const [album] = toAlbums(rows, new Map(full.cards.map((c) => [c.id, c])));
+  // En el álbum, cada carta lleva la imagen que elegiste para esta serie (si elegiste una).
+  const images = new Map(chosen.map((c) => [c.characterId, c.imageUrl]));
+  const cards = full.cards.map((c) => ({ ...c, imageThumbUrl: images.get(c.id) ?? c.imageThumbUrl }));
+  const [album] = toAlbums(rows, new Map(cards.map((c) => [c.id, c])));
   const zone = (Object.keys(ZONES) as Zone[]).find((z) => ZONES[z].publisherSlug === publisherSlug) ?? null;
   return { album, zone };
 }

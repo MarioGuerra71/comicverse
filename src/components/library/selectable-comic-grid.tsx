@@ -80,8 +80,8 @@ export function SelectableComicGrid({ items }: { items: GridItem[] }) {
   const count = selected.size;
 
   return (
-    <div className="mt-6">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="mt-4">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {selecting ? (
           <>
             <button
@@ -96,8 +96,12 @@ export function SelectableComicGrid({ items }: { items: GridItem[] }) {
             </button>
           </>
         ) : (
-          <button type="button" onClick={() => setSelecting(true)} className={outlineButton}>
-            <CheckIcon size={18} />
+          <button
+            type="button"
+            onClick={() => setSelecting(true)}
+            className="inline-flex min-h-11 items-center gap-1.5 text-sm text-ink-soft transition-colors hover:text-ink"
+          >
+            <CheckIcon size={16} />
             Seleccionar varios
           </button>
         )}

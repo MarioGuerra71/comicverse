@@ -302,3 +302,34 @@ export function packGroups<T extends { members: unknown[] }>(groups: T[], cols: 
   }
   return packed;
 }
+
+export interface CharacterVersionDto {
+  seriesId: string;
+  seriesTitle: string;
+  /** La imagen que has elegido para esta serie; null = la de siempre. */
+  imageUrl: string | null;
+  /** Portadas de los cómics que has leído de esta serie con él: las opciones para elegir. */
+  covers: string[];
+}
+
+/** Una versión por cada serie en la que has leído al personaje, en orden de lectura. */
+export function toCharacterVersions(
+  comics: { comic: ComicListItemDto; status: ReadingStatus }[],
+  chosen: { seriesId: string; imageUrl: string }[],
+): CharacterVersionDto[] {
+  const images = new Map(chosen.map((c) => [c.seriesId, c.imageUrl]));
+  const versions = new Map<string, CharacterVersionDto>();
+  for (const { comic, status } of comics) {
+    if (status !== "READ") continue;
+    const { id, name, startYear } = comic.series;
+    const version = versions.get(id) ?? {
+      seriesId: id,
+      seriesTitle: startYear ? `${name} (${startYear})` : name,
+      imageUrl: images.get(id) ?? null,
+      covers: [],
+    };
+    if (comic.coverThumbUrl && !version.covers.includes(comic.coverThumbUrl)) version.covers.push(comic.coverThumbUrl);
+    versions.set(id, version);
+  }
+  return [...versions.values()];
+}

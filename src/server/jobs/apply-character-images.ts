@@ -1,10 +1,6 @@
 import { z } from "zod";
 import type { PrismaClient } from "../../../generated/prisma/client";
-
-// Solo imágenes de Comic Vine: es el único dominio de imágenes que permite la CSP (img-src).
-const comicVineImage = z
-  .url()
-  .refine((url) => url.startsWith("https://comicvine.gamespot.com/"), "Debe ser una imagen de comicvine.gamespot.com");
+import { comicVineImageSchema as comicVineImage } from "@/server/validation/collection";
 
 const fileSchema = z.object({
   images: z.array(

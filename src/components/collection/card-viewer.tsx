@@ -22,11 +22,14 @@ const reducedMotion = () =>
 export function CardViewer({
   card,
   total,
+  seriesId,
   from,
   onClosed,
 }: {
   card: CollectionCardDto;
   total: number;
+  /** Serie del álbum: la ficha se abre con la versión del personaje en esta serie. */
+  seriesId: string;
   from: DOMRect;
   onClosed: () => void;
 }) {
@@ -177,8 +180,8 @@ export function CardViewer({
                   <dd className="text-ink">{card.isFavorite ? "Sí" : "No"}</dd>
                 </dl>
                 <div className="mt-auto flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
-                  <Link href={`/characters/${card.id}`} className="inline-flex min-h-11 items-center text-sm text-ink underline">
-                    Ver su ficha completa
+                  <Link href={`/characters/${card.id}?series=${seriesId}`} className="inline-flex min-h-11 items-center text-sm text-ink underline">
+                    Ver su ficha y cambiar su imagen
                   </Link>
                   <Link href={`/graph?focus=${card.id}`} className="inline-flex min-h-11 items-center text-sm text-ink underline">
                     Ver su reparto en el universo

@@ -25,6 +25,9 @@ describe("buildCsp", () => {
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("object-src 'none'");
     expect(csp).toContain("https://comicvine.gamespot.com");
+    // Imágenes de cualquier web, pero solo por HTTPS (nunca http:).
+    expect(csp).toMatch(/img-src [^;]* https:( |;|$)/);
+    expect(csp).not.toMatch(/img-src [^;]*http:/);
     expect(csp).toContain("upgrade-insecure-requests");
   });
 

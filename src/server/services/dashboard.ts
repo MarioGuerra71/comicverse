@@ -83,11 +83,13 @@ export async function getRecentActivity(db: PrismaClient, userId: string, limit:
 
 /** Todo lo que necesita la portada privada. */
 export async function getDashboard(db: PrismaClient, userId: string, zone?: Zone) {
-  const [stats, recentLibrary, recentDiscoveries, activity] = await Promise.all([
+  // Solo lo que estás leyendo y lo ya leído: los pendientes y abandonados no salen en el Inicio.
+  const [stats, reading, read, recentDiscoveries, activity] = await Promise.all([
     getDashboardStats(db, userId, zone),
-    listLibrary(db, userId, { page: 1, pageSize: 6 }, zone),
+    listLibrary(db, userId, { status: "READING", page: 1, pageSize: 1 }, zone),
+    listLibrary(db, userId, { status: "READ", page: 1, pageSize: 6 }, zone),
     getRecentDiscoveries(db, userId, 6, zone),
     getRecentActivity(db, userId, 8, zone),
   ]);
-  return { stats, recentComics: recentLibrary.items, recentDiscoveries, activity };
+  return { stats, recentComics: [...reading.items, ...read.items].slice(0, 6), recentDiscoveries, activity };
 }

@@ -28,12 +28,19 @@ describe("setStatusSchema", () => {
 
 describe("librarySearchSchema", () => {
   it("aplica valores por defecto", () => {
-    expect(librarySearchSchema.parse({})).toEqual({ page: 1, pageSize: 24 });
+    expect(librarySearchSchema.parse({})).toEqual({ view: "comics", page: 1, pageSize: 24 });
   });
 
   it("acepta un filtro de estado y rechaza uno inválido", () => {
     expect(librarySearchSchema.parse({ status: "READ" }).status).toBe("READ");
     expect(librarySearchSchema.safeParse({ status: "x" }).success).toBe(false);
+  });
+
+  it("acepta la vista por series y una serie (solo UUID)", () => {
+    expect(librarySearchSchema.parse({ view: "series" }).view).toBe("series");
+    expect(librarySearchSchema.safeParse({ view: "carpetas" }).success).toBe(false);
+    expect(librarySearchSchema.safeParse({ series: "1; DROP TABLE" }).success).toBe(false);
+    expect(librarySearchSchema.safeParse({ series: "4b1e7a52-8d0c-4f7e-9b5a-2c6d3e1f0a9b" }).success).toBe(true);
   });
 
   it("limita el tamaño de página", () => {

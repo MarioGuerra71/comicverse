@@ -196,3 +196,31 @@ export async function findSeriesCovers(db: Db, seriesIds: string[]) {
   });
   return new Map(rows.map((r) => [r.seriesId, r.coverThumbUrl]));
 }
+
+/** ¿Has leído algún cómic de la serie en el que aparece? (para poder elegir su versión). */
+export async function hasReadCharacterInSeries(db: Db, userId: string, characterId: string, seriesId: string) {
+  const count = await db.comicCharacter.count({
+    where: { characterId, comic: { seriesId, userEntries: { some: { userId, status: "READ" } } } },
+  });
+  return count > 0;
+}
+
+/** Tus imágenes de versión: de un personaje (todas sus series) o de una serie (todos sus personajes). */
+export function findVersionImages(db: Db, userId: string, where: { characterId: string } | { seriesId: string }) {
+  return db.characterVersionImage.findMany({
+    where: { userId, ...where },
+    select: { characterId: true, seriesId: true, imageUrl: true },
+  });
+}
+
+export function saveVersionImage(db: Db, userId: string, characterId: string, seriesId: string, imageUrl: string) {
+  return db.characterVersionImage.upsert({
+    where: { userId_characterId_seriesId: { userId, characterId, seriesId } },
+    create: { userId, characterId, seriesId, imageUrl },
+    update: { imageUrl },
+  });
+}
+
+export function deleteVersionImage(db: Db, userId: string, characterId: string, seriesId: string) {
+  return db.characterVersionImage.deleteMany({ where: { userId, characterId, seriesId } });
+}

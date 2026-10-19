@@ -205,3 +205,24 @@ export function PencilIcon(props: IconProps) {
     </Svg>
   );
 }
+
+/** Vista en rejilla: cuatro portadas. */
+export function GridIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="4" y="4" width="6.5" height="7" rx="1" />
+      <rect x="13.5" y="4" width="6.5" height="7" rx="1" />
+      <rect x="4" y="13" width="6.5" height="7" rx="1" />
+      <rect x="13.5" y="13" width="6.5" height="7" rx="1" />
+    </Svg>
+  );
+}
+
+/** Vista por series: una carpeta. */
+export function FolderIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3.5 7.5V18a1 1 0 0 0 1 1h15a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-7.5L10 5.5H4.5a1 1 0 0 0-1 1z" />
+    </Svg>
+  );
+}
