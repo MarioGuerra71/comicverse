@@ -1,4 +1,3 @@
-import { ZONES } from "@/lib/zones";
 import { getZone } from "@/server/zone";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -19,12 +18,8 @@ const percent = (part: number, total: number) => (total ? Math.round((part / tot
 export default async function DashboardPage() {
   const user = await requireUser();
   const zone = await getZone();
-  const { stats, recentComics, recentDiscoveries, activity } = await getDashboard(db, user.id, zone);
-  const isNew = stats.library.total === 0;
-
-  const universe = percent(stats.characters.unlocked, stats.characters.total);
-  // La caja de luz: lo que estás leyendo ahora (o lo último que tocaste).
-  const hero = recentComics.find((item) => item.status === "READING") ?? recentComics[0];
+  const { stats, recentComics, hero, heroSeries, recentDiscoveries, activity } = await getDashboard(db, user.id, zone);
+  const seriesPercent = heroSeries ? percent(heroSeries.read, heroSeries.total) : 0;
   const longbox = recentComics.filter((item) => item !== hero);
 
   return (
@@ -103,25 +98,26 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          {/* La cifra monumental: cuánto de tu universo ya está encendido. */}
-          <div className="text-center md:text-right">
-            <p className="neon font-display text-[clamp(5rem,14vw,9rem)] leading-[0.8] font-black">{universe}%</p>
-            <p className="mt-2 text-sm leading-tight tracking-wide text-ink-soft uppercase">
-              del universo {ZONES[zone].label} encendido
-            </p>
-            <progress
-              value={universe}
-              max={100}
-              aria-label={`${universe}% del universo ${ZONES[zone].label}`}
-              className="mt-3 h-1.5 w-full overflow-hidden rounded-full md:w-56"
-            />
-            {!isNew && (
-              <p className="mt-2 text-xs text-ink-soft">
-                {stats.library.READING} leyendo · {stats.library.PENDING} pendientes · {stats.library.DROPPED}{" "}
-                abandonados
+          {/* Cuánto llevas de la serie del cómic de la caja de luz. */}
+          {heroSeries && hero && (
+            <div className="text-center md:text-right">
+              <p className="text-xs tracking-wide text-ink-soft uppercase">
+                {hero.status === "READING" ? "Leyendo" : "Último leído"}
               </p>
-            )}
-          </div>
+              <p className="mt-1 text-sm font-bold text-ink">{heroSeries.name}</p>
+              <p className="mt-3 font-display text-4xl leading-none font-extrabold text-ink tabular-nums">
+                {heroSeries.read}
+                <span className="text-xl text-ink-soft">/{heroSeries.total}</span>
+              </p>
+              <progress
+                value={seriesPercent}
+                max={100}
+                aria-label={`${heroSeries.read} de ${heroSeries.total} leídos de ${heroSeries.name}`}
+                className="mt-3 h-1.5 w-full overflow-hidden rounded-full md:w-56"
+              />
+              <p className="mt-2 text-xs text-ink-soft">{seriesPercent}% de la serie leída</p>
+            </div>
+          )}
         </div>
       </section>
 

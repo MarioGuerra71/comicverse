@@ -1,7 +1,7 @@
 import type { Zone } from "@/lib/zones";
 import type { PrismaClient } from "../../../generated/prisma/client";
 import { toCharacterSummary, type CharacterSummaryDto } from "@/server/dto/character";
-import { countSeriesProgress } from "@/server/repositories/comics";
+import { countReadInSeries, countSeriesProgress } from "@/server/repositories/comics";
 import { findDiscoveriesPage, findRecentDiscoveries } from "@/server/repositories/discoveries";
 import { countByStatus, findRecentHistory } from "@/server/repositories/library";
 import type { ReadingStatus } from "@/server/domain/library-status";
@@ -91,5 +91,11 @@ export async function getDashboard(db: PrismaClient, userId: string, zone?: Zone
     getRecentDiscoveries(db, userId, 6, zone),
     getRecentActivity(db, userId, 8, zone),
   ]);
-  return { stats, recentComics: [...reading.items, ...read.items].slice(0, 6), recentDiscoveries, activity };
+  const recentComics = [...reading.items, ...read.items].slice(0, 6);
+  // Lo que estás leyendo (o lo último leído) y cuánto llevas de su serie.
+  const hero = recentComics[0];
+  const heroSeries = hero
+    ? { name: hero.comic.series.name, ...(await countReadInSeries(db, userId, hero.comic.series.id)) }
+    : null;
+  return { stats, recentComics, hero, heroSeries, recentDiscoveries, activity };
 }

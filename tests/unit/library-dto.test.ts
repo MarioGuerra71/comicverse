@@ -70,10 +70,10 @@ describe("toLibraryItem", () => {
 describe("groupBySeries", () => {
   const entry = (seriesId: string, status: "READ" | "PENDING", cover: string | null) => ({
     status,
-    comic: { coverThumbUrl: cover, series: { id: seriesId, name: `Serie ${seriesId}`, startYear: 2024 } },
+    comic: { coverThumbUrl: cover, series: { id: seriesId, name: `Serie ${seriesId}`, startYear: 2024, _count: { comics: 100 } } },
   });
 
-  it("agrupa por serie en el orden de llegada, cuenta leídos y guarda hasta 3 portadas", () => {
+  it("agrupa por serie en el orden de llegada, cuenta leídos sobre el total de la serie y guarda hasta 3 portadas", () => {
     const groups = groupBySeries([
       entry("b", "READ", "b1"),
       entry("a", "PENDING", "a1"),
@@ -83,7 +83,8 @@ describe("groupBySeries", () => {
       entry("b", "READ", "b4"),
     ]);
     expect(groups.map((g) => g.id)).toEqual(["b", "a"]);
-    expect(groups[0]).toMatchObject({ total: 5, read: 4, covers: ["b1", "b2", "b3"] });
-    expect(groups[1]).toMatchObject({ total: 1, read: 0, covers: ["a1"] });
+    expect(groups[0]).toMatchObject({ total: 100, read: 4, covers: ["b1", "b2", "b3"] });
+    expect(groups[1]).toMatchObject({ total: 100, read: 0, covers: ["a1"] });
+    expect(Object.keys(groups[0])).not.toContain("_count");
   });
 });

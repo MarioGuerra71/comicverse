@@ -119,7 +119,7 @@ export function findLibrarySeriesRows(db: PrismaClient, userId: string, status?:
     orderBy: [{ updatedAt: "desc" }, { comicId: "asc" }],
     select: {
       status: true,
-      comic: { select: { coverThumbUrl: true, series: { select: { id: true, name: true, startYear: true } } } },
+      comic: { select: { coverThumbUrl: true, series: { select: { id: true, name: true, startYear: true, _count: { select: { comics: true } } } } } },
     },
   });
 }

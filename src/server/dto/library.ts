@@ -89,12 +89,19 @@ export interface LibrarySeriesDto {
 
 /** Agrupa las entradas por serie; las carpetas salen en el orden de su entrada más reciente. */
 export function groupBySeries(
-  rows: { status: ReadingStatus; comic: { coverThumbUrl: string | null; series: { id: string; name: string; startYear: number | null } } }[],
+  rows: {
+    status: ReadingStatus;
+    comic: {
+      coverThumbUrl: string | null;
+      series: { id: string; name: string; startYear: number | null; _count: { comics: number } };
+    };
+  }[],
 ): LibrarySeriesDto[] {
   const groups = new Map<string, LibrarySeriesDto>();
   for (const { status, comic } of rows) {
-    const group = groups.get(comic.series.id) ?? { ...comic.series, covers: [], total: 0, read: 0 };
-    group.total += 1;
+    const { id, name, startYear, _count } = comic.series;
+    // El total es la serie entera del catálogo, no solo lo que tienes en la biblioteca.
+    const group = groups.get(id) ?? { id, name, startYear, covers: [], total: _count.comics, read: 0 };
     if (status === "READ") group.read += 1;
     if (comic.coverThumbUrl && group.covers.length < 3) group.covers.push(comic.coverThumbUrl);
     groups.set(comic.series.id, group);

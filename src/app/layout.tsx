@@ -27,6 +27,7 @@ const display = Big_Shoulders({
 export const metadata: Metadata = {
   title: "ComicVerse",
   description: "Descubre el universo de los cómics mientras lo lees.",
+  icons: { icon: "/icon-192.png", apple: "/apple-icon.png" },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
