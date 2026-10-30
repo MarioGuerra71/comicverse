@@ -28,7 +28,7 @@ describe("setStatusSchema", () => {
 
 describe("librarySearchSchema", () => {
   it("aplica valores por defecto", () => {
-    expect(librarySearchSchema.parse({})).toEqual({ view: "comics", order: "recent", page: 1, pageSize: 24 });
+    expect(librarySearchSchema.parse({})).toEqual({ view: "series", order: "recent", page: 1, pageSize: 24 });
   });
 
   it("acepta un filtro de estado y rechaza uno inválido", () => {

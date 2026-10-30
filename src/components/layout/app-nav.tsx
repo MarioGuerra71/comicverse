@@ -82,8 +82,20 @@ export function BottomNav() {
       aria-label="Principal"
       className="glass fixed inset-x-0 bottom-0 z-30 border-t border-edge pb-[env(safe-area-inset-bottom)] md:hidden"
     >
+      {/* Opaco: dentro de la barra de cristal el desenfoque no funciona y se transparentaba la página. */}
       {open && (
-        <ul id="more-menu" className="absolute inset-x-0 bottom-full glass grid grid-cols-2 gap-2 border-t border-edge p-3">
+        <button
+          type="button"
+          aria-label="Cerrar el menú"
+          onClick={() => setOpen(false)}
+          className="absolute inset-x-0 bottom-full h-dvh bg-black/70"
+        />
+      )}
+      {open && (
+        <ul
+          id="more-menu"
+          className="absolute inset-x-0 bottom-full grid grid-cols-2 gap-2 rounded-t-2xl border-t border-edge bg-paper-raised p-3 shadow-[0_-16px_40px_rgb(0_0_0/0.6)]"
+        >
           {[...extra, { href: "/profile", label: "Perfil", Icon: HomeIcon, match: ["/profile"] }].map(
             ({ href, label, Icon, match }) => {
               const active = isActive(pathname, match);
@@ -94,7 +106,7 @@ export function BottomNav() {
                     aria-current={active ? "page" : undefined}
                     onClick={() => setOpen(false)}
                     className={`flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-semibold ring-1 ${
-                      active ? "bg-editor/15 text-ink ring-editor" : "bg-sheet text-ink ring-edge"
+                      active ? "bg-editor/15 text-ink ring-editor" : "bg-sheet-raised text-ink ring-edge"
                     }`}
                   >
                     {href === "/profile" ? <span aria-hidden="true" className="h-5 w-5 rounded-full border-2 border-current" /> : <Icon size={20} />}

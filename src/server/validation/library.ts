@@ -27,7 +27,7 @@ export const bulkStatusSchema = z.object({
 export const librarySearchSchema = z.object({
   status: readingStatusSchema.optional(),
   // «series»: una carpeta por serie; al abrir una, `series` filtra la rejilla a sus cómics.
-  view: z.enum(["comics", "series"]).default("comics"),
+  view: z.enum(["comics", "series"]).default("series"),
   series: z.uuid().optional(),
   // Orden de las carpetas: recientes, las más cerca de terminar o por nombre.
   order: z.enum(["recent", "closest", "name"]).default("recent"),

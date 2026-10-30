@@ -31,9 +31,10 @@ type HrefInput = Partial<Pick<LibrarySearchInput, "status" | "view" | "series" |
 function libraryHref({ status, view, series, order, page }: HrefInput) {
   const query = new URLSearchParams();
   if (status) query.set("status", status);
-  if (view === "series") query.set("view", view);
+  // «Series» es la vista por defecto: solo la otra va en la URL.
+  if (view === "comics") query.set("view", view);
   if (series) query.set("series", series);
-  if (view === "series" && order && order !== "recent") query.set("order", order);
+  if (view !== "comics" && order && order !== "recent") query.set("order", order);
   if (page && page > 1) query.set("page", String(page));
   const queryString = query.toString();
   return queryString ? `/library?${queryString}` : "/library";
