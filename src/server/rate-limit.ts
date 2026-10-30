@@ -3,7 +3,7 @@ import type { PrismaClient } from "../../generated/prisma/client";
 /** Límites de lo que cuesta peticiones a Comic Vine (su cuota es por hora y compartida por todos). */
 export const LIMITS = {
   // Importar una serie son varias peticiones: pocas por hora y lector.
-  seriesImport: { max: 5, windowMs: 60 * 60 * 1000 },
+  seriesImport: { max: 15, windowMs: 60 * 60 * 1000 },
   // Cada búsqueda en el catálogo es una petición a Comic Vine.
   remoteSearch: { max: 30, windowMs: 60 * 60 * 1000 },
   // Cada demo crea una cuenta y marca una docena de cómics: pocas por hora y IP.

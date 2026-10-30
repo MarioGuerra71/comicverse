@@ -30,11 +30,28 @@ async function unrarPages(data: Uint8Array): Promise<ArchivePage[]> {
   return pages;
 }
 
+// Archivos ocultos que no son páginas: los «._001.jpg» y «__MACOSX/» que deja un Mac al comprimir
+// (se llaman como una imagen, van primero y rompían la portada) y los «.algo» de cualquier sistema.
+export const isHiddenEntry = (name: string) => /(^|[\\/])(__MACOSX[\\/]|\.)/.test(name);
+
+/** ¿Es de verdad una imagen? Se miran sus primeros bytes (JPEG, PNG, GIF, WebP o AVIF). */
+export function looksLikeImage(b: Uint8Array) {
+  const ascii = (from: number, to: number) => String.fromCharCode(...b.subarray(from, to));
+  return (
+    (b[0] === 0xff && b[1] === 0xd8) ||
+    ascii(1, 4) === "PNG" ||
+    ascii(0, 3) === "GIF" ||
+    (ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") ||
+    ascii(4, 8) === "ftyp"
+  );
+}
+
 /** Las páginas (solo imágenes) en orden natural de nombre: «2.jpg» antes que «10.jpg». */
 export async function readArchivePages(file: File): Promise<ArchivePage[]> {
   const data = new Uint8Array(await file.arrayBuffer());
-  const pages = isZip(data) ? await unzipPages(data) : isRar(data) ? await unrarPages(data) : null;
-  if (!pages) throw new Error("UNSUPPORTED_FORMAT");
+  const all = isZip(data) ? await unzipPages(data) : isRar(data) ? await unrarPages(data) : null;
+  if (!all) throw new Error("UNSUPPORTED_FORMAT");
+  const pages = all.filter((p) => !isHiddenEntry(p.name) && looksLikeImage(p.data));
   if (pages.length === 0) throw new Error("NO_PAGES");
   return pages.sort((a, b) => naturalCompare(a.name, b.name));
 }

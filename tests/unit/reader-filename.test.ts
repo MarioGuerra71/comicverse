@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { naturalCompare, parseComicFileName, pickBestMatch, searchQuery } from "@/lib/reader/filename";
+import { naturalCompare, parseComicFileName, seriesKey, yearFromPath } from "@/lib/reader/filename";
 
 describe("parseComicFileName", () => {
   it.each([
@@ -9,37 +9,33 @@ describe("parseComicFileName", () => {
     ["X-Men 1.5 [scan].cbz", { series: "X-Men", issue: "1.5", year: null }],
     ["Absolute Flash 03 of 12 (2025).cbr", { series: "Absolute Flash", issue: "3", year: 2025 }],
     ["Batman - Year One.cbz", { series: "Batman - Year One", issue: null, year: null }],
+    // Casos reales de la carpeta del usuario.
+    ["Absolute Martian Manhunter #001.cbr", { series: "Absolute Martian Manhunter", issue: "1", year: null }],
+    ["Green Lantern - Rebirth #1.cbr", { series: "Green Lantern - Rebirth", issue: "1", year: null }],
+    [
+      "310 - Green Lantern Corps Recharge #01.howtoarsenio.blogspot.com.cbr",
+      { series: "Green Lantern Corps Recharge", issue: "1", year: null },
+    ],
+    ["02 - Green Lantern #21.cbr", { series: "Green Lantern", issue: "21", year: null }],
+    ["Absolute Batman Annual 01.cbz", { series: "Absolute Batman Annual", issue: "1", year: null }],
+    ["Absolute Green Lantern 017.cbr", { series: "Absolute Green Lantern", issue: "17", year: null }],
+    ["Green Lantern Corps (53).cbr", { series: "Green Lantern Corps", issue: "53", year: null }],
+    ["09Green Lantern Corps #60.cbr", { series: "Green Lantern Corps", issue: "60", year: null }],
+    ["GL Emerald Warriors 03.cbr", { series: "Green Lantern Emerald Warriors", issue: "3", year: null }],
   ])("%s", (name, expected) => {
     expect(parseComicFileName(name)).toEqual(expected);
   });
 
-  it("la búsqueda usa el formato de título del catálogo", () => {
-    expect(searchQuery({ series: "Green Lantern", issue: "20", year: null })).toBe("Green Lantern #20");
+  it("si el nombre no trae año, lo toma de la carpeta", () => {
+    expect(parseComicFileName("Green Lantern #21.cbr", "GREEN LANTERN 2005/08 - Sinestro").year).toBe(2005);
+    expect(yearFromPath("DC UNIVERSO ABSOLUTE/Absolute Batman")).toBeNull();
   });
 });
 
-describe("pickBestMatch", () => {
-  const comic = (id: string, title: string, date: string | null) => ({
-    id,
-    title,
-    releaseDate: date,
-    series: { startYear: null },
-  });
-  const candidates = [
-    comic("old", "Green Lantern #20", "1963-04-01"),
-    comic("new", "Green Lantern #20", "2025-03-12"),
-    comic("other", "Green Lantern #200", "1986-05-01"),
-  ];
-
-  it("con varias series del mismo nombre elige la del año más cercano", () => {
-    expect(pickBestMatch(candidates, { series: "Green Lantern", issue: "20", year: 2025 })?.id).toBe("new");
-    expect(pickBestMatch(candidates, { series: "Green Lantern", issue: "20", year: 1960 })?.id).toBe("old");
-  });
-
-  it("sin año y con dudas no elige; con un solo título exacto, sí", () => {
-    expect(pickBestMatch(candidates, { series: "Green Lantern", issue: "20", year: null })).toBeNull();
-    expect(pickBestMatch(candidates, { series: "Green Lantern", issue: "200", year: null })?.id).toBe("other");
-  });
+it("seriesKey iguala nombres que solo cambian en signos, mayúsculas o acentos", () => {
+  expect(seriesKey("Green Lantern: Rebirth")).toBe(seriesKey("green lantern - Rebirth"));
+  expect(seriesKey("Batman & Robin")).toBe("batmanandrobin");
+  expect(seriesKey("Pokémon")).toBe("pokemon");
 });
 
 it("naturalCompare ordena las páginas por número", () => {

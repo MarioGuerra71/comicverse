@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { CHANGE_EVENT, readLocalPage, type LocalComic } from "@/lib/reader/local-library";
-
-const KEY = "comicverse-reader-v1";
+import { CHANGE_EVENT, readLocalPage, STORAGE_KEY, type LocalComic } from "@/lib/reader/local-library";
 
 function subscribe(onChange: () => void) {
   window.addEventListener(CHANGE_EVENT, onChange);
@@ -19,7 +17,7 @@ export function useLocalComics(): LocalComic[] | null {
   // El texto guardado es estable entre lecturas; la lista se reconstruye solo si cambia.
   const raw = useSyncExternalStore(
     subscribe,
-    () => localStorage.getItem(KEY) ?? "[]",
+    () => localStorage.getItem(STORAGE_KEY) ?? "[]",
     () => null,
   );
   return useMemo(() => {
@@ -32,27 +30,29 @@ export function useLocalComics(): LocalComic[] | null {
   }, [raw]);
 }
 
-/** URL de una página guardada (se libera al cambiar o desmontar). */
-export function usePageUrl(comic: LocalComic | null, index: number) {
-  const [url, setUrl] = useState<string | null>(null);
-  // Solo datos fijos del cómic: guardar la página por la que vas no debe recargar la imagen.
-  const id = comic?.id;
-  const ext = comic?.extensions[index];
+/**
+ * URL de una página guardada (se libera al cambiar o desmontar). `failed` avisa si no se ha podido
+ * leer, para no dejar la pantalla en negro sin explicación.
+ */
+export function usePageUrl(id: string | undefined, index: number, pages = Infinity) {
+  const [state, setState] = useState<{ key: string; url: string | null; failed: boolean } | null>(null);
+  const key = `${id}/${index}`;
   useEffect(() => {
-    if (!id || !ext) return;
+    if (!id || index < 0 || index >= pages) return;
     let objectUrl: string | null = null;
     let cancelled = false;
-    readLocalPage(id, index, ext)
-      .then((file) => {
+    readLocalPage(id, index)
+      .then((blob) => {
         if (cancelled) return;
-        objectUrl = URL.createObjectURL(file);
-        setUrl(objectUrl);
+        objectUrl = URL.createObjectURL(blob);
+        setState({ key: `${id}/${index}`, url: objectUrl, failed: false });
       })
-      .catch(() => setUrl(null));
+      .catch(() => !cancelled && setState({ key: `${id}/${index}`, url: null, failed: true }));
     return () => {
       cancelled = true;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [id, index, ext]);
-  return url;
+  }, [id, index, pages]);
+  // Mientras llega la página nueva no se enseña la anterior.
+  return state?.key === key ? state : { url: null, failed: false };
 }

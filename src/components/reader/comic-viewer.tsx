@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { updateLocalComic } from "@/lib/reader/local-library";
+import { matchComics } from "@/lib/reader/linking";
 import { useLocalComics, usePageUrl } from "@/components/reader/use-local-comics";
 import { UnlockPanel, type UnlockView } from "@/components/library/unlock-panel";
 import { ArrowIcon } from "@/components/ui/icons";
@@ -46,8 +47,16 @@ export function ComicViewer({ id }: { id: string }) {
 
   // Hasta que pasas página, la de donde lo dejaste (si ya lo terminaste, desde la portada).
   const current = page ?? (comic && comic.lastPage < comic.pages - 1 ? comic.lastPage : 0);
-  const url = usePageUrl(comic, current);
-  const nextUrl = usePageUrl(comic, current + 1);
+  const { url, failed } = usePageUrl(comic?.id, current, comic?.pages);
+  const { url: nextUrl } = usePageUrl(comic?.id, current + 1, comic?.pages);
+
+  // Sin enlazar: se intenta otra vez al abrirlo (el catálogo puede tener ya su serie).
+  const unlinked = comic !== null && !comic.comicId;
+  useEffect(() => {
+    if (unlinked) void matchComics([comic]).catch(() => undefined);
+    // Solo al abrir este cómic.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, unlinked]);
 
   // Al abrir un cómic enlazado: si no estaba leído ni empezado, pasa a «Leyendo».
   const comicId = comic?.comicId ?? null;
@@ -163,6 +172,11 @@ export function ComicViewer({ id }: { id: string }) {
         onPointerUp={onSwipeEnd}
         className={`flex-1 select-none ${fit === "height" ? "flex items-center justify-center overflow-hidden" : "overflow-y-auto"}`}
       >
+        {failed && (
+          <p className="max-w-sm p-6 text-center text-sm text-white/80">
+            No se ha podido cargar esta página. Prueba a borrar el cómic del lector y añadirlo otra vez.
+          </p>
+        )}
         {url && (
           // eslint-disable-next-line @next/next/no-img-element -- página local (blob:), next/image no aporta nada
           <img
