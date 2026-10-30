@@ -108,3 +108,17 @@ export function groupBySeries(
   }
   return [...groups.values()];
 }
+
+export type SeriesOrder = "recent" | "closest" | "name";
+
+/**
+ * Ordena las carpetas. «closest»: las empezadas por el porcentaje leído (de más a menos), luego
+ * las sin empezar y al final las completas. Las que empatan siguen en orden reciente.
+ */
+export function sortSeriesFolders(series: LibrarySeriesDto[], order: SeriesOrder): LibrarySeriesDto[] {
+  if (order === "name") return [...series].sort((a, b) => a.name.localeCompare(b.name, "es"));
+  if (order === "recent") return series;
+  const rank = (s: LibrarySeriesDto) =>
+    s.total > 0 && s.read >= s.total ? -1 : s.read === 0 ? 0 : 1 + s.read / s.total;
+  return [...series].sort((a, b) => rank(b) - rank(a));
+}

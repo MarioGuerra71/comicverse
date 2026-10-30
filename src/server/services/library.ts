@@ -4,7 +4,7 @@ import {
   applyStatusChange,
   type ReadingStatus,
 } from "@/server/domain/library-status";
-import { groupBySeries, toLibraryEntry, toLibraryItem, toReview } from "@/server/dto/library";
+import { groupBySeries, sortSeriesFolders, type SeriesOrder, toLibraryEntry, toLibraryItem, toReview } from "@/server/dto/library";
 import {
   buildUnlockResult,
   snapshotUnlocked,
@@ -289,7 +289,7 @@ export function toStatusCounts(grouped: { status: ReadingStatus; _count: { _all:
 export async function listLibrary(
   db: PrismaClient,
   userId: string,
-  input: Omit<LibrarySearchInput, "view">,
+  input: Omit<LibrarySearchInput, "view" | "order">,
   zone?: Zone,
 ) {
   const [{ rows, total }, grouped] = await Promise.all([
@@ -308,6 +308,12 @@ export async function listLibrary(
 }
 
 // ponytail: agrupa en memoria toda la biblioteca; si alguien llega a miles de cómics, pasar a groupBy en SQL.
-export async function listLibrarySeries(db: PrismaClient, userId: string, status?: ReadingStatus, zone?: Zone) {
-  return groupBySeries(await findLibrarySeriesRows(db, userId, status, zone));
+export async function listLibrarySeries(
+  db: PrismaClient,
+  userId: string,
+  status?: ReadingStatus,
+  zone?: Zone,
+  order: SeriesOrder = "recent",
+) {
+  return sortSeriesFolders(groupBySeries(await findLibrarySeriesRows(db, userId, status, zone)), order);
 }

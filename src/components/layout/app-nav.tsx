@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CatalogIcon,
+  ChartIcon,
   CollectionIcon,
   CommunityIcon,
   HomeIcon,
@@ -22,6 +23,7 @@ const SECTIONS = [
   { href: "/collection", label: "Colección", Icon: CollectionIcon, match: ["/collection", "/characters"] },
   { href: "/graph", label: "Universo", Icon: UniverseIcon, match: ["/graph"] },
   { href: "/achievements", label: "Logros", Icon: TrophyIcon, match: ["/achievements"] },
+  { href: "/stats", label: "Estadísticas", Icon: ChartIcon, match: ["/stats"] },
   { href: "/community", label: "Comunidad", Icon: CommunityIcon, match: ["/community", "/u"] },
 ] as const;
 
@@ -66,7 +68,7 @@ const tabClass = (active: boolean) =>
     active ? "font-semibold text-editor-ink" : "text-ink-soft"
   }`;
 
-/** Barra inferior del móvil: 4 pestañas y «Más» (Universo, Logros, Comunidad y Perfil). */
+/** Barra inferior del móvil: 4 pestañas y «Más» (Universo, Logros, Estadísticas, Comunidad y Perfil). */
 export function BottomNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);

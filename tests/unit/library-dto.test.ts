@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { groupBySeries, toLibraryEntry, toLibraryItem } from "@/server/dto/library";
+import { groupBySeries, sortSeriesFolders, toLibraryEntry, toLibraryItem } from "@/server/dto/library";
 
 describe("toLibraryEntry", () => {
   it("convierte las fechas a texto ISO y conserva el resto", () => {
@@ -86,5 +86,22 @@ describe("groupBySeries", () => {
     expect(groups[0]).toMatchObject({ total: 100, read: 4, covers: ["b1", "b2", "b3"] });
     expect(groups[1]).toMatchObject({ total: 100, read: 0, covers: ["a1"] });
     expect(Object.keys(groups[0])).not.toContain("_count");
+  });
+});
+
+describe("sortSeriesFolders", () => {
+  const folder = (id: string, read: number, total: number) => ({ id, name: id, startYear: null, covers: [], total, read });
+  const folders = [folder("Zeta", 0, 10), folder("Alfa", 10, 10), folder("Beta", 2, 10), folder("Gamma", 8, 10)];
+
+  it("«recientes» deja el orden tal cual", () => {
+    expect(sortSeriesFolders(folders, "recent").map((f) => f.id)).toEqual(["Zeta", "Alfa", "Beta", "Gamma"]);
+  });
+
+  it("«casi terminadas»: empezadas por porcentaje, luego sin empezar y al final las completas", () => {
+    expect(sortSeriesFolders(folders, "closest").map((f) => f.id)).toEqual(["Gamma", "Beta", "Zeta", "Alfa"]);
+  });
+
+  it("«A-Z» ordena por nombre", () => {
+    expect(sortSeriesFolders(folders, "name").map((f) => f.id)).toEqual(["Alfa", "Beta", "Gamma", "Zeta"]);
   });
 });

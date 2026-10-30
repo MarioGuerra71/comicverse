@@ -80,7 +80,7 @@ export function addHistory(
 export async function findLibraryPage(
   db: PrismaClient,
   userId: string,
-  input: Omit<LibrarySearchInput, "view">,
+  input: Omit<LibrarySearchInput, "view" | "order">,
   zone?: Zone,
 ) {
   const where: Prisma.UserComicWhereInput = {
@@ -144,4 +144,58 @@ export function countByStatus(db: PrismaClient, userId: string, zone?: Zone) {
     where: { userId, ...(zone ? { comic: comicInZone(zone) } : {}) },
     _count: { _all: true },
   });
+}
+/** Series que estás leyendo (con algo leído o en curso), la de tu último movimiento primero. */
+export async function findActiveSeriesIds(db: PrismaClient, userId: string, take: number, zone?: Zone) {
+  const rows = await db.userComic.findMany({
+    where: { userId, status: { in: ["READ", "READING"] }, comic: comicInZone(zone) },
+    orderBy: [{ updatedAt: "desc" }, { comicId: "asc" }],
+    take: 300,
+    select: { comic: { select: { seriesId: true } } },
+  });
+  return [...new Set(rows.map((r) => r.comic.seriesId))].slice(0, take);
+}
+
+/** Todos los números de esas series, con tu estado en cada uno. */
+export function findSeriesIssues(db: PrismaClient, userId: string, seriesIds: string[]) {
+  return db.comic.findMany({
+    where: { seriesId: { in: seriesIds } },
+    select: {
+      id: true,
+      title: true,
+      issueNumber: true,
+      releaseDate: true,
+      coverThumbUrl: true,
+      seriesId: true,
+      series: { select: { name: true } },
+      userEntries: { where: { userId }, select: { status: true } },
+    },
+  });
+}
+
+/** Números salidos desde `since` de series que sigues (con algo no abandonado) y que aún no tienes. */
+export function findNewIssues(db: PrismaClient, userId: string, since: Date, zone?: Zone) {
+  return db.comic.findMany({
+    where: {
+      // AND: comicInZone también filtra por `series` y no debe pisarse con la condición de abajo.
+      AND: [
+        comicInZone(zone),
+        { series: { comics: { some: { userEntries: { some: { userId, status: { not: "DROPPED" } } } } } } },
+      ],
+      releaseDate: { gte: since, lte: new Date() },
+      userEntries: { none: { userId } },
+    },
+    orderBy: [{ releaseDate: "desc" }, { id: "asc" }],
+    take: 60,
+    select: { id: true, title: true, coverThumbUrl: true, series: { select: { id: true, name: true } } },
+  });
+}
+
+/** Fechas de lectura de tus cómics leídos (sin fecha guardada, la del último cambio). */
+export async function findReadDates(db: PrismaClient, userId: string, zone?: Zone) {
+  const rows = await db.userComic.findMany({
+    where: { userId, status: "READ", comic: comicInZone(zone) },
+    select: { readAt: true, updatedAt: true },
+  });
+  return rows.map((r) => r.readAt ?? r.updatedAt);
 }

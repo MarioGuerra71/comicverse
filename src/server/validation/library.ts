@@ -29,6 +29,8 @@ export const librarySearchSchema = z.object({
   // «series»: una carpeta por serie; al abrir una, `series` filtra la rejilla a sus cómics.
   view: z.enum(["comics", "series"]).default("comics"),
   series: z.uuid().optional(),
+  // Orden de las carpetas: recientes, las más cerca de terminar o por nombre.
+  order: z.enum(["recent", "closest", "name"]).default("recent"),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(60).default(24),
 });

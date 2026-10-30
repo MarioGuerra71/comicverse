@@ -12,6 +12,7 @@ const zero: AchievementStats = {
   zonesWithAlbums: 0,
   unlockedMarvel: 0,
   unlockedDc: 0,
+  completedSeries: 0,
 };
 const byId = (stats: AchievementStats) => new Map(evaluateAchievements(stats).map((p) => [p.id, p]));
 
@@ -30,6 +31,12 @@ describe("evaluateAchievements", () => {
   it("cruce de universos exige 25 en cada editorial, no en total", () => {
     expect(byId({ ...zero, unlockedMarvel: 40, unlockedDc: 10 }).get("crossover-25")).toMatchObject({ done: false, current: 10 });
     expect(byId({ ...zero, unlockedMarvel: 25, unlockedDc: 25 }).get("crossover-25")?.done).toBe(true);
+  });
+
+  it("las series completas cuentan para «Serie completa» y «Completista»", () => {
+    const p = byId({ ...zero, completedSeries: 2 });
+    expect(p.get("series-1")?.done).toBe(true);
+    expect(p.get("series-5")).toMatchObject({ done: false, current: 2 });
   });
 
   it("los álbumes cuentan por porcentaje", () => {

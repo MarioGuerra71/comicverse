@@ -9,6 +9,7 @@ import {
 } from "@/server/domain/achievements";
 import { toAlbums, toCollection } from "@/server/dto/character";
 import {
+  countCompletedSeries,
   countRead,
   countReadDecades,
   findEarnedAchievements,
@@ -18,11 +19,12 @@ import { findAlbumRows, findCollection } from "@/server/repositories/characters"
 
 /** Estadísticas para los logros (lectura, colección, álbumes y editoriales). */
 export async function getAchievementStats(db: PrismaClient, userId: string): Promise<AchievementStats> {
-  const [read, decades, readMarvel, readDc, rows, ...albumRows] = await Promise.all([
+  const [read, decades, readMarvel, readDc, completedSeries, rows, ...albumRows] = await Promise.all([
     countRead(db, userId),
     countReadDecades(db, userId),
     countRead(db, userId, "marvel"),
     countRead(db, userId, "dc"),
+    countCompletedSeries(db, userId),
     findCollection(db, userId),
     ...ZONE_KEYS.map((z) => findAlbumRows(db, userId, ZONES[z].publisherSlug)),
   ]);
@@ -53,6 +55,7 @@ export async function getAchievementStats(db: PrismaClient, userId: string): Pro
     zonesWithAlbums: perZone.filter((z) => z.albums.length > 0).length,
     unlockedMarvel: zone("marvel").unlocked,
     unlockedDc: zone("dc").unlocked,
+    completedSeries,
   };
 }
 

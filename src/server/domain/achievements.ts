@@ -15,6 +15,8 @@ export interface AchievementStats {
   zonesWithAlbums: number;
   unlockedMarvel: number;
   unlockedDc: number;
+  /** Series leídas enteras (de al menos MIN_SERIES_SIZE cómics). */
+  completedSeries: number;
 }
 
 export type AchievementGroup = "READING" | "COLLECTION" | "PUBLISHERS";
@@ -49,6 +51,8 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
   count("read-50", "READING", "Ratón de biblioteca", "Lee 50 cómics.", 50, (s) => s.read),
   count("read-100", "READING", "Centenario", "Lee 100 cómics.", 100, (s) => s.read),
   count("read-500", "READING", "Leyenda de la grapa", "Lee 500 cómics.", 500, (s) => s.read),
+  count("series-1", "READING", "Serie completa", "Lee una serie entera, del primer número al último.", 1, (s) => s.completedSeries),
+  count("series-5", "READING", "Completista", "Lee 5 series enteras.", 5, (s) => s.completedSeries),
   count("decades-5", "READING", "Viajero en el tiempo", "Lee cómics de 5 décadas distintas.", 5, (s) => s.decades, true),
 
   count("unlock-1", "COLLECTION", "Primer descubrimiento", "Descubre a tu primer personaje.", 1, (s) => s.unlocked),

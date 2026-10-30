@@ -32,3 +32,28 @@ export function saveEarnedAchievements(db: PrismaClient, userId: string, ids: st
     skipDuplicates: true,
   });
 }
+
+/** Un one-shot no cuenta como «serie completa»: hace falta al menos este número de cómics. */
+export const MIN_SERIES_SIZE = 4;
+
+/** Series que has leído enteras (de una editorial, si se indica). */
+export async function countCompletedSeries(db: PrismaClient, userId: string, zone?: Zone) {
+  const slug = zone ? ZONES[zone].publisherSlug : null;
+  const [row] = await db.$queryRaw<{ completed: bigint }[]>`
+    SELECT COUNT(*) AS completed FROM (
+      SELECT c."seriesId"
+      FROM "Comic" c
+      JOIN "Series" s ON s.id = c."seriesId"
+      JOIN "Publisher" p ON p.id = s."publisherId"
+      LEFT JOIN "UserComic" uc ON uc."comicId" = c.id AND uc."userId" = ${userId} AND uc.status = 'READ'
+      WHERE (${slug}::text IS NULL OR p.slug = ${slug})
+        AND c."seriesId" IN (
+          SELECT c2."seriesId" FROM "UserComic" u2 JOIN "Comic" c2 ON c2.id = u2."comicId"
+          WHERE u2."userId" = ${userId} AND u2.status = 'READ'
+        )
+      GROUP BY c."seriesId"
+      HAVING COUNT(*) >= ${MIN_SERIES_SIZE} AND COUNT(*) = COUNT(uc."comicId")
+    ) done
+  `;
+  return Number(row?.completed ?? 0);
+}

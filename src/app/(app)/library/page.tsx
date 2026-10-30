@@ -20,13 +20,20 @@ const VIEWS = [
   { value: "series", label: "Series", Icon: FolderIcon },
 ] as const;
 
-type HrefInput = Partial<Pick<LibrarySearchInput, "status" | "view" | "series" | "page">>;
+const ORDERS = [
+  { value: "recent", label: "Recientes" },
+  { value: "closest", label: "Casi terminadas" },
+  { value: "name", label: "A-Z" },
+] as const;
 
-function libraryHref({ status, view, series, page }: HrefInput) {
+type HrefInput = Partial<Pick<LibrarySearchInput, "status" | "view" | "series" | "order" | "page">>;
+
+function libraryHref({ status, view, series, order, page }: HrefInput) {
   const query = new URLSearchParams();
   if (status) query.set("status", status);
   if (view === "series") query.set("view", view);
   if (series) query.set("series", series);
+  if (view === "series" && order && order !== "recent") query.set("order", order);
   if (page && page > 1) query.set("page", String(page));
   const queryString = query.toString();
   return queryString ? `/library?${queryString}` : "/library";
@@ -49,7 +56,7 @@ export default async function LibraryPage({
   const showFolders = input.view === "series" && !input.series;
   const [result, folders] = await Promise.all([
     listLibrary(db, user.id, input, zone),
-    showFolders ? listLibrarySeries(db, user.id, input.status, zone) : null,
+    showFolders ? listLibrarySeries(db, user.id, input.status, zone, input.order) : null,
   ]);
   const openSeries = input.series ? result.items[0]?.comic.series : undefined;
   const totalInLibrary = Object.values(result.counts).reduce((a, b) => a + b, 0);
@@ -94,7 +101,7 @@ export default async function LibraryPage({
           {VIEWS.map(({ value, label, Icon }) => (
             <Link
               key={value}
-              href={libraryHref({ status: input.status, view: value })}
+              href={libraryHref({ status: input.status, view: value, order: input.order })}
               aria-current={input.view === value ? "page" : undefined}
               aria-label={label}
               title={label}
@@ -107,10 +114,27 @@ export default async function LibraryPage({
         </nav>
       </div>
 
+      {showFolders && (
+        <nav aria-label="Orden de las series" className="mt-4 flex flex-wrap gap-x-4 text-sm">
+          {ORDERS.map(({ value, label }) => (
+            <Link
+              key={value}
+              href={libraryHref({ status: input.status, view: "series", order: value })}
+              aria-current={input.order === value ? "true" : undefined}
+              className={`inline-flex min-h-11 items-center underline-offset-4 ${
+                input.order === value ? "font-semibold text-ink underline" : "text-ink-soft hover:text-ink"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+      )}
+
       {input.series && (
         <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line pb-3">
           <Link
-            href={libraryHref({ status: input.status, view: "series" })}
+            href={libraryHref({ status: input.status, view: "series", order: input.order })}
             className="inline-flex min-h-11 items-center gap-1.5 text-sm text-ink-soft hover:text-ink"
           >
             <ArrowIcon direction="left" size={16} />
@@ -134,7 +158,7 @@ export default async function LibraryPage({
               : "Aún no tienes cómics en tu biblioteca."}
           </p>
         ) : (
-          <SeriesShelf series={folders} hrefFor={(series) => libraryHref({ status: input.status, view: "series", series })} />
+          <SeriesShelf series={folders} hrefFor={(series) => libraryHref({ status: input.status, view: "series", series, order: input.order })} />
         )
       ) : result.items.length === 0 ? (
         <div className="mt-10">

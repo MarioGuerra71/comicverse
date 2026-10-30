@@ -10,6 +10,7 @@ import { HeaderField, inkButton, SectionHeading } from "@/components/ui/page-par
 import { requireUser } from "@/server/auth/session";
 import { getDashboard } from "@/server/services/dashboard";
 import { ArrowIcon } from "@/components/ui/icons";
+import { MarkReadButton } from "@/components/library/mark-read-button";
 
 export const metadata: Metadata = { title: "Inicio · ComicVerse" };
 
@@ -18,7 +19,7 @@ const percent = (part: number, total: number) => (total ? Math.round((part / tot
 export default async function DashboardPage() {
   const user = await requireUser();
   const zone = await getZone();
-  const { stats, recentComics, hero, heroSeries, recentDiscoveries, activity } = await getDashboard(db, user.id, zone);
+  const { stats, recentComics, hero, heroSeries, recentDiscoveries, activity, nextIssues, newIssues } = await getDashboard(db, user.id, zone);
   const seriesPercent = heroSeries ? percent(heroSeries.read, heroSeries.total) : 0;
   const longbox = recentComics.filter((item) => item !== hero);
 
@@ -161,16 +162,65 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      {/* Hueco reservado para la IA (pendiente: recommendNextReads en services/ai.ts). */}
-      <section aria-labelledby="ai-heading" className="mt-12 rounded-2xl border border-dashed border-blue bg-sheet p-5">
-        <h2 id="ai-heading" className="font-display text-xl font-extrabold tracking-wide text-blue-ink uppercase">
-          Qué leer ahora
-        </h2>
-        <p className="mt-1 text-sm text-ink-soft">
-          Próximamente: recomendaciones con IA para completar tus álbumes y descubrir nuevas relaciones, sin
-          spoilers.
-        </p>
-      </section>
+      {/* El siguiente número de cada serie que llevas a medias, listo para marcar. */}
+      {nextIssues.length > 0 && (
+        <section aria-labelledby="next-heading" className="mt-12">
+          <SectionHeading id="next-heading" title="Qué leer ahora" />
+          <ul className="-mx-4 mt-4 flex gap-5 overflow-x-auto px-4 pb-2 scrollbar-none md:mx-0 md:grid md:grid-cols-6 md:overflow-visible md:px-0">
+            {nextIssues.map((item) => (
+              <li key={item.comic.id} className="w-32 shrink-0 md:w-auto">
+                <Link href={`/comics/${item.comic.id}`} className="block rounded-lg">
+                  <span className="relative block aspect-2/3 overflow-hidden rounded-lg bg-sheet ring-1 ring-edge">
+                    {item.comic.coverThumbUrl ? (
+                      <Image src={item.comic.coverThumbUrl} alt="" fill unoptimized sizes="200px" className="object-cover" />
+                    ) : (
+                      <span className="flex h-full items-center justify-center p-2 text-center text-xs text-ink-soft">
+                        Sin portada
+                      </span>
+                    )}
+                  </span>
+                  <span className="mt-3 block text-sm leading-tight font-bold text-ink">{item.comic.title}</span>
+                </Link>
+                <span className="mt-1 block text-xs text-ink-soft tabular-nums">
+                  {item.read}/{item.total} de la serie
+                </span>
+                <MarkReadButton comicId={item.comic.id} title={item.comic.title} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Números salidos este último mes de las series que sigues y que aún no tienes. */}
+      {newIssues.length > 0 && (
+        <section aria-labelledby="new-heading" className="mt-12">
+          <SectionHeading id="new-heading" title="Novedades de tus series" />
+          <ul className="mt-2 text-sm">
+            {newIssues.map((group) => (
+              <li key={group.series.id} className="flex items-center gap-3 border-b border-line py-3">
+                <span className="relative block h-14 w-10 shrink-0 overflow-hidden rounded bg-sheet ring-1 ring-edge">
+                  {group.latest.coverThumbUrl && (
+                    <Image src={group.latest.coverThumbUrl} alt="" fill unoptimized sizes="40px" className="object-cover" />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1 text-ink">
+                  <span className="font-semibold">{group.series.name}</span>
+                  <span className="block text-xs text-ink-soft">
+                    {group.count === 1 ? "1 número nuevo" : `${group.count} números nuevos`} · último:{" "}
+                    {group.latest.title}
+                  </span>
+                </span>
+                <Link
+                  href={`/comics/${group.latest.id}`}
+                  className="inline-flex min-h-11 shrink-0 items-center text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+                >
+                  Ver
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {recentDiscoveries.length > 0 && (
         <section aria-labelledby="discoveries-heading" className="mt-12">

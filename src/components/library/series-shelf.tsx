@@ -13,7 +13,8 @@ export function SeriesShelf({ series, hrefFor }: { series: LibrarySeriesDto[]; h
   return (
     <ul className="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
       {series.map((s) => {
-        const percent = Math.round((s.read / s.total) * 100);
+        const percent = s.total ? Math.round((s.read / s.total) * 100) : 0;
+        const complete = s.total > 0 && s.read >= s.total;
         return (
           <li key={s.id}>
             <Link
@@ -45,10 +46,10 @@ export function SeriesShelf({ series, hrefFor }: { series: LibrarySeriesDto[]; h
                 <span>
                   {s.read}/{s.total} leídos
                 </span>
-                <span>{percent} %</span>
+                {complete ? <span className="font-semibold text-editor-ink">Completa</span> : <span>{percent} %</span>}
               </div>
               <div className="mt-1.5 h-0.5 overflow-hidden rounded-full bg-sheet-raised" aria-hidden="true">
-                <div className="h-full rounded-full bg-ink-soft" style={{ width: `${percent}%` }} />
+                <div className={`h-full rounded-full ${complete ? "bg-editor" : "bg-ink-soft"}`} style={{ width: `${percent}%` }} />
               </div>
             </Link>
           </li>
