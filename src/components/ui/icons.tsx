@@ -138,6 +138,16 @@ export function TrophyIcon(props: IconProps) {
   );
 }
 
+/** Lector: una tablet con una página de viñetas. */
+export function ReaderIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="5" y="3" width="14" height="18" rx="2" />
+      <path d="M8 6.5h8v5H8zM8 14h3.5v3.5H8zM14 14h2v3.5h-2" />
+    </Svg>
+  );
+}
+
 /** Estadísticas: tres barras sobre una línea base. */
 export function ChartIcon(props: IconProps) {
   return (

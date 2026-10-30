@@ -18,6 +18,7 @@ import { findUnreadUpTo, getLibraryEntry, getReview } from "@/server/services/li
 import { getComicCommunity, type ComicCommunityDto } from "@/server/services/social";
 import { READING_STATUS_LABELS } from "@/lib/reading-status";
 import { LibraryControls } from "@/components/library/library-controls";
+import { LocalCopyLink } from "@/components/reader/local-copy-link";
 
 // cache: la página y su título comparten una sola consulta por petición.
 // La primera vez que se abre un cómic se traen sus personajes de Comic Vine (una petición).
@@ -143,7 +144,8 @@ export default async function ComicPage({
 
       <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
         {/* En el móvil, «Tu lectura» va primero: es lo que vienes a hacer. */}
-        <div className="lg:sticky lg:top-6 lg:order-2 lg:self-start">
+        <div className="flex flex-col gap-3 lg:sticky lg:top-6 lg:order-2 lg:self-start">
+          <LocalCopyLink comicId={comic.id} />
           <LibraryControls comicId={comic.id} entry={entry} review={review} earlierUnread={earlierUnread} />
         </div>
 

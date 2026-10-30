@@ -11,6 +11,7 @@ import {
   HomeIcon,
   LibraryIcon,
   MoreIcon,
+  ReaderIcon,
   TrophyIcon,
   UniverseIcon,
 } from "@/components/ui/icons";
@@ -20,6 +21,7 @@ const SECTIONS = [
   { href: "/dashboard", label: "Inicio", Icon: HomeIcon, match: ["/dashboard", "/discoveries"] },
   { href: "/catalog", label: "Catálogo", Icon: CatalogIcon, match: ["/catalog", "/comics"] },
   { href: "/library", label: "Biblioteca", Icon: LibraryIcon, match: ["/library"] },
+  { href: "/reader", label: "Lector", Icon: ReaderIcon, match: ["/reader"] },
   { href: "/collection", label: "Colección", Icon: CollectionIcon, match: ["/collection", "/characters"] },
   { href: "/graph", label: "Universo", Icon: UniverseIcon, match: ["/graph"] },
   { href: "/achievements", label: "Logros", Icon: TrophyIcon, match: ["/achievements"] },
@@ -68,7 +70,7 @@ const tabClass = (active: boolean) =>
     active ? "font-semibold text-editor-ink" : "text-ink-soft"
   }`;
 
-/** Barra inferior del móvil: 4 pestañas y «Más» (Universo, Logros, Estadísticas, Comunidad y Perfil). */
+/** Barra inferior del móvil: 4 pestañas y «Más» (Colección, Universo, Logros, Estadísticas, Comunidad y Perfil). */
 export function BottomNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);

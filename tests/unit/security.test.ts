@@ -21,7 +21,9 @@ describe("buildCsp", () => {
   it("solo permite scripts con el nonce y nada de iframes ni objetos", () => {
     const csp = buildCsp("abc123", { isDev: false, isHttps: true });
     expect(csp).toContain("script-src 'self' 'nonce-abc123' 'strict-dynamic'");
-    expect(csp).not.toContain("unsafe-eval");
+    // Solo WebAssembly (lector de .cbr), nunca eval de JavaScript.
+    expect(csp).toContain("'wasm-unsafe-eval'");
+    expect(csp).not.toContain("'unsafe-eval'");
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("object-src 'none'");
     expect(csp).toContain("https://comicvine.gamespot.com");
