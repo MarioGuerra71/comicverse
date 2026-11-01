@@ -78,3 +78,28 @@ export function readingTimeline(readDates: Date[], view: TimelineView, now = new
   }
   return keys.map((key) => ({ key, count: counts.get(key)! }));
 }
+
+/** Esta semana, de lunes a domingo: lecturas de cada día, cuál es hoy y cuáles aún no han llegado. */
+export function currentWeek(readDates: Date[], now = new Date(), timeZone = TIME_ZONE) {
+  const today = localDay(now, timeZone);
+  const monday = mondayOf(today);
+  const counts = new Map<string, number>();
+  for (const d of readDates) {
+    const day = localDay(d, timeZone);
+    counts.set(day, (counts.get(day) ?? 0) + 1);
+  }
+  return Array.from({ length: 7 }, (_, i) => {
+    const key = addDays(monday, i);
+    return { key, count: counts.get(key) ?? 0, today: key === today, future: key > today };
+  });
+}
+
+/**
+ * Los `size` números de la serie alrededor del actual (en orden de lectura), para la tira de la
+ * caja de luz: una serie de 651 números no cabe entera. `start` es la posición del primero.
+ */
+export function issueWindow<T extends SeriesIssue>(sorted: T[], currentId: string, size = 30) {
+  const index = Math.max(0, sorted.findIndex((i) => i.id === currentId));
+  const start = Math.max(0, Math.min(index - Math.floor(size / 2), sorted.length - size));
+  return { start, items: sorted.slice(start, start + size) };
+}

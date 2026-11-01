@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { localDay, nextIssue, readingTimeline, weeklyStreak } from "@/server/domain/reading-stats";
+import { currentWeek, issueWindow, localDay, nextIssue, readingTimeline, weeklyStreak } from "@/server/domain/reading-stats";
 
 const issue = (id: string, n: string) => ({ id, issueNumber: n, releaseDate: null });
 
@@ -71,5 +71,33 @@ describe("readingTimeline", () => {
     expect(months.at(-1)).toEqual({ key: "2026-10", count: 1 });
     expect(months.at(-3)).toEqual({ key: "2026-08", count: 1 });
     expect(months[0].key).toBe("2025-11");
+  });
+});
+
+describe("currentWeek", () => {
+  it("de lunes a domingo, con hoy marcado y los días que faltan", () => {
+    // Jueves 29 de octubre de 2026.
+    const week = currentWeek([new Date("2026-10-26T10:00:00Z"), new Date("2026-10-29T08:00:00Z"), new Date("2026-10-29T09:00:00Z")], new Date("2026-10-29T12:00:00Z"));
+    expect(week.map((d) => d.key)).toEqual(["2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31", "2026-11-01"]);
+    expect(week.map((d) => d.count)).toEqual([1, 0, 0, 2, 0, 0, 0]);
+    expect(week.findIndex((d) => d.today)).toBe(3);
+    expect(week.filter((d) => d.future)).toHaveLength(3);
+  });
+});
+
+describe("issueWindow", () => {
+  const issues = Array.from({ length: 100 }, (_, i) => issue(`c${i + 1}`, String(i + 1)));
+
+  it("centra la tira en el número actual", () => {
+    const { start, items } = issueWindow(issues, "c50", 10);
+    expect(start).toBe(44);
+    expect(items.map((i) => i.id)).toContain("c50");
+    expect(items).toHaveLength(10);
+  });
+
+  it("al principio y al final de la serie no se sale", () => {
+    expect(issueWindow(issues, "c2", 10).start).toBe(0);
+    expect(issueWindow(issues, "c99", 10).start).toBe(90);
+    expect(issueWindow(issues.slice(0, 4), "c2", 10)).toMatchObject({ start: 0, items: { length: 4 } });
   });
 });

@@ -1,7 +1,7 @@
 import type { Zone } from "@/lib/zones";
 import type { PrismaClient } from "../../../generated/prisma/client";
 import { toCharacterSummary, type CharacterSummaryDto } from "@/server/dto/character";
-import { countReadInSeries, countSeriesProgress } from "@/server/repositories/comics";
+import { countSeriesProgress } from "@/server/repositories/comics";
 import { findDiscoveriesPage, findRecentDiscoveries } from "@/server/repositories/discoveries";
 import {
   countByStatus,
@@ -12,7 +12,15 @@ import {
   findSeriesIssues,
 } from "@/server/repositories/library";
 import { countCompletedSeries } from "@/server/repositories/achievements";
-import { nextIssue, readingTimeline, weeklyStreak, type TimelineView } from "@/server/domain/reading-stats";
+import {
+  currentWeek,
+  issueWindow,
+  nextIssue,
+  readingTimeline,
+  weeklyStreak,
+  type TimelineView,
+} from "@/server/domain/reading-stats";
+import { sortIssues } from "@/server/domain/series-order";
 import type { ReadingStatus } from "@/server/domain/library-status";
 import type { PageInput } from "@/server/validation/discoveries";
 import { getUniverse } from "@/server/services/discovery";
@@ -157,23 +165,62 @@ export async function getReadingStats(db: PrismaClient, userId: string, zone?: Z
   };
 }
 
+/** La caja de luz: progreso en la serie del cómic que tienes entre manos y la tira de sus números. */
+async function getHeroSeries(db: PrismaClient, userId: string, seriesId: string, name: string, comicId: string) {
+  const issues = sortIssues(await findSeriesIssues(db, userId, [seriesId]));
+  const isRead = (i: (typeof issues)[number]) => i.userEntries[0]?.status === "READ";
+  const { start, items } = issueWindow(issues, comicId);
+  return {
+    name,
+    read: issues.filter(isRead).length,
+    total: issues.length,
+    strip: {
+      start,
+      items: items.map((i) => ({ id: i.id, title: i.title, read: isRead(i), current: i.id === comicId })),
+    },
+  };
+}
+
+/** Tu semana para el Inicio: lecturas de lunes a domingo, racha y total del mes. */
+async function getWeekSummary(db: PrismaClient, userId: string, zone?: Zone) {
+  const dates = await findReadDates(db, userId, zone);
+  return {
+    days: currentWeek(dates),
+    streak: weeklyStreak(dates),
+    thisMonth: readingTimeline(dates, "month").at(-1)?.count ?? 0,
+  };
+}
+
 /** Todo lo que necesita la portada privada. */
 export async function getDashboard(db: PrismaClient, userId: string, zone?: Zone) {
   // Solo lo que estás leyendo y lo ya leído: los pendientes y abandonados no salen en el Inicio.
-  const [stats, reading, read, recentDiscoveries, activity, nextIssues, newIssues] = await Promise.all([
+  const [stats, reading, read, recentDiscoveries, activity, nextIssues, newIssues, week] = await Promise.all([
     getDashboardStats(db, userId, zone),
     listLibrary(db, userId, { status: "READING", page: 1, pageSize: 1 }, zone),
     listLibrary(db, userId, { status: "READ", page: 1, pageSize: 6 }, zone),
     getRecentDiscoveries(db, userId, 6, zone),
     getRecentActivity(db, userId, 8, zone),
-    getNextIssues(db, userId, 6, zone),
+    getNextIssues(db, userId, 7, zone),
     getNewIssues(db, userId, zone),
+    getWeekSummary(db, userId, zone),
   ]);
   const recentComics = [...reading.items, ...read.items].slice(0, 6);
-  // Lo que estás leyendo (o lo último leído) y cuánto llevas de su serie.
+  // Lo que estás leyendo (o lo último leído), su serie y el número siguiente (que va dentro de la caja).
   const hero = recentComics[0];
   const heroSeries = hero
-    ? { name: hero.comic.series.name, ...(await countReadInSeries(db, userId, hero.comic.series.id)) }
+    ? await getHeroSeries(db, userId, hero.comic.series.id, hero.comic.series.name, hero.comic.id)
     : null;
-  return { stats, recentComics, hero, heroSeries, recentDiscoveries, activity, nextIssues, newIssues };
+  const heroNext = hero ? (nextIssues.find((n) => n.series.id === hero.comic.series.id) ?? null) : null;
+  return {
+    stats,
+    recentComics,
+    hero,
+    heroSeries,
+    heroNext,
+    recentDiscoveries,
+    activity,
+    nextIssues: nextIssues.filter((n) => n !== heroNext).slice(0, 6),
+    newIssues,
+    week,
+  };
 }

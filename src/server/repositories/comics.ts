@@ -36,15 +36,6 @@ export async function countSeriesProgress(db: PrismaClient, userId: string, zone
   return { discovered, total };
 }
 
-/** Cuántos cómics de una serie has leído, sobre el total de la serie. */
-export async function countReadInSeries(db: PrismaClient, userId: string, seriesId: string) {
-  const [read, total] = await Promise.all([
-    db.comic.count({ where: { seriesId, userEntries: { some: { userId, status: "READ" } } } }),
-    db.comic.count({ where: { seriesId } }),
-  ]);
-  return { read, total };
-}
-
 function buildWhere(input: ComicSearchInput): Prisma.ComicWhereInput {
   const where: Prisma.ComicWhereInput = {};
 

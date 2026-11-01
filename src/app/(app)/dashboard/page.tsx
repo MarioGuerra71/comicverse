@@ -11,17 +11,24 @@ import { requireUser } from "@/server/auth/session";
 import { getDashboard } from "@/server/services/dashboard";
 import { ArrowIcon } from "@/components/ui/icons";
 import { MarkReadButton } from "@/components/library/mark-read-button";
+import { QuickRating } from "@/components/library/quick-rating";
 
 export const metadata: Metadata = { title: "Inicio · ComicVerse" };
 
 const percent = (part: number, total: number) => (total ? Math.round((part / total) * 100) : 0);
+const WEEKDAYS = ["L", "M", "X", "J", "V", "S", "D"];
 
 export default async function DashboardPage() {
   const user = await requireUser();
   const zone = await getZone();
-  const { stats, recentComics, hero, heroSeries, recentDiscoveries, activity, nextIssues, newIssues } = await getDashboard(db, user.id, zone);
+  const { stats, recentComics, hero, heroSeries, heroNext, recentDiscoveries, activity, nextIssues, newIssues, week } =
+    await getDashboard(db, user.id, zone);
   const seriesPercent = heroSeries ? percent(heroSeries.read, heroSeries.total) : 0;
   const longbox = recentComics.filter((item) => item !== hero);
+  // El siguiente número va dentro de la caja (si no es el mismo que ya estás leyendo).
+  const next = heroNext && heroNext.comic.id !== hero?.comic.id ? heroNext : null;
+  const weekMax = Math.max(1, ...week.days.map((d) => d.count));
+  const weekTotal = week.days.reduce((sum, d) => sum + d.count, 0);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
@@ -78,10 +85,20 @@ export default async function DashboardPage() {
           <div className="min-w-0 text-center md:text-left">
             {hero ? (
               <>
-                <p className="font-display text-4xl leading-[0.9] font-extrabold tracking-tight text-balance text-ink uppercase md:text-5xl">
+                <p className="text-xs tracking-wide text-ink-soft uppercase">
+                  {hero.status === "READING" ? "Leyendo" : "Último leído"}
+                </p>
+                <p className="mt-2 font-display text-3xl leading-[0.95] font-extrabold tracking-tight text-balance text-ink uppercase md:text-4xl">
                   {hero.comic.title}
                 </p>
-                <Link href={`/comics/${hero.comic.id}`} className={`${inkButton} mt-6`}>
+                {hero.comic.storyTitle && <p className="mt-1 text-sm text-ink-soft">{hero.comic.storyTitle}</p>}
+                {/* Puntuar ahí mismo: solo se puede con el cómic leído. */}
+                {hero.status === "READ" && (
+                  <div className="mt-3">
+                    <QuickRating comicId={hero.comic.id} rating={hero.rating} />
+                  </div>
+                )}
+                <Link href={`/comics/${hero.comic.id}`} className={`${inkButton} mt-4`}>
                   {hero.status === "READING" ? "Seguir" : "Abrir"}
                   <ArrowIcon size={16} />
                 </Link>
@@ -99,31 +116,115 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          {/* Cuánto llevas de la serie del cómic de la caja de luz. */}
-          {heroSeries && hero && (
-            <div className="text-center md:text-right">
-              <p className="text-xs tracking-wide text-ink-soft uppercase">
-                {hero.status === "READING" ? "Leyendo" : "Último leído"}
+          {/* El siguiente número de la serie, listo para marcar. */}
+          {next ? (
+            <div className="mx-auto flex w-full max-w-xs items-center gap-4 rounded-2xl bg-black/25 p-3 ring-1 ring-white/10 md:w-64">
+              <Link
+                href={`/comics/${next.comic.id}`}
+                className="relative block aspect-2/3 w-16 shrink-0 overflow-hidden rounded-md bg-sheet ring-1 ring-edge"
+              >
+                {next.comic.coverThumbUrl && (
+                  <Image src={next.comic.coverThumbUrl} alt="" fill unoptimized sizes="64px" className="object-cover" />
+                )}
+              </Link>
+              <div className="min-w-0">
+                <p className="text-xs tracking-wide text-ink-soft uppercase">Siguiente</p>
+                <Link
+                  href={`/comics/${next.comic.id}`}
+                  className="mt-0.5 block text-sm leading-tight font-bold text-ink hover:underline"
+                >
+                  {next.comic.title}
+                </Link>
+                <MarkReadButton comicId={next.comic.id} title={next.comic.title} />
+              </div>
+            </div>
+          ) : (
+            hero && <span aria-hidden="true" className="hidden md:block" />
+          )}
+
+          {/* La tira de la serie: un trazo por número, encendidos los leídos y destacado el actual. */}
+          {heroSeries && (
+            <div className="md:col-span-3">
+              <div aria-hidden="true" className="flex h-7 items-end gap-[3px]">
+                {heroSeries.strip.items.map((issue) => (
+                  <Link
+                    key={issue.id}
+                    href={`/comics/${issue.id}`}
+                    tabIndex={-1}
+                    title={`${issue.title}${issue.read ? " · leído" : ""}`}
+                    className={`flex-1 rounded-sm transition-[height,background-color] hover:h-full ${
+                      issue.current
+                        ? "h-full bg-editor shadow-[0_0_10px_var(--glow)]"
+                        : issue.read
+                          ? "h-4 bg-editor/60 hover:bg-editor"
+                          : "h-4 bg-white/15 hover:bg-white/30"
+                    }`}
+                  />
+                ))}
+              </div>
+              <p className="mt-3 flex flex-wrap justify-between gap-x-4 gap-y-1 text-xs text-ink-soft">
+                <span>
+                  <span className="font-semibold text-ink">{heroSeries.name}</span> ·{" "}
+                  <span className="tabular-nums">
+                    {heroSeries.read}/{heroSeries.total} leídos ({seriesPercent} %)
+                  </span>
+                </span>
+                {heroSeries.total > heroSeries.strip.items.length && (
+                  <span className="tabular-nums">
+                    números {heroSeries.strip.start + 1}–{heroSeries.strip.start + heroSeries.strip.items.length} de{" "}
+                    {heroSeries.total}
+                  </span>
+                )}
               </p>
-              <p className="mt-1 text-sm font-bold text-ink">{heroSeries.name}</p>
-              <p className="mt-3 font-display text-4xl leading-none font-extrabold text-ink tabular-nums">
-                {heroSeries.read}
-                <span className="text-xl text-ink-soft">/{heroSeries.total}</span>
-              </p>
-              <progress
-                value={seriesPercent}
-                max={100}
-                aria-label={`${heroSeries.read} de ${heroSeries.total} leídos de ${heroSeries.name}`}
-                className="mt-3 h-1.5 w-full overflow-hidden rounded-full md:w-56"
-              />
-              <p className="mt-2 text-xs text-ink-soft">{seriesPercent}% de la serie leída</p>
             </div>
           )}
         </div>
       </section>
 
+      {/* Tu semana: de lunes a domingo, sin tener que ir a Estadísticas. */}
+      {stats.library.total > 0 && (
+        <section
+          aria-labelledby="week-heading"
+          className="glass mt-6 flex flex-wrap items-center gap-x-8 gap-y-4 rounded-2xl px-5 py-4 ring-1 ring-edge"
+        >
+          <h2 id="week-heading" className="text-xs tracking-wide text-ink-soft uppercase">
+            Tu semana
+          </h2>
+          <ol className="flex flex-1 items-end gap-2 sm:max-w-xs">
+            {week.days.map((day, i) => (
+              <li key={day.key} className="flex flex-1 flex-col items-center gap-1">
+                <span aria-hidden="true" className={`text-[11px] tabular-nums ${day.count ? "text-ink" : "text-transparent"}`}>
+                  {day.count}
+                </span>
+                <span aria-hidden="true" className="flex h-8 w-full items-end justify-center">
+                  <span
+                    className={`w-full max-w-5 rounded-sm ${
+                      day.future ? "bg-white/5" : day.count ? (day.today ? "bg-editor" : "bg-editor/60") : "bg-line-strong"
+                    }`}
+                    style={{ height: day.count ? `${Math.max(20, (day.count / weekMax) * 100)}%` : "2px" }}
+                  />
+                </span>
+                <span className={`text-[11px] ${day.today ? "font-bold text-ink" : "text-ink-soft"}`}>
+                  <span aria-hidden="true">{WEEKDAYS[i]}</span>
+                  <span className="sr-only">{`${day.today ? "Hoy" : day.key}: ${day.count}`}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p className="text-sm text-ink-soft">
+            <span className="font-semibold text-ink tabular-nums">{weekTotal}</span> esta semana ·{" "}
+            <span className="font-semibold text-ink tabular-nums">{week.thisMonth}</span> este mes · racha de{" "}
+            <span className="font-semibold text-ink tabular-nums">{week.streak}</span>{" "}
+            {week.streak === 1 ? "semana" : "semanas"}
+          </p>
+          <Link href="/stats" className="text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline">
+            Estadísticas
+          </Link>
+        </section>
+      )}
+
       {/* Casillas de cristal: cada cifra lleva a su pantalla. */}
-      <div className="glass mt-10 grid grid-cols-2 overflow-hidden rounded-2xl ring-1 ring-edge sm:grid-cols-4">
+      <div className="glass mt-6 grid grid-cols-2 overflow-hidden rounded-2xl ring-1 ring-edge sm:grid-cols-4">
         <HeaderField href="/library?status=READ" value={stats.library.READ} label="cómics leídos" />
         <HeaderField href="/collection" value={stats.characters.unlocked} total={stats.characters.total} label="personajes" />
         <HeaderField href="/graph" value={stats.relationships.discovered} total={stats.relationships.total} label="relaciones" />
