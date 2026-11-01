@@ -1,19 +1,42 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { z } from "zod";
 import { db } from "@/lib/db";
 import { ZONES } from "@/lib/zones";
-import { PageHeader, SectionHeading } from "@/components/ui/page-parts";
+import { normalizeParams, type SearchParams } from "@/lib/search-params";
+import { PageHeader, SectionHeading, segment, segmentGroup } from "@/components/ui/page-parts";
+import type { TimelineView } from "@/server/domain/reading-stats";
 import { requireUser } from "@/server/auth/session";
 import { getReadingStats } from "@/server/services/dashboard";
 import { getZone } from "@/server/zone";
 
 export const metadata: Metadata = { title: "Estadísticas · ComicVerse" };
 
-const monthLabel = (month: string, style: "short" | "long") =>
-  new Intl.DateTimeFormat("es-ES", { month: style, year: style === "long" ? "numeric" : undefined, timeZone: "UTC" }).format(
-    new Date(`${month}-01T00:00:00Z`),
-  );
+// La vista va en la URL en español (?vista=semana); por defecto, por día.
+const VIEWS = [
+  { value: "dia", view: "day", label: "Día", title: "Lecturas por día", hint: "últimos 30 días" },
+  { value: "semana", view: "week", label: "Semana", title: "Lecturas por semana", hint: "últimas 12 semanas" },
+  { value: "mes", view: "month", label: "Mes", title: "Lecturas por mes", hint: "últimos 12 meses" },
+] as const satisfies readonly { value: string; view: TimelineView; label: string; title: string; hint: string }[];
+
+const statsSearchSchema = z.object({ vista: z.enum(["dia", "semana", "mes"]).default("dia") });
+
+const fmt = (key: string, options: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat("es-ES", { timeZone: "UTC", ...options }).format(new Date(`${key.length === 7 ? `${key}-01` : key}T00:00:00Z`));
+
+/** Texto bajo cada barra (corto) y el de la tabla y la ayuda al pasar por encima (largo). */
+function labels(view: TimelineView, key: string, index: number, total: number) {
+  if (view === "day") {
+    const short = index === total - 1 ? "hoy" : index % 5 === 4 ? fmt(key, { day: "numeric" }) : "";
+    return { short, long: fmt(key, { weekday: "long", day: "numeric", month: "long" }) };
+  }
+  if (view === "week") {
+    const short = index % 2 === 1 || index === total - 1 ? fmt(key, { day: "numeric", month: "short" }).replace(".", "") : "";
+    return { short, long: `Semana del ${fmt(key, { day: "numeric", month: "long" })}` };
+  }
+  return { short: fmt(key, { month: "short" }).replace(".", ""), long: fmt(key, { month: "long", year: "numeric" }) };
+}
 
 function Figure({ value, label }: { value: number; label: string }) {
   return (
@@ -24,12 +47,15 @@ function Figure({ value, label }: { value: number; label: string }) {
   );
 }
 
-export default async function StatsPage() {
+export default async function StatsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const user = await requireUser();
   const zone = await getZone();
-  const stats = await getReadingStats(db, user.id, zone);
-  const maxMonth = Math.max(1, ...stats.months.map((m) => m.count));
-  const thisYear = stats.months.reduce((sum, m) => sum + m.count, 0);
+  const parsed = statsSearchSchema.safeParse(normalizeParams(await searchParams));
+  const active = VIEWS.find((v) => v.value === (parsed.success ? parsed.data.vista : "dia"))!;
+  const stats = await getReadingStats(db, user.id, zone, active.view);
+  const max = Math.max(1, ...stats.timeline.map((p) => p.count));
+  const inRange = stats.timeline.reduce((sum, p) => sum + p.count, 0);
+  const current = stats.timeline.at(-1)?.count ?? 0;
   const maxCharacter = stats.topCharacters[0]?.comicsRead ?? 1;
 
   return (
@@ -37,7 +63,7 @@ export default async function StatsPage() {
       <PageHeader title={`Estadísticas ${ZONES[zone].label}`}>
         <div className="grid grid-cols-2 sm:grid-cols-4">
           <Figure value={stats.read} label="cómics leídos" />
-          <Figure value={thisYear} label="últimos 12 meses" />
+          <Figure value={stats.lastYear} label="últimos 12 meses" />
           <Figure value={stats.streak} label={stats.streak === 1 ? "semana seguida" : "semanas seguidas"} />
           <Figure value={stats.completedSeries} label="series completas" />
         </div>
@@ -53,37 +79,64 @@ export default async function StatsPage() {
         </p>
       ) : (
         <>
-          <section aria-labelledby="months-heading" className="mt-12">
-            <SectionHeading id="months-heading" title="Lecturas por mes" />
-            {/* Una barra por mes; la cifra sale al pasar por encima y en la tabla para lectores de pantalla. */}
-            <div aria-hidden="true" className="mt-6 flex h-40 items-end gap-1.5 border-b border-line sm:gap-3">
-              {stats.months.map((m) => (
-                <div key={m.month} className="group relative flex h-full flex-1 items-end justify-center">
-                  <span className="pointer-events-none absolute -top-6 text-xs font-semibold text-ink opacity-0 tabular-nums group-hover:opacity-100">
-                    {m.count}
-                  </span>
-                  <div
-                    title={`${monthLabel(m.month, "long")}: ${m.count}`}
-                    className={`w-full max-w-8 rounded-t ${m.count ? "bg-editor/80 group-hover:bg-editor" : "bg-line-strong"}`}
-                    style={{ height: m.count ? `${(m.count / maxMonth) * 100}%` : "2px" }}
-                  />
-                </div>
-              ))}
+          <section aria-labelledby="timeline-heading" className="mt-12">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <SectionHeading id="timeline-heading" title={active.title} />
+              <nav aria-label="Ver lecturas por" className={segmentGroup}>
+                {VIEWS.map((v) => (
+                  <Link
+                    key={v.value}
+                    href={v.value === "dia" ? "/stats" : `/stats?vista=${v.value}`}
+                    aria-current={v === active ? "page" : undefined}
+                    className={segment(v === active)}
+                    scroll={false}
+                  >
+                    {v.label}
+                  </Link>
+                ))}
+              </nav>
             </div>
-            <div aria-hidden="true" className="mt-2 flex gap-1.5 text-center text-[11px] text-ink-soft sm:gap-3">
-              {stats.months.map((m) => (
-                <span key={m.month} className="flex-1 capitalize">
-                  {monthLabel(m.month, "short").replace(".", "")}
+            <p className="mt-2 text-sm text-ink-soft">
+              {inRange} en los {active.hint} ·{" "}
+              {active.view === "day" ? "hoy" : active.view === "week" ? "esta semana" : "este mes"}: {current}
+            </p>
+            {/* Una barra por periodo (el actual, encendido); la cifra sale al pasar por encima y en la tabla. */}
+            <div
+              aria-hidden="true"
+              className={`mt-8 flex h-40 items-end border-b border-line ${active.view === "day" ? "gap-0.5 sm:gap-1" : "gap-1.5 sm:gap-3"}`}
+            >
+              {stats.timeline.map((p, i) => {
+                const last = i === stats.timeline.length - 1;
+                return (
+                  <div key={p.key} className="group relative flex h-full flex-1 items-end justify-center">
+                    <span className="pointer-events-none absolute -top-6 text-xs font-semibold text-ink opacity-0 tabular-nums group-hover:opacity-100">
+                      {p.count}
+                    </span>
+                    <div
+                      title={`${labels(active.view, p.key, i, stats.timeline.length).long}: ${p.count}`}
+                      className={`w-full max-w-8 rounded-t ${
+                        p.count ? (last ? "bg-editor" : "bg-editor/60 group-hover:bg-editor") : "bg-line-strong"
+                      }`}
+                      style={{ height: p.count ? `${(p.count / max) * 100}%` : "2px" }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <div aria-hidden="true" className={`mt-2 flex text-center text-[11px] text-ink-soft ${active.view === "day" ? "gap-0.5 sm:gap-1" : "gap-1.5 sm:gap-3"}`}>
+              {stats.timeline.map((p, i) => (
+                <span key={p.key} className="flex-1 whitespace-nowrap capitalize">
+                  {labels(active.view, p.key, i, stats.timeline.length).short}
                 </span>
               ))}
             </div>
             <table className="sr-only">
-              <caption>Cómics leídos por mes</caption>
+              <caption>{`${active.title} (${active.hint})`}</caption>
               <tbody>
-                {stats.months.map((m) => (
-                  <tr key={m.month}>
-                    <th scope="row">{monthLabel(m.month, "long")}</th>
-                    <td>{m.count}</td>
+                {stats.timeline.map((p, i) => (
+                  <tr key={p.key}>
+                    <th scope="row">{labels(active.view, p.key, i, stats.timeline.length).long}</th>
+                    <td>{p.count}</td>
                   </tr>
                 ))}
               </tbody>

@@ -12,7 +12,7 @@ import {
   findSeriesIssues,
 } from "@/server/repositories/library";
 import { countCompletedSeries } from "@/server/repositories/achievements";
-import { monthlyCounts, nextIssue, weeklyStreak } from "@/server/domain/reading-stats";
+import { nextIssue, readingTimeline, weeklyStreak, type TimelineView } from "@/server/domain/reading-stats";
 import type { ReadingStatus } from "@/server/domain/library-status";
 import type { PageInput } from "@/server/validation/discoveries";
 import { getUniverse } from "@/server/services/discovery";
@@ -135,8 +135,8 @@ export async function getNewIssues(db: PrismaClient, userId: string, zone?: Zone
   return [...groups.values()];
 }
 
-/** Estadísticas de lectura: por mes, racha, series completas y personajes más leídos. */
-export async function getReadingStats(db: PrismaClient, userId: string, zone?: Zone) {
+/** Estadísticas de lectura: por día, semana o mes, racha, series completas y personajes más leídos. */
+export async function getReadingStats(db: PrismaClient, userId: string, zone?: Zone, view: TimelineView = "day") {
   const [dates, completedSeries, universe] = await Promise.all([
     findReadDates(db, userId, zone),
     countCompletedSeries(db, userId, zone),
@@ -149,7 +149,8 @@ export async function getReadingStats(db: PrismaClient, userId: string, zone?: Z
     .map((c) => ({ id: c.id, name: c.name, imageThumbUrl: c.imageThumbUrl, comicsRead: c.comicsRead }));
   return {
     read: dates.length,
-    months: monthlyCounts(dates),
+    timeline: readingTimeline(dates, view),
+    lastYear: readingTimeline(dates, "month").reduce((sum, m) => sum + m.count, 0),
     streak: weeklyStreak(dates),
     completedSeries,
     topCharacters,

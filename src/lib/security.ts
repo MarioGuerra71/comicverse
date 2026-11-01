@@ -16,8 +16,7 @@ export function buildCsp(nonce: string, { isDev, isHttps }: { isDev: boolean; is
   return [
     "default-src 'self'",
     // 'unsafe-eval' solo en desarrollo: React lo usa para mostrar mejor los errores.
-    // 'wasm-unsafe-eval': el lector descomprime los .cbr con WebAssembly (no permite eval de JS).
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""}`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     `img-src 'self' blob: data: ${IMAGE_HOSTS.join(" ")}`,
     "font-src 'self'",

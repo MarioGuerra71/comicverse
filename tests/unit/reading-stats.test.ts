@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { monthlyCounts, nextIssue, weeklyStreak } from "@/server/domain/reading-stats";
+import { localDay, nextIssue, readingTimeline, weeklyStreak } from "@/server/domain/reading-stats";
 
 const issue = (id: string, n: string) => ({ id, issueNumber: n, releaseDate: null });
 
@@ -39,14 +39,37 @@ describe("weeklyStreak", () => {
   });
 });
 
-describe("monthlyCounts", () => {
-  it("agrupa por mes los últimos meses e ignora lo anterior", () => {
-    const now = new Date("2026-10-15T00:00:00Z");
-    const dates = ["2026-10-01", "2026-10-20", "2026-08-03", "2025-01-01"].map((d) => new Date(`${d}T10:00:00Z`));
-    expect(monthlyCounts(dates, now, 3)).toEqual([
-      { month: "2026-08", count: 1 },
-      { month: "2026-09", count: 0 },
-      { month: "2026-10", count: 2 },
-    ]);
+describe("readingTimeline", () => {
+  const at = (iso: string) => new Date(iso);
+  // Sábado 31 de octubre de 2026, por la tarde en España.
+  const now = at("2026-10-31T17:00:00Z");
+
+  it("por día: los últimos 30, hoy el último", () => {
+    const days = readingTimeline([at("2026-10-31T09:00:00Z"), at("2026-10-31T10:00:00Z"), at("2026-10-02T10:00:00Z")], "day", now);
+    expect(days).toHaveLength(30);
+    expect(days.at(-1)).toEqual({ key: "2026-10-31", count: 2 });
+    expect(days[0]).toEqual({ key: "2026-10-02", count: 1 });
+  });
+
+  it("los días van en hora de España: las 00:30 del 1 de noviembre son el día 1", () => {
+    // 23:30 UTC del 31 de octubre = 00:30 en Madrid (horario de invierno, UTC+1).
+    expect(localDay(at("2026-10-31T23:30:00Z"))).toBe("2026-11-01");
+    const days = readingTimeline([at("2026-10-31T23:30:00Z")], "day", at("2026-11-01T10:00:00Z"));
+    expect(days.at(-1)).toEqual({ key: "2026-11-01", count: 1 });
+  });
+
+  it("por semana: de lunes a domingo, la actual la última", () => {
+    const weeks = readingTimeline([at("2026-10-26T10:00:00Z"), at("2026-10-25T10:00:00Z")], "week", now);
+    expect(weeks).toHaveLength(12);
+    expect(weeks.at(-1)).toEqual({ key: "2026-10-26", count: 1 });
+    expect(weeks.at(-2)).toEqual({ key: "2026-10-19", count: 1 });
+  });
+
+  it("por mes: los últimos 12 e ignora lo anterior", () => {
+    const months = readingTimeline([at("2026-10-01T10:00:00Z"), at("2026-08-03T10:00:00Z"), at("2025-01-01T10:00:00Z")], "month", now);
+    expect(months).toHaveLength(12);
+    expect(months.at(-1)).toEqual({ key: "2026-10", count: 1 });
+    expect(months.at(-3)).toEqual({ key: "2026-08", count: 1 });
+    expect(months[0].key).toBe("2025-11");
   });
 });
