@@ -61,7 +61,6 @@ describe("getZoneCollection (álbumes por serie)", () => {
     expect(marvel.stats.characters).toEqual({ unlocked: 0, total: 0 });
     expect(marvel.stats.library.READ).toBe(0);
     expect(marvel.recentDiscoveries).toEqual([]);
-    expect(marvel.activity).toEqual([]);
 
     expect((await getGraph(db, user.id, undefined, "dc"))!.nodes).toHaveLength(1);
     expect((await getGraph(db, user.id, undefined, "marvel"))!.nodes).toHaveLength(0);

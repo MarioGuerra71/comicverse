@@ -8,7 +8,6 @@ import {
   findActiveSeriesIds,
   findNewIssues,
   findReadDates,
-  findRecentHistory,
   findSeriesIssues,
 } from "@/server/repositories/library";
 import { countCompletedSeries } from "@/server/repositories/achievements";
@@ -21,7 +20,6 @@ import {
   type TimelineView,
 } from "@/server/domain/reading-stats";
 import { sortIssues } from "@/server/domain/series-order";
-import type { ReadingStatus } from "@/server/domain/library-status";
 import type { PageInput } from "@/server/validation/discoveries";
 import { getUniverse } from "@/server/services/discovery";
 import { listLibrary, toStatusCounts } from "@/server/services/library";
@@ -76,26 +74,6 @@ export async function listDiscoveries(db: PrismaClient, userId: string, input: P
     total,
     totalPages: Math.max(1, Math.ceil(total / input.pageSize)),
   };
-}
-
-export interface ActivityDto {
-  comic: { id: string; title: string };
-  fromStatus: ReadingStatus | null;
-  toStatus: ReadingStatus | null;
-  at: string;
-}
-
-/** Últimos cambios en la biblioteca (del historial de lectura). */
-export async function getRecentActivity(db: PrismaClient, userId: string, limit: number, zone?: Zone) {
-  const rows = await findRecentHistory(db, userId, limit, zone);
-  return rows.map(
-    (r): ActivityDto => ({
-      comic: r.comic,
-      fromStatus: r.fromStatus,
-      toStatus: r.toStatus,
-      at: r.createdAt.toISOString(),
-    }),
-  );
 }
 
 export interface NextIssueDto {
@@ -194,12 +172,11 @@ async function getWeekSummary(db: PrismaClient, userId: string, zone?: Zone) {
 /** Todo lo que necesita la portada privada. */
 export async function getDashboard(db: PrismaClient, userId: string, zone?: Zone) {
   // Solo lo que estás leyendo y lo ya leído: los pendientes y abandonados no salen en el Inicio.
-  const [stats, reading, read, recentDiscoveries, activity, nextIssues, newIssues, week] = await Promise.all([
+  const [stats, reading, read, recentDiscoveries, nextIssues, newIssues, week] = await Promise.all([
     getDashboardStats(db, userId, zone),
     listLibrary(db, userId, { status: "READING", page: 1, pageSize: 1 }, zone),
     listLibrary(db, userId, { status: "READ", page: 1, pageSize: 6 }, zone),
     getRecentDiscoveries(db, userId, 6, zone),
-    getRecentActivity(db, userId, 8, zone),
     getNextIssues(db, userId, 7, zone),
     getNewIssues(db, userId, zone),
     getWeekSummary(db, userId, zone),
@@ -218,7 +195,6 @@ export async function getDashboard(db: PrismaClient, userId: string, zone?: Zone
     heroSeries,
     heroNext,
     recentDiscoveries,
-    activity,
     nextIssues: nextIssues.filter((n) => n !== heroNext).slice(0, 6),
     newIssues,
     week,

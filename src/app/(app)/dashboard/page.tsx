@@ -3,15 +3,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { formatDate } from "@/lib/format";
-import { describeActivity } from "@/lib/activity";
 import { DiscoveryItem } from "@/components/characters/discovery-item";
-import { HeaderField, inkButton, SectionHeading } from "@/components/ui/page-parts";
+import { inkButton, SectionHeading } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { getDashboard } from "@/server/services/dashboard";
 import { ArrowIcon } from "@/components/ui/icons";
 import { MarkReadButton } from "@/components/library/mark-read-button";
-import { QuickRating } from "@/components/library/quick-rating";
 
 export const metadata: Metadata = { title: "Inicio · ComicVerse" };
 
@@ -21,7 +18,7 @@ const WEEKDAYS = ["L", "M", "X", "J", "V", "S", "D"];
 export default async function DashboardPage() {
   const user = await requireUser();
   const zone = await getZone();
-  const { stats, recentComics, hero, heroSeries, heroNext, recentDiscoveries, activity, nextIssues, newIssues, week } =
+  const { stats, recentComics, hero, heroSeries, heroNext, recentDiscoveries, nextIssues, newIssues, week } =
     await getDashboard(db, user.id, zone);
   const seriesPercent = heroSeries ? percent(heroSeries.read, heroSeries.total) : 0;
   const longbox = recentComics.filter((item) => item !== hero);
@@ -92,12 +89,6 @@ export default async function DashboardPage() {
                   {hero.comic.title}
                 </p>
                 {hero.comic.storyTitle && <p className="mt-1 text-sm text-ink-soft">{hero.comic.storyTitle}</p>}
-                {/* Puntuar ahí mismo: solo se puede con el cómic leído. */}
-                {hero.status === "READ" && (
-                  <div className="mt-3">
-                    <QuickRating comicId={hero.comic.id} rating={hero.rating} />
-                  </div>
-                )}
                 <Link href={`/comics/${hero.comic.id}`} className={`${inkButton} mt-4`}>
                   {hero.status === "READING" ? "Seguir" : "Abrir"}
                   <ArrowIcon size={16} />
@@ -223,13 +214,20 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      {/* Casillas de cristal: cada cifra lleva a su pantalla. */}
-      <div className="glass mt-6 grid grid-cols-2 overflow-hidden rounded-2xl ring-1 ring-edge sm:grid-cols-4">
-        <HeaderField href="/library?status=READ" value={stats.library.READ} label="cómics leídos" />
-        <HeaderField href="/collection" value={stats.characters.unlocked} total={stats.characters.total} label="personajes" />
-        <HeaderField href="/graph" value={stats.relationships.discovered} total={stats.relationships.total} label="relaciones" />
-        <HeaderField href="/catalog" value={stats.series.discovered} total={stats.series.total} label="series" />
-      </div>
+      {/* Tus cifras, en una línea: cada una lleva a su pantalla. */}
+      <nav aria-label="Tus cifras" className="mt-4 flex flex-wrap gap-x-5 gap-y-1 px-1 text-sm text-ink-soft">
+        {[
+          { href: "/library?status=READ", value: `${stats.library.READ}`, label: "cómics leídos" },
+          { href: "/collection", value: `${stats.characters.unlocked}/${stats.characters.total}`, label: "personajes" },
+          { href: "/graph", value: `${stats.relationships.discovered}/${stats.relationships.total}`, label: "relaciones" },
+          { href: "/catalog", value: `${stats.series.discovered}/${stats.series.total}`, label: "series" },
+        ].map((f) => (
+          <Link key={f.href} href={f.href} className="inline-flex min-h-11 items-center gap-1.5 hover:text-ink">
+            <span className="font-semibold text-ink tabular-nums">{f.value}</span>
+            {f.label}
+          </Link>
+        ))}
+      </nav>
 
       {longbox.length > 0 && (
         <section aria-labelledby="recent-heading" className="mt-12">
@@ -342,27 +340,6 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      {activity.length > 0 && (
-        <section aria-labelledby="activity-heading" className="mt-12">
-          <SectionHeading id="activity-heading" title="Actividad reciente" />
-          <ol className="mt-2 text-sm">
-            {activity.map((item, index) => (
-              <li
-                key={`${item.at}-${index}`}
-                className="flex flex-wrap items-baseline justify-between gap-x-4 border-b border-line py-3"
-              >
-                <span className="text-ink">
-                  {describeActivity(item.fromStatus, item.toStatus)}{" "}
-                  <Link href={`/comics/${item.comic.id}`} className="font-semibold underline">
-                    {item.comic.title}
-                  </Link>
-                </span>
-                <span className="text-xs text-ink-soft">{formatDate(item.at.slice(0, 10))}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
     </main>
   );
 }

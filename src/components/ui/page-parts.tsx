@@ -64,29 +64,6 @@ export function PageHeader({
   );
 }
 
-/** Casilla del cajetín: cifra a mano y su etiqueta; enlaza a su pantalla. */
-export function HeaderField({
-  href,
-  value,
-  total,
-  label,
-}: {
-  href: string;
-  value: number;
-  total?: number;
-  label: string;
-}) {
-  return (
-    <Link href={href} className="flex flex-col px-4 py-3 transition-colors hover:bg-sheet-raised">
-      <span className="font-display text-4xl leading-none font-extrabold text-ink">
-        {value}
-        {total !== undefined && <span className="text-2xl font-semibold text-ink-soft">/{total}</span>}
-      </span>
-      <span className="mt-1 text-xs tracking-wide text-ink-soft uppercase">{label}</span>
-    </Link>
-  );
-}
-
 /** Título de sección con un enlace opcional a la derecha. */
 export function SectionHeading({
   id,

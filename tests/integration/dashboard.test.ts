@@ -2,11 +2,9 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import {
   getDashboard,
   getDashboardStats,
-  getRecentActivity,
   getRecentDiscoveries,
   listDiscoveries,
 } from "@/server/services/dashboard";
-import { removeFromLibrary } from "@/server/services/library";
 import { setComicStatus } from "@/server/services/library";
 import { createCharacter, createComic, createTestDb, createUser, resetDb } from "./test-db";
 
@@ -164,22 +162,3 @@ describe("listDiscoveries", () => {
   });
 });
 
-describe("getRecentActivity", () => {
-  it("devuelve los últimos cambios de mi biblioteca, el más reciente primero", async () => {
-    const { user, comicA } = await seed();
-    const other = await createUser(db);
-    await setComicStatus(db, user.id, comicA.id, "READING");
-    await setComicStatus(db, user.id, comicA.id, "READ");
-    await removeFromLibrary(db, user.id, comicA.id);
-    await setComicStatus(db, other.id, comicA.id, "PENDING");
-
-    const activity = await getRecentActivity(db, user.id, 10);
-
-    expect(activity.map((a) => [a.fromStatus, a.toStatus])).toEqual([
-      ["READ", null],
-      ["READING", "READ"],
-      [null, "READING"],
-    ]);
-    expect(activity[0].comic).toEqual({ id: comicA.id, title: comicA.title });
-  });
-});

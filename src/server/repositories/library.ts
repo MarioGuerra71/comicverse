@@ -111,7 +111,6 @@ export async function findLibraryPage(
   return { rows, total };
 }
 
-/** Últimos cambios del historial de lectura, con el cómic. */
 /** Todas tus entradas (con su serie) para agrupar la biblioteca en carpetas, las más recientes primero. */
 export function findLibrarySeriesRows(db: PrismaClient, userId: string, status?: ReadingStatus, zone?: Zone) {
   return db.userComic.findMany({
@@ -124,19 +123,6 @@ export function findLibrarySeriesRows(db: PrismaClient, userId: string, status?:
   });
 }
 
-export function findRecentHistory(db: PrismaClient, userId: string, take: number, zone?: Zone) {
-  return db.readingHistory.findMany({
-    where: { userId, ...(zone ? { comic: comicInZone(zone) } : {}) },
-    orderBy: [{ createdAt: "desc" }, { id: "asc" }],
-    take,
-    select: {
-      fromStatus: true,
-      toStatus: true,
-      createdAt: true,
-      comic: { select: { id: true, title: true } },
-    },
-  });
-}
 
 export function countByStatus(db: PrismaClient, userId: string, zone?: Zone) {
   return db.userComic.groupBy({
