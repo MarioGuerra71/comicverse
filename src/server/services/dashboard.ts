@@ -1,6 +1,8 @@
-import type { Zone } from "@/lib/zones";
+import { ZONES, type Zone } from "@/lib/zones";
 import type { PrismaClient } from "../../../generated/prisma/client";
 import { toCharacterSummary, type CharacterSummaryDto } from "@/server/dto/character";
+import { almostFinished } from "@/server/dto/library";
+import { findTopCharacterSince } from "@/server/repositories/characters";
 import { countSeriesProgress } from "@/server/repositories/comics";
 import { findDiscoveriesPage, findRecentDiscoveries } from "@/server/repositories/discoveries";
 import {
@@ -22,7 +24,7 @@ import {
 import { sortIssues } from "@/server/domain/series-order";
 import type { PageInput } from "@/server/validation/discoveries";
 import { getUniverse } from "@/server/services/discovery";
-import { listLibrary, toStatusCounts } from "@/server/services/library";
+import { listLibrary, listLibrarySeries, toStatusCounts } from "@/server/services/library";
 
 export interface DiscoveryDto {
   character: CharacterSummaryDto;
@@ -169,17 +171,28 @@ async function getWeekSummary(db: PrismaClient, userId: string, zone?: Zone) {
   };
 }
 
+/** El personaje que más has leído en los últimos 30 días, ya con el nombre que se enseña. */
+async function getCharacterOfTheMonth(db: PrismaClient, userId: string, zone?: Zone) {
+  const since = new Date(Date.now() - 30 * 86_400_000);
+  const top = await findTopCharacterSince(db, userId, since, zone ? ZONES[zone].publisherSlug : undefined);
+  if (!top) return null;
+  const { comics, imageUrl, realName, ...row } = top;
+  return { ...toCharacterSummary(row), imageUrl: imageUrl ?? row.imageThumbUrl, realName, comics };
+}
+
 /** Todo lo que necesita la portada privada. */
 export async function getDashboard(db: PrismaClient, userId: string, zone?: Zone) {
   // Solo lo que estás leyendo y lo ya leído: los pendientes y abandonados no salen en el Inicio.
-  const [stats, reading, read, recentDiscoveries, nextIssues, newIssues, week] = await Promise.all([
+  const [stats, reading, read, recentDiscoveries, nextIssues, newIssues, week, characterOfTheMonth, folders] = await Promise.all([
     getDashboardStats(db, userId, zone),
     listLibrary(db, userId, { status: "READING", page: 1, pageSize: 1 }, zone),
-    listLibrary(db, userId, { status: "READ", page: 1, pageSize: 6 }, zone),
+    listLibrary(db, userId, { status: "READ", page: 1, pageSize: 6, sort: "readAt" }, zone),
     getRecentDiscoveries(db, userId, 6, zone),
     getNextIssues(db, userId, 7, zone),
     getNewIssues(db, userId, zone),
     getWeekSummary(db, userId, zone),
+    getCharacterOfTheMonth(db, userId, zone),
+    listLibrarySeries(db, userId, undefined, zone),
   ]);
   const recentComics = [...reading.items, ...read.items].slice(0, 6);
   // Lo que estás leyendo (o lo último leído), su serie y el número siguiente (que va dentro de la caja).
@@ -198,5 +211,8 @@ export async function getDashboard(db: PrismaClient, userId: string, zone?: Zone
     nextIssues: nextIssues.filter((n) => n !== heroNext).slice(0, 6),
     newIssues,
     week,
+    characterOfTheMonth,
+    // Las series que tienes a punto (sin repetir la de la caja de luz).
+    almostDone: almostFinished(folders, 3, hero?.comic.series.id),
   };
 }

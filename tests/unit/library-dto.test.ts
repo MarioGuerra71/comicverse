@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { groupBySeries, sortSeriesFolders, toLibraryEntry, toLibraryItem } from "@/server/dto/library";
+import { almostFinished, groupBySeries, sortSeriesFolders, toLibraryEntry, toLibraryItem } from "@/server/dto/library";
 
 describe("toLibraryEntry", () => {
   it("convierte las fechas a texto ISO y conserva el resto", () => {
@@ -124,5 +124,22 @@ describe("sortSeriesFolders", () => {
   it("«mejor nota»: la media más alta primero y las sin puntuar al final", () => {
     const rated = [folder("A", 1, 10, 3.5), folder("B", 1, 10), folder("C", 1, 10, 4.8)];
     expect(sortSeriesFolders(rated, "rating").map((f) => f.id)).toEqual(["C", "A", "B"]);
+  });
+});
+
+describe("almostFinished", () => {
+  const folder = (id: string, read: number, total: number) => ({ id, name: id, startYear: null, covers: [], total, read, averageRating: null });
+
+  it("las empezadas sin terminar, las que menos números te faltan primero", () => {
+    const series = [folder("larga", 50, 60), folder("casi", 22, 24), folder("nueva", 0, 10), folder("hecha", 5, 5), folder("media", 3, 6)];
+    expect(almostFinished(series).map((s) => [s.id, s.missing])).toEqual([
+      ["casi", 2],
+      ["media", 3],
+      ["larga", 10],
+    ]);
+  });
+
+  it("puede dejar fuera una serie (la de la caja de luz)", () => {
+    expect(almostFinished([folder("a", 1, 2), folder("b", 1, 3)], 3, "a").map((s) => s.id)).toEqual(["b"]);
   });
 });

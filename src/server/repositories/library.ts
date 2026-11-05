@@ -94,7 +94,10 @@ export async function findLibraryPage(
   db: PrismaClient,
   userId: string,
   input: Pick<LibrarySearchInput, "status" | "series" | "page" | "pageSize"> &
-    Partial<Pick<LibrarySearchInput, "q" | "sort" | "nota">>,
+    Partial<Pick<LibrarySearchInput, "q" | "nota">> & {
+      /** «readAt»: por fecha de lectura (el Inicio: puntuar un cómic viejo no lo hace «el último»). */
+      sort?: LibrarySearchInput["sort"] | "readAt";
+    },
   zone?: Zone,
 ) {
   const where: Prisma.UserComicWhereInput = {
@@ -113,7 +116,10 @@ export async function findLibraryPage(
   const orderBy: Prisma.UserComicOrderByWithRelationInput[] =
     input.sort === "rating"
       ? [{ rating: { sort: "desc", nulls: "last" } }, { updatedAt: "desc" }, { comicId: "asc" }]
-      : [{ updatedAt: "desc" }, { comicId: "asc" }];
+      : input.sort === "readAt"
+        ? // A igual fecha (marcar «hasta aquí» marca varios a la vez), el que salió más tarde.
+          [{ readAt: { sort: "desc", nulls: "last" } }, { comic: { releaseDate: { sort: "desc", nulls: "last" } } }, { comicId: "asc" }]
+        : [{ updatedAt: "desc" }, { comicId: "asc" }];
 
   const [rows, total] = await db.$transaction([
     db.userComic.findMany({

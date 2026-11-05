@@ -289,8 +289,7 @@ export function toStatusCounts(grouped: { status: ReadingStatus; _count: { _all:
 export async function listLibrary(
   db: PrismaClient,
   userId: string,
-  input: Pick<LibrarySearchInput, "status" | "series" | "page" | "pageSize"> &
-    Partial<Pick<LibrarySearchInput, "q" | "sort" | "nota">>,
+  input: Parameters<typeof findLibraryPage>[2],
   zone?: Zone,
 ) {
   const [{ rows, total }, grouped] = await Promise.all([

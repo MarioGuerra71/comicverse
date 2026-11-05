@@ -18,8 +18,19 @@ const WEEKDAYS = ["L", "M", "X", "J", "V", "S", "D"];
 export default async function DashboardPage() {
   const user = await requireUser();
   const zone = await getZone();
-  const { stats, recentComics, hero, heroSeries, heroNext, recentDiscoveries, nextIssues, newIssues, week } =
-    await getDashboard(db, user.id, zone);
+  const {
+    stats,
+    recentComics,
+    hero,
+    heroSeries,
+    heroNext,
+    recentDiscoveries,
+    nextIssues,
+    newIssues,
+    week,
+    characterOfTheMonth,
+    almostDone,
+  } = await getDashboard(db, user.id, zone);
   const seriesPercent = heroSeries ? percent(heroSeries.read, heroSeries.total) : 0;
   const longbox = recentComics.filter((item) => item !== hero);
   // El siguiente número va dentro de la caja (si no es el mismo que ya estás leyendo).
@@ -228,6 +239,81 @@ export default async function DashboardPage() {
           </Link>
         ))}
       </nav>
+
+      {/* El personaje del mes y las series que tienes a punto de terminar. */}
+      {(characterOfTheMonth || almostDone.length > 0) && (
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {characterOfTheMonth && (
+            <section aria-labelledby="character-heading" className="glass relative overflow-hidden rounded-2xl ring-1 ring-edge">
+              {characterOfTheMonth.imageThumbUrl && (
+                <Image
+                  src={characterOfTheMonth.imageThumbUrl}
+                  alt=""
+                  aria-hidden="true"
+                  fill
+                  unoptimized
+                  className="scale-125 object-cover opacity-25 blur-2xl saturate-150"
+                />
+              )}
+              <Link href={`/characters/${characterOfTheMonth.id}`} className="group relative flex h-full items-center gap-5 p-5">
+                <span className="relative block aspect-3/4 w-24 shrink-0 overflow-hidden rounded-xl bg-sheet ring-1 ring-white/20 sm:w-28">
+                  {characterOfTheMonth.imageUrl && (
+                    <Image src={characterOfTheMonth.imageUrl} alt="" fill unoptimized sizes="112px" className="object-cover" />
+                  )}
+                </span>
+                <span className="min-w-0">
+                  <span id="character-heading" className="block text-xs tracking-wide text-ink-soft uppercase">
+                    Personaje del mes
+                  </span>
+                  <span className="mt-1 block font-display text-2xl leading-tight font-extrabold tracking-tight text-ink uppercase group-hover:underline">
+                    {characterOfTheMonth.name}
+                  </span>
+                  {characterOfTheMonth.realName && (
+                    <span className="block text-sm text-ink-soft">{characterOfTheMonth.realName}</span>
+                  )}
+                  <span className="mt-3 block text-sm text-ink-soft">
+                    <span className="font-semibold text-ink tabular-nums">{characterOfTheMonth.comics}</span>{" "}
+                    {characterOfTheMonth.comics === 1 ? "cómic" : "cómics"} contigo en los últimos 30 días
+                  </span>
+                </span>
+              </Link>
+            </section>
+          )}
+
+          {almostDone.length > 0 && (
+            <section aria-labelledby="almost-heading" className="glass rounded-2xl p-5 ring-1 ring-edge">
+              <h2 id="almost-heading" className="text-xs tracking-wide text-ink-soft uppercase">
+                Casi terminadas
+              </h2>
+              <ul className="mt-3 flex flex-col gap-3">
+                {almostDone.map((s) => (
+                  <li key={s.id}>
+                    <Link href={`/library?series=${s.id}`} className="group flex items-center gap-3">
+                      <span className="relative block aspect-2/3 w-10 shrink-0 overflow-hidden rounded bg-sheet ring-1 ring-edge">
+                        {s.covers[0] && <Image src={s.covers[0]} alt="" fill unoptimized sizes="40px" className="object-cover" />}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-baseline justify-between gap-2 text-sm">
+                          <span className="truncate font-semibold text-ink group-hover:underline">{s.name}</span>
+                          <span className="shrink-0 text-xs text-ink-soft tabular-nums">
+                            {s.read}/{s.total}
+                          </span>
+                        </span>
+                        <span className="mt-0.5 block text-xs text-editor-ink">
+                          {s.missing === 1 ? "te falta 1" : `te faltan ${s.missing}`}
+                        </span>
+                        <span aria-hidden="true" className="mt-1.5 block h-1 overflow-hidden rounded-full bg-sheet-raised">
+                          <span className="block h-full rounded-full bg-editor/70" style={{ width: `${percent(s.read, s.total)}%` }} />
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
+      )}
 
       {longbox.length > 0 && (
         <section aria-labelledby="recent-heading" className="mt-12">

@@ -140,3 +140,15 @@ export function sortSeriesFolders(series: LibrarySeriesDto[], order: SeriesOrder
     s.total > 0 && s.read >= s.total ? -1 : s.read === 0 ? 0 : 1 + s.read / s.total;
   return [...series].sort((a, b) => rank(b) - rank(a));
 }
+
+/**
+ * Las series que más cerca tienes de terminar: empezadas, sin completar, las que menos números te
+ * faltan primero (a igualdad, la de mayor porcentaje leído).
+ */
+export function almostFinished(series: LibrarySeriesDto[], limit = 3, exceptId?: string) {
+  return series
+    .filter((s) => s.id !== exceptId && s.read > 0 && s.read < s.total)
+    .sort((a, b) => a.total - a.read - (b.total - b.read) || b.read / b.total - a.read / a.total)
+    .slice(0, limit)
+    .map((s) => ({ ...s, missing: s.total - s.read }));
+}

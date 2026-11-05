@@ -224,3 +224,31 @@ export function saveVersionImage(db: Db, userId: string, characterId: string, se
 export function deleteVersionImage(db: Db, userId: string, characterId: string, seriesId: string) {
   return db.characterVersionImage.deleteMany({ where: { userId, characterId, seriesId } });
 }
+
+/**
+ * El personaje que más aparece en lo que has leído desde `since` (de una editorial, si se indica),
+ * con cuántos de esos cómics. Solo coleccionables: los que tienen carta y ficha.
+ */
+export async function findTopCharacterSince(db: PrismaClient, userId: string, since: Date, publisherSlug?: string) {
+  const [top] = await db.$queryRaw<{ characterId: string; comics: bigint }[]>`
+    SELECT cc."characterId", COUNT(*) AS comics
+    FROM "UserComic" uc
+    JOIN "ComicCharacter" cc ON cc."comicId" = uc."comicId"
+    JOIN "Character" ch ON ch.id = cc."characterId" AND ch."isCollectible"
+    JOIN "Comic" c ON c.id = uc."comicId"
+    JOIN "Series" s ON s.id = c."seriesId"
+    JOIN "Publisher" p ON p.id = s."publisherId"
+    WHERE uc."userId" = ${userId} AND uc.status = 'READ'
+      AND COALESCE(uc."readAt", uc."updatedAt") >= ${since}
+      AND (${publisherSlug ?? null}::text IS NULL OR p.slug = ${publisherSlug ?? null})
+    GROUP BY cc."characterId"
+    ORDER BY comics DESC, cc."characterId"
+    LIMIT 1
+  `;
+  if (!top) return null;
+  const character = await db.character.findUnique({
+    where: { id: top.characterId },
+    select: { ...characterSummarySelect, imageUrl: true, realName: true },
+  });
+  return character ? { ...character, comics: Number(top.comics) } : null;
+}

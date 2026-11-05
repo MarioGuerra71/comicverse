@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { countCompletedSeries } from "@/server/repositories/achievements";
-import { getNewIssues, getNextIssues, getReadingStats } from "@/server/services/dashboard";
-import { listLibrarySeries, setComicStatus } from "@/server/services/library";
+import { getDashboard, getNewIssues, getNextIssues, getReadingStats } from "@/server/services/dashboard";
+import { listLibrarySeries, setComicStatus, updateLibraryEntry } from "@/server/services/library";
 import { createCharacter, createComic, createTestDb, createUser, resetDb } from "./test-db";
 
 const db = createTestDb();
@@ -83,5 +83,55 @@ describe("novedades y estadísticas", () => {
       ["Batman", 2],
       ["Robin", 1],
     ]);
+  });
+});
+
+describe("Inicio: personaje del momento y series casi terminadas", () => {
+  it("el personaje que más has leído este mes, solo de lo leído en los últimos 30 días", async () => {
+    const user = await createUser(db);
+    const batman = await createCharacter(db, "Batman");
+    const robin = await createCharacter(db, "Robin");
+    const [a, b, old] = await series(3, [batman]);
+    await db.comicCharacter.create({ data: { comicId: old.id, characterId: robin.id } });
+    await setComicStatus(db, user.id, a.id, "READ");
+    await setComicStatus(db, user.id, b.id, "READ");
+    // Leído hace dos meses: no cuenta para «este mes».
+    await setComicStatus(db, user.id, old.id, "READ", new Date(Date.now() - 60 * 86_400_000));
+
+    const { characterOfTheMonth } = await getDashboard(db, user.id);
+    expect(characterOfTheMonth).toMatchObject({ name: "Batman", comics: 2 });
+  });
+
+  it("puntuar un cómic antiguo no lo convierte en el «último leído»", async () => {
+    const user = await createUser(db);
+    const [older, newer] = await series(2);
+    await setComicStatus(db, user.id, older.id, "READ", new Date(Date.now() - 2 * 86_400_000));
+    await setComicStatus(db, user.id, newer.id, "READ");
+    await updateLibraryEntry(db, user.id, older.id, { rating: 5 });
+
+    expect((await getDashboard(db, user.id)).hero?.comic.id).toBe(newer.id);
+  });
+
+  it("si se marcaron varios a la vez, el «último leído» es el que salió más tarde", async () => {
+    const user = await createUser(db);
+    const [first, second] = await series(2);
+    await db.comic.update({ where: { id: first.id }, data: { releaseDate: new Date("2020-01-01") } });
+    await db.comic.update({ where: { id: second.id }, data: { releaseDate: new Date("2020-02-01") } });
+    const at = new Date();
+    await setComicStatus(db, user.id, second.id, "READ", at);
+    await setComicStatus(db, user.id, first.id, "READ", at);
+    await updateLibraryEntry(db, user.id, first.id, { rating: 4 });
+
+    expect((await getDashboard(db, user.id)).hero?.comic.id).toBe(second.id);
+  });
+
+  it("las series empezadas a las que les faltan pocos números", async () => {
+    const user = await createUser(db);
+    const comics = await series(4);
+    for (const c of comics.slice(0, 3)) await setComicStatus(db, user.id, c.id, "PENDING");
+    await setComicStatus(db, user.id, comics[0].id, "READ");
+
+    // La única serie es la de la caja de luz: no se repite.
+    expect((await getDashboard(db, user.id)).almostDone).toEqual([]);
   });
 });
