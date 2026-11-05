@@ -85,31 +85,47 @@ export interface LibrarySeriesDto {
   covers: string[];
   total: number;
   read: number;
+  /** Tu nota media en esta serie (1–5, con un decimal) o null si aún no has puntuado ninguno. */
+  averageRating: number | null;
 }
 
 /** Agrupa las entradas por serie; las carpetas salen en el orden de su entrada más reciente. */
 export function groupBySeries(
   rows: {
     status: ReadingStatus;
+    rating?: number | null;
     comic: {
       coverThumbUrl: string | null;
       series: { id: string; name: string; startYear: number | null; _count: { comics: number } };
     };
   }[],
 ): LibrarySeriesDto[] {
-  const groups = new Map<string, LibrarySeriesDto>();
-  for (const { status, comic } of rows) {
+  const groups = new Map<string, LibrarySeriesDto & { ratings: number[] }>();
+  for (const { status, rating, comic } of rows) {
     const { id, name, startYear, _count } = comic.series;
     // El total es la serie entera del catálogo, no solo lo que tienes en la biblioteca.
-    const group = groups.get(id) ?? { id, name, startYear, covers: [], total: _count.comics, read: 0 };
+    const group = groups.get(id) ?? {
+      id,
+      name,
+      startYear,
+      covers: [],
+      total: _count.comics,
+      read: 0,
+      averageRating: null,
+      ratings: [],
+    };
     if (status === "READ") group.read += 1;
+    if (rating) group.ratings.push(rating);
     if (comic.coverThumbUrl && group.covers.length < 3) group.covers.push(comic.coverThumbUrl);
     groups.set(comic.series.id, group);
   }
-  return [...groups.values()];
+  return [...groups.values()].map(({ ratings, ...group }) => ({
+    ...group,
+    averageRating: ratings.length ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10 : null,
+  }));
 }
 
-export type SeriesOrder = "recent" | "closest" | "name";
+export type SeriesOrder = "recent" | "closest" | "name" | "rating";
 
 /**
  * Ordena las carpetas. «closest»: las empezadas por el porcentaje leído (de más a menos), luego
@@ -118,6 +134,8 @@ export type SeriesOrder = "recent" | "closest" | "name";
 export function sortSeriesFolders(series: LibrarySeriesDto[], order: SeriesOrder): LibrarySeriesDto[] {
   if (order === "name") return [...series].sort((a, b) => a.name.localeCompare(b.name, "es"));
   if (order === "recent") return series;
+  // Mejor nota media primero; las que aún no has puntuado, al final.
+  if (order === "rating") return [...series].sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
   const rank = (s: LibrarySeriesDto) =>
     s.total > 0 && s.read >= s.total ? -1 : s.read === 0 ? 0 : 1 + s.read / s.total;
   return [...series].sort((a, b) => rank(b) - rank(a));

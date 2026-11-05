@@ -8,7 +8,7 @@ import { normalizeParams, type SearchParams } from "@/lib/search-params";
 import { SelectableComicGrid } from "@/components/library/selectable-comic-grid";
 import { SeriesShelf } from "@/components/library/series-shelf";
 import { ArrowIcon, FolderIcon, GridIcon } from "@/components/ui/icons";
-import { PageHeader, Pagination, segment, segmentGroup } from "@/components/ui/page-parts";
+import { inkField, PageHeader, Pagination, segment, segmentGroup } from "@/components/ui/page-parts";
 import { requireUser } from "@/server/auth/session";
 import { listLibrary, listLibrarySeries } from "@/server/services/library";
 import { librarySearchSchema, type LibrarySearchInput } from "@/server/validation/library";
@@ -23,21 +23,57 @@ const VIEWS = [
 const ORDERS = [
   { value: "recent", label: "Recientes" },
   { value: "closest", label: "Casi terminadas" },
+  { value: "rating", label: "Mejor nota" },
   { value: "name", label: "A-Z" },
 ] as const;
 
-type HrefInput = Partial<Pick<LibrarySearchInput, "status" | "view" | "series" | "order" | "page">>;
+const SORTS = [
+  { value: "recent", label: "Recientes" },
+  { value: "rating", label: "Mejor nota" },
+] as const;
 
-function libraryHref({ status, view, series, order, page }: HrefInput) {
+const NOTAS = [
+  { value: undefined, label: "Todas" },
+  ...(["5", "4", "3", "2", "1"] as const).map((value) => ({ value, label: `★${value}` })),
+  { value: "sin", label: "Sin nota" },
+] as const;
+
+type HrefInput = Partial<Pick<LibrarySearchInput, "status" | "view" | "series" | "order" | "page" | "q" | "sort" | "nota">>;
+
+function libraryHref({ status, view, series, order, page, q, sort, nota }: HrefInput) {
   const query = new URLSearchParams();
   if (status) query.set("status", status);
   // «Series» es la vista por defecto: solo la otra va en la URL.
   if (view === "comics") query.set("view", view);
   if (series) query.set("series", series);
-  if (view !== "comics" && order && order !== "recent") query.set("order", order);
+  if (q) query.set("q", q);
+  if (view !== "comics" && !series && order && order !== "recent") query.set("order", order);
+  // Orden y nota son de la rejilla de cómics (vista «Cómics» o una carpeta abierta).
+  if ((view === "comics" || series) && sort && sort !== "recent") query.set("sort", sort);
+  if ((view === "comics" || series) && nota) query.set("nota", nota);
   if (page && page > 1) query.set("page", String(page));
   const queryString = query.toString();
   return queryString ? `/library?${queryString}` : "/library";
+}
+
+/** Fila de opciones en texto (subrayada la activa), como el orden de las carpetas. */
+function OptionRow({ label, options }: { label: string; options: { key: string; label: string; href: string; active: boolean }[] }) {
+  return (
+    <nav aria-label={label} className="flex flex-wrap gap-x-4 text-sm">
+      {options.map((o) => (
+        <Link
+          key={o.key}
+          href={o.href}
+          aria-current={o.active ? "true" : undefined}
+          className={`inline-flex min-h-11 items-center underline-offset-4 ${
+            o.active ? "font-semibold text-ink underline" : "text-ink-soft hover:text-ink"
+          }`}
+        >
+          {o.label}
+        </Link>
+      ))}
+    </nav>
+  );
 }
 
 export default async function LibraryPage({
@@ -57,7 +93,7 @@ export default async function LibraryPage({
   const showFolders = input.view === "series" && !input.series;
   const [result, folders] = await Promise.all([
     listLibrary(db, user.id, input, zone),
-    showFolders ? listLibrarySeries(db, user.id, input.status, zone, input.order) : null,
+    showFolders ? listLibrarySeries(db, user.id, input.status, zone, input.order, input.q) : null,
   ]);
   const openSeries = input.series ? result.items[0]?.comic.series : undefined;
   const totalInLibrary = Object.values(result.counts).reduce((a, b) => a + b, 0);
@@ -115,27 +151,61 @@ export default async function LibraryPage({
         </nav>
       </div>
 
-      {showFolders && (
-        <nav aria-label="Orden de las series" className="mt-4 flex flex-wrap gap-x-4 text-sm">
-          {ORDERS.map(({ value, label }) => (
-            <Link
-              key={value}
-              href={libraryHref({ status: input.status, view: "series", order: value })}
-              aria-current={input.order === value ? "true" : undefined}
-              className={`inline-flex min-h-11 items-center underline-offset-4 ${
-                input.order === value ? "font-semibold text-ink underline" : "text-ink-soft hover:text-ink"
-              }`}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
+      {/* Buscador: en las carpetas, por serie; en los cómics, por título («green lantern 21»). */}
+      <form action="/library" role="search" className="mt-4 flex max-w-md gap-2">
+        {input.status && <input type="hidden" name="status" value={input.status} />}
+        {input.view === "comics" && <input type="hidden" name="view" value="comics" />}
+        {input.series && <input type="hidden" name="series" value={input.series} />}
+        <input
+          type="search"
+          name="q"
+          defaultValue={input.q ?? ""}
+          placeholder={showFolders ? "Buscar una serie…" : "Buscar un cómic (p. ej. green lantern 21)…"}
+          aria-label={showFolders ? "Buscar una serie" : "Buscar un cómic"}
+          className={`${inkField} flex-1`}
+        />
+      </form>
+
+      {showFolders ? (
+        <div className="mt-2">
+          <OptionRow
+            label="Orden de las series"
+            options={ORDERS.map((o) => ({
+              key: o.value,
+              label: o.label,
+              href: libraryHref({ status: input.status, view: "series", order: o.value, q: input.q }),
+              active: input.order === o.value,
+            }))}
+          />
+        </div>
+      ) : (
+        <div className="mt-2 flex flex-wrap items-center gap-x-8">
+          <OptionRow
+            label="Orden de los cómics"
+            options={SORTS.map((o) => ({
+              key: o.value,
+              label: o.label,
+              href: libraryHref({ ...input, sort: o.value, page: 1 }),
+              active: input.sort === o.value,
+            }))}
+          />
+          <OptionRow
+            label="Filtrar por tu nota"
+            options={NOTAS.map((o) => ({
+              key: o.value ?? "todas",
+              label: o.label,
+              href: libraryHref({ ...input, nota: o.value, page: 1 }),
+              active: input.nota === o.value,
+            }))}
+          />
+        </div>
       )}
 
       {input.series && (
         <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line pb-3">
           <Link
             href={libraryHref({ status: input.status, view: "series", order: input.order })}
+            aria-label="Volver a las series"
             className="inline-flex min-h-11 items-center gap-1.5 text-sm text-ink-soft hover:text-ink"
           >
             <ArrowIcon direction="left" size={16} />
@@ -154,19 +224,23 @@ export default async function LibraryPage({
       {folders ? (
         folders.length === 0 ? (
           <p className="mt-10 text-ink">
-            {input.status
-              ? `No tienes series con cómics en «${READING_STATUS_LABELS[input.status]}».`
-              : "Aún no tienes cómics en tu biblioteca."}
+            {input.q
+              ? `Ninguna de tus series se llama «${input.q}».`
+              : input.status
+                ? `No tienes series con cómics en «${READING_STATUS_LABELS[input.status]}».`
+                : "Aún no tienes cómics en tu biblioteca."}
           </p>
         ) : (
-          <SeriesShelf series={folders} hrefFor={(series) => libraryHref({ status: input.status, view: "series", series, order: input.order })} />
+          <SeriesShelf series={folders} hrefFor={(series) => libraryHref({ status: input.status, view: "series", series })} />
         )
       ) : result.items.length === 0 ? (
         <div className="mt-10">
           <p className="text-ink">
-            {input.status
-              ? `No tienes cómics en «${READING_STATUS_LABELS[input.status]}».`
-              : "Aún no tienes cómics en tu biblioteca."}
+            {input.q || input.nota
+              ? "No hay cómics que cumplan esa búsqueda o ese filtro."
+              : input.status
+                ? `No tienes cómics en «${READING_STATUS_LABELS[input.status]}».`
+                : "Aún no tienes cómics en tu biblioteca."}
           </p>
           <Link href="/catalog" className="mt-2 inline-block text-sm text-ink underline">
             Explorar el catálogo

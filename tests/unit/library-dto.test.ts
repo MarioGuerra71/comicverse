@@ -87,10 +87,26 @@ describe("groupBySeries", () => {
     expect(groups[1]).toMatchObject({ total: 100, read: 0, covers: ["a1"] });
     expect(Object.keys(groups[0])).not.toContain("_count");
   });
+
+  it("calcula tu nota media por serie (con un decimal) y deja null si no has puntuado", () => {
+    const rated = (seriesId: string, rating: number | null) => ({ ...entry(seriesId, "READ", null), rating });
+    const [a, b] = groupBySeries([rated("a", 5), rated("a", 4), rated("a", 4), rated("b", null)]);
+    expect(a.averageRating).toBe(4.3);
+    expect(b.averageRating).toBeNull();
+    expect(Object.keys(a)).not.toContain("ratings");
+  });
 });
 
 describe("sortSeriesFolders", () => {
-  const folder = (id: string, read: number, total: number) => ({ id, name: id, startYear: null, covers: [], total, read });
+  const folder = (id: string, read: number, total: number, averageRating: number | null = null) => ({
+    id,
+    name: id,
+    startYear: null,
+    covers: [],
+    total,
+    read,
+    averageRating,
+  });
   const folders = [folder("Zeta", 0, 10), folder("Alfa", 10, 10), folder("Beta", 2, 10), folder("Gamma", 8, 10)];
 
   it("«recientes» deja el orden tal cual", () => {
@@ -103,5 +119,10 @@ describe("sortSeriesFolders", () => {
 
   it("«A-Z» ordena por nombre", () => {
     expect(sortSeriesFolders(folders, "name").map((f) => f.id)).toEqual(["Alfa", "Beta", "Gamma", "Zeta"]);
+  });
+
+  it("«mejor nota»: la media más alta primero y las sin puntuar al final", () => {
+    const rated = [folder("A", 1, 10, 3.5), folder("B", 1, 10), folder("C", 1, 10, 4.8)];
+    expect(sortSeriesFolders(rated, "rating").map((f) => f.id)).toEqual(["C", "A", "B"]);
   });
 });

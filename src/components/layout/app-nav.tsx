@@ -7,7 +7,6 @@ import {
   CatalogIcon,
   ChartIcon,
   CollectionIcon,
-  CommunityIcon,
   HomeIcon,
   LibraryIcon,
   MoreIcon,
@@ -24,7 +23,7 @@ const SECTIONS = [
   { href: "/graph", label: "Universo", Icon: UniverseIcon, match: ["/graph"] },
   { href: "/achievements", label: "Logros", Icon: TrophyIcon, match: ["/achievements"] },
   { href: "/stats", label: "Estadísticas", Icon: ChartIcon, match: ["/stats"] },
-  { href: "/community", label: "Comunidad", Icon: CommunityIcon, match: ["/community", "/u"] },
+  // Comunidad (/community, /u/…) sigue existiendo, pero fuera del menú: la app es de uso personal.
 ] as const;
 
 /** En el móvil caben 4 pestañas fijas; el resto va en «Más». */
@@ -68,7 +67,7 @@ const tabClass = (active: boolean) =>
     active ? "font-semibold text-editor-ink" : "text-ink-soft"
   }`;
 
-/** Barra inferior del móvil: 4 pestañas y «Más» (Universo, Logros, Estadísticas, Comunidad y Perfil). */
+/** Barra inferior del móvil: 4 pestañas y «Más» (Universo, Logros, Estadísticas y Perfil). */
 export function BottomNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);

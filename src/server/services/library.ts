@@ -289,7 +289,8 @@ export function toStatusCounts(grouped: { status: ReadingStatus; _count: { _all:
 export async function listLibrary(
   db: PrismaClient,
   userId: string,
-  input: Omit<LibrarySearchInput, "view" | "order">,
+  input: Pick<LibrarySearchInput, "status" | "series" | "page" | "pageSize"> &
+    Partial<Pick<LibrarySearchInput, "q" | "sort" | "nota">>,
   zone?: Zone,
 ) {
   const [{ rows, total }, grouped] = await Promise.all([
@@ -314,6 +315,11 @@ export async function listLibrarySeries(
   status?: ReadingStatus,
   zone?: Zone,
   order: SeriesOrder = "recent",
+  q?: string,
 ) {
-  return sortSeriesFolders(groupBySeries(await findLibrarySeriesRows(db, userId, status, zone)), order);
+  const folders = groupBySeries(await findLibrarySeriesRows(db, userId, status, zone));
+  // Buscar en las carpetas: por nombre de serie, sin mayúsculas ni acentos.
+  const plain = (text: string) => text.toLocaleLowerCase("es").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const found = q ? folders.filter((f) => plain(f.name).includes(plain(q))) : folders;
+  return sortSeriesFolders(found, order);
 }

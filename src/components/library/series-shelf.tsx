@@ -42,6 +42,11 @@ export function SeriesShelf({ series, hrefFor }: { series: LibrarySeriesDto[]; h
                 {s.name}
                 {s.startYear && <span className="font-normal text-ink-soft"> ({s.startYear})</span>}
               </p>
+              {s.averageRating !== null && (
+                <p className="mt-0.5 text-xs text-ink-soft" aria-label={`Tu nota media: ${s.averageRating} de 5`}>
+                  <span className="text-editor-ink">★</span> {s.averageRating.toLocaleString("es-ES")} de media
+                </p>
+              )}
               <div className="mt-1 flex items-baseline justify-between gap-2 text-xs text-ink-soft">
                 <span>
                   {s.read}/{s.total} leídos

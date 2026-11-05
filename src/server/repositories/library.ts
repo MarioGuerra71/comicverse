@@ -77,22 +77,48 @@ export function addHistory(
   });
 }
 
+/**
+ * Qué buscar en el título: «green lantern 21» o «Green Lantern #021» → títulos que contienen
+ * «Green Lantern #» con el número 21 (no «Green Lantern #210»); cualquier otra cosa, tal cual.
+ */
+export function libraryTitleFilter(q: string): Prisma.ComicWhereInput {
+  const match = q.match(/^(.*?)\s*#?\s*(\d+(?:\.\d+)?)$/);
+  if (!match || !match[1].trim()) return { title: { contains: q, mode: "insensitive" } };
+  return {
+    title: { contains: `${match[1].trim()} #`, mode: "insensitive" },
+    issueNumber: String(Number.parseFloat(match[2])),
+  };
+}
+
 export async function findLibraryPage(
   db: PrismaClient,
   userId: string,
-  input: Omit<LibrarySearchInput, "view" | "order">,
+  input: Pick<LibrarySearchInput, "status" | "series" | "page" | "pageSize"> &
+    Partial<Pick<LibrarySearchInput, "q" | "sort" | "nota">>,
   zone?: Zone,
 ) {
   const where: Prisma.UserComicWhereInput = {
     userId,
     ...(input.status ? { status: input.status } : {}),
-    comic: { ...comicInZone(zone), ...(input.series ? { seriesId: input.series } : {}) },
+    // «Sin nota»: solo tiene sentido con los leídos (los demás no se pueden puntuar).
+    ...(input.nota === "sin" ? { status: "READ", rating: null } : input.nota ? { rating: Number(input.nota) } : {}),
+    comic: {
+      AND: [
+        comicInZone(zone),
+        input.series ? { seriesId: input.series } : {},
+        input.q ? libraryTitleFilter(input.q) : {},
+      ],
+    },
   };
+  const orderBy: Prisma.UserComicOrderByWithRelationInput[] =
+    input.sort === "rating"
+      ? [{ rating: { sort: "desc", nulls: "last" } }, { updatedAt: "desc" }, { comicId: "asc" }]
+      : [{ updatedAt: "desc" }, { comicId: "asc" }];
 
   const [rows, total] = await db.$transaction([
     db.userComic.findMany({
       where,
-      orderBy: [{ updatedAt: "desc" }, { comicId: "asc" }],
+      orderBy,
       skip: (input.page - 1) * input.pageSize,
       take: input.pageSize,
       select: {
@@ -118,6 +144,7 @@ export function findLibrarySeriesRows(db: PrismaClient, userId: string, status?:
     orderBy: [{ updatedAt: "desc" }, { comicId: "asc" }],
     select: {
       status: true,
+      rating: true,
       comic: { select: { coverThumbUrl: true, series: { select: { id: true, name: true, startYear: true, _count: { select: { comics: true } } } } } },
     },
   });

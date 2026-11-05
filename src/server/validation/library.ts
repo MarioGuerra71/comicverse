@@ -29,8 +29,18 @@ export const librarySearchSchema = z.object({
   // «series»: una carpeta por serie; al abrir una, `series` filtra la rejilla a sus cómics.
   view: z.enum(["comics", "series"]).default("series"),
   series: z.uuid().optional(),
-  // Orden de las carpetas: recientes, las más cerca de terminar o por nombre.
-  order: z.enum(["recent", "closest", "name"]).default("recent"),
+  // Orden de las carpetas: recientes, las más cerca de terminar, por nombre o por tu nota media.
+  order: z.enum(["recent", "closest", "name", "rating"]).default("recent"),
+  // Buscar por título («green lantern 21») o, en las carpetas, por nombre de serie.
+  q: z
+    .string()
+    .trim()
+    .max(100)
+    .optional()
+    .transform((value) => value || undefined),
+  // Cómics: orden (recientes o mejor nota) y filtro por nota; «sin» = leídos sin puntuar.
+  sort: z.enum(["recent", "rating"]).default("recent"),
+  nota: z.enum(["5", "4", "3", "2", "1", "sin"]).optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(60).default(24),
 });
